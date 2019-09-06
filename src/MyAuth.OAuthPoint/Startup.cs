@@ -37,6 +37,7 @@ namespace MyAuth.OAuthPoint
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             
             services.AddRedisManager(Configuration);
+            services.AddSingleton<ILoginRegistry, DefaultLoginRegistry>();
 
             services.Configure<ExceptionProcessingOptions>(o =>
 #if DEBUG

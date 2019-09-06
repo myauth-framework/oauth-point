@@ -1,0 +1,6 @@
+{
+  "ClientId" : "test-app",
+  "UserId" : "user-id",
+  "CodeChallenge" : "123123123",
+  "CodeChallengeMethod" : "MD5"
+}

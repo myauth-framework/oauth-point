@@ -17,4 +17,37 @@
       <ProjectReference Include="..\MyAuth.OAuthPoint\MyAuth.OAuthPoint.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="clients.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Requests\Login\Invalid\with-wrong-redirect-uri.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Requests\Login\Invalid\without-client-id.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Requests\Login\Invalid\without-code-challenge-when-required.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Requests\Login\Invalid\without-redirect-uri.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Requests\Login\Invalid\without-user-id.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Requests\Login\Invalid\with-unknown-client.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Requests\Login\Valid\without-verification.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Requests\Login\Valid\with-verification.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Requests\Login\Valid\with-allow-uri.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

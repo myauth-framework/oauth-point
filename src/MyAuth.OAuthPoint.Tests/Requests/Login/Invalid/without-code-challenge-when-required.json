@@ -1,0 +1,5 @@
+{
+  "ClientId" : "test-app3",
+  "RedirectUri": "http://test.host.ru",
+  "UserId" : "user-id"
+}
