@@ -8,7 +8,7 @@ using MyLab.WebErrors;
 
 namespace MyAuth.OAuthPoint.Tests
 {
-    class TestWebApplicationFactory : WebApplicationFactory<Startup>
+    public class TestWebApplicationFactory : WebApplicationFactory<Startup>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {

@@ -12,13 +12,13 @@ using Xunit.Abstractions;
 
 namespace MyAuth.OAuthPoint.Tests
 {
-    public class IncomingControllerBehavior : IClassFixture<WebApplicationFactory<Startup>>
+    public class IncomingControllerBehavior : IClassFixture<TestWebApplicationFactory>
     {
-        private readonly WebApplicationFactory<Startup> _factory;
+        private readonly TestWebApplicationFactory _factory;
         private readonly ITestOutputHelper _output;
 
         public IncomingControllerBehavior(
-            WebApplicationFactory<Startup> factory,
+            TestWebApplicationFactory factory,
             ITestOutputHelper _output)
         {
             _factory = factory;
