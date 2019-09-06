@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyAuth.OAuthPoint", "MyAuth.OAuthPoint\MyAuth.OAuthPoint.csproj", "{4A790C3D-39B3-4C7E-87FF-623448C5A95D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyAuth.OAuthPoint.Tests", "MyAuth.OAuthPoint.Tests\MyAuth.OAuthPoint.Tests.csproj", "{6B6B3AC4-8372-4014-906A-EDBDAEE594EA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{4A790C3D-39B3-4C7E-87FF-623448C5A95D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4A790C3D-39B3-4C7E-87FF-623448C5A95D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A790C3D-39B3-4C7E-87FF-623448C5A95D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B6B3AC4-8372-4014-906A-EDBDAEE594EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B6B3AC4-8372-4014-906A-EDBDAEE594EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B6B3AC4-8372-4014-906A-EDBDAEE594EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B6B3AC4-8372-4014-906A-EDBDAEE594EA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

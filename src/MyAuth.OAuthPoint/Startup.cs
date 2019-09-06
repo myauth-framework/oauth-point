@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using DotRedis;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MyAuth.OAuthPoint.Services;
 using MyLab.RedisManager;
 using MyLab.WebErrors;
 using MyLab.WebInteraction;
@@ -53,7 +55,20 @@ namespace MyAuth.OAuthPoint
                 Console.WriteLine("\tRequest: \t" + request);
                 Console.WriteLine("\tResponse: \t" + response);
             });
-#endif  
+#endif
+
+            LoadClients(services);
+        }
+
+        private void LoadClients(IServiceCollection services)
+        {
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "clients.json");
+
+            if (File.Exists(filePath))
+            {
+                var registry = DefaultClientRegistry.LoadFromJson(File.ReadAllText(filePath));
+                services.AddSingleton<IClientRegistry>(registry);
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
