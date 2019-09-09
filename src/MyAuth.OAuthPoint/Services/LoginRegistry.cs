@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using DotRedis.ObjectModel;
 using MyAuth.OAuthPoint.Models;
+using MyAuth.OAuthPoint.Tools;
 using MyLab;
 using MyLab.RedisManager;
 
@@ -15,7 +16,6 @@ namespace MyAuth.OAuthPoint.Services
     
     public class DefaultLoginRegistry : ILoginRegistry
     {
-        private const string KeyPrefix = "myauth:auth-code:";
         private readonly IRedisManager _redisManager;
 
         public DefaultLoginRegistry(IRedisManager redisManager)
@@ -25,7 +25,7 @@ namespace MyAuth.OAuthPoint.Services
         
         public async Task Register(string authCode, LoginRequest request)
         {
-            var keyName = "myauth:auth-code:" + authCode;
+            var keyName = LoginRedisKey.Create(authCode);
             
             using (var c = await _redisManager.GetConnection())
             {
@@ -47,9 +47,15 @@ namespace MyAuth.OAuthPoint.Services
             }
         }
 
-        public Task<LoginRequest> Get(string authCode)
+        public async Task<LoginRequest> Get(string authCode)
         {
-            throw new System.NotImplementedException();
+            var keyName = LoginRedisKey.Create(authCode);
+            
+            using (var c = await _redisManager.GetConnection())
+            {
+                var requestKey = new RedisKey<LoginRequest>(keyName, c);
+                return await requestKey.GetAsync();
+            }
         }
     }
 }

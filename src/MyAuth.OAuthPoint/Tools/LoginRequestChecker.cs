@@ -4,7 +4,7 @@ using MyAuth.OAuthPoint.Services;
 
 namespace MyAuth.OAuthPoint.Tools
 {
-    public class LoginRequestChecker
+    class LoginRequestChecker
     {
         private readonly IClientRegistry _clientRegistry;
 
@@ -17,7 +17,7 @@ namespace MyAuth.OAuthPoint.Tools
         {
             if (loginRequest == null)
             {
-                errText = "Request id empty";
+                errText = "Request is empty";
                 return false;
             }
 

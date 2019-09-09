@@ -12,17 +12,17 @@ using Xunit.Abstractions;
 
 namespace MyAuth.OAuthPoint.Tests
 {
-    public class IncomingControllerBehavior : IClassFixture<TestWebApplicationFactory>
+    public class LoginControllerBehavior : IClassFixture<TestWebApplicationFactory>
     {
         private readonly TestWebApplicationFactory _factory;
         private readonly ITestOutputHelper _output;
 
-        public IncomingControllerBehavior(
+        public LoginControllerBehavior(
             TestWebApplicationFactory factory,
-            ITestOutputHelper _output)
+            ITestOutputHelper output)
         {
             _factory = factory;
-            this._output = _output;
+            _output = output;
         }
 
         [Theory]
@@ -37,11 +37,11 @@ namespace MyAuth.OAuthPoint.Tests
             request.Headers.Add("Content-Type", "application/json");
             
             //Act
-            var resp = await client.PostAsync("/incoming", request);
+            var resp = await client.PostAsync("/login", request);
             var msg = await resp.Content.ReadAsStringAsync();
             
             //Assert
-            Assert.Equal(resp.StatusCode, HttpStatusCode.BadRequest);
+            Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
             
             _output.WriteLine(msg);
         }

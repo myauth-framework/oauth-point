@@ -17,12 +17,12 @@ namespace MyAuth.OAuthPoint.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class IncomingController : ControllerBase
+    public class LoginController : ControllerBase
     {
         private readonly ILoginRegistry _loginRegistry;
-        private LoginRequestChecker _requestChecker;
+        private readonly LoginRequestChecker _requestChecker;
 
-        public IncomingController(ILoginRegistry loginRegistry, IClientRegistry clientRegistry)
+        public LoginController(ILoginRegistry loginRegistry, IClientRegistry clientRegistry)
         {
             _loginRegistry = loginRegistry;
             _requestChecker = new LoginRequestChecker(clientRegistry);

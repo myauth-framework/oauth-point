@@ -22,8 +22,17 @@ namespace MyAuth.OAuthPoint
 {
     public class Startup
     {
+        protected IAppConfigurator AppConfigurator { get; }
+
         public Startup(IConfiguration configuration)
+            :this(configuration, new Configurator())
         {
+            Configuration = configuration;
+        }
+        
+        internal Startup(IConfiguration configuration, IAppConfigurator appConfigurator)
+        {
+            AppConfigurator = appConfigurator;
             Configuration = configuration;
         }
 
@@ -32,44 +41,7 @@ namespace MyAuth.OAuthPoint
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services
-                .AddMvc(o => o.AddExceptionProcessing())
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-            
-            services.AddRedisManager(Configuration);
-            services.AddSingleton<ILoginRegistry, DefaultLoginRegistry>();
-
-            services.Configure<ExceptionProcessingOptions>(o =>
-#if DEBUG
-                    o.HideError = false
-#else
-                    o.HideError = true
-#endif  
-            );
-
-            services.AddLogging(builder => builder.AddConsole());
-
-#if DEBUG
-            Redis.Debugger = new RedisDebugger((request, response) =>
-            {
-                Console.WriteLine("REDIS DEBUG >>> " + request);
-                Console.WriteLine("\tRequest: \t" + request);
-                Console.WriteLine("\tResponse: \t" + response);
-            });
-#endif
-
-            LoadClients(services);
-        }
-
-        private void LoadClients(IServiceCollection services)
-        {
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "clients.json");
-
-            if (File.Exists(filePath))
-            {
-                var registry = DefaultClientRegistry.LoadFromJson(File.ReadAllText(filePath));
-                services.AddSingleton<IClientRegistry>(registry);
-            }
+            AppConfigurator.Configure(services, Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -87,6 +59,51 @@ namespace MyAuth.OAuthPoint
 
             app.AddResponceSourceHeader();
             app.UseMvc();
+        }
+        
+        class Configurator : IAppConfigurator
+        {
+            public void Configure(IServiceCollection services, IConfiguration configuration)
+            {
+                services
+                    .AddMvc(o => o.AddExceptionProcessing())
+                    .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            
+                services.AddRedisManager(configuration);
+                services.AddSingleton<ILoginRegistry, DefaultLoginRegistry>();
+
+                services.Configure<ExceptionProcessingOptions>(o =>
+#if DEBUG
+                        o.HideError = false
+#else
+                    o.HideError = true
+#endif  
+                );
+
+                services.AddLogging(builder => builder.AddConsole());
+
+#if DEBUG
+                Redis.Debugger = new RedisDebugger((request, response) =>
+                {
+                    Console.WriteLine("REDIS DEBUG >>> " + request);
+                    Console.WriteLine("\tRequest: \t" + request);
+                    Console.WriteLine("\tResponse: \t" + response);
+                });
+#endif
+
+                LoadClients(services);
+            }
+            
+            private void LoadClients(IServiceCollection services)
+            {
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "clients.json");
+
+                if (File.Exists(filePath))
+                {
+                    var registry = DefaultClientRegistry.LoadFromJson(File.ReadAllText(filePath));
+                    services.AddSingleton<IClientRegistry>(registry);
+                }
+            }
         }
     }
 }
