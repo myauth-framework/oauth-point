@@ -39,11 +39,10 @@ namespace MyAuth.OAuthPoint.Tests
             //Act
             var resp = await client.PostAsync("/login", request);
             var msg = await resp.Content.ReadAsStringAsync();
+            _output.WriteLine(msg);
             
             //Assert
             Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
-            
-            _output.WriteLine(msg);
         }
         
         [Theory]
@@ -58,11 +57,12 @@ namespace MyAuth.OAuthPoint.Tests
             request.Headers.Add("Content-Type", "application/json");
             
             //Act
-            var resp = await client.PostAsync("/incoming", request);
+            var resp = await client.PostAsync("/login", request);
             var msg = await resp.Content.ReadAsStringAsync();
+            _output.WriteLine(msg);
             
             //Assert
-            Assert.True(resp.IsSuccessStatusCode, msg);
+            Assert.True(resp.IsSuccessStatusCode);
         }
 
         public static object[][] GetLoginFiles(string relPath)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DotRedis.ObjectModel;
 using Microsoft.AspNetCore.Mvc;
@@ -37,7 +38,7 @@ namespace MyAuth.OAuthPoint.Controllers
             
             string authCode = Guid.NewGuid().ToString("N");
 
-            _loginRegistry.Register(authCode, loginRequest);
+            await _loginRegistry.Register(authCode, loginRequest);
 
             return Ok(authCode);
             

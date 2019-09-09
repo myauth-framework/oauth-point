@@ -27,7 +27,7 @@ namespace MyAuth.OAuthPoint.Controllers
             if (checkError != null)
                 return BadRequest(checkError);
 
-            var loginRequest = loginReqProvider.Provide(tokenRequest.AuthCode);
+            var loginRequest = await loginReqProvider.Provide(tokenRequest.AuthCode);
             
             return Ok();
         }
