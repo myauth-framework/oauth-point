@@ -7,5 +7,12 @@ namespace MyAuth.OAuthPoint.Models
         public string UserId { get; set; }
         public string CodeChallenge { get; set; }
         public string CodeChallengeMethod { get; set; }
+        public LoginClime[] Climes { get; set; } 
+    }
+    
+    public class LoginClime
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
     }
 }
