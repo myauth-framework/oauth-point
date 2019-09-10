@@ -23,9 +23,9 @@ namespace MyAuth.OAuthPoint.Controllers
             var loginReqProvider = new LoginRequestProviderWithCache(_loginRegistry);
             var reqChecker = new TokenRequestChecker(loginReqProvider);
             
-            var checkError = await reqChecker.Check(tokenRequest);
-            if (checkError != null)
-                return BadRequest(checkError);
+            var errResp = await reqChecker.Check(tokenRequest);
+            if (errResp != null)
+                return BadRequest(errResp);
 
             var loginRequest = await loginReqProvider.Provide(tokenRequest.AuthCode);
             

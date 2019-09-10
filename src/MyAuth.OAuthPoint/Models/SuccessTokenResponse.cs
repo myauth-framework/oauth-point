@@ -3,7 +3,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace MyAuth.OAuthPoint.Models
 {
-    public class TokenResponse
+    public class SuccessTokenResponse
     {
         [JsonProperty(PropertyName = "access_token")]
         public string AccessToken { get; set; }

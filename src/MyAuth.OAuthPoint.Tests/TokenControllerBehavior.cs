@@ -24,11 +24,16 @@ namespace MyAuth.OAuthPoint.Tests
         }
         
         [Theory]
-        [InlineData("Wrong authCode", "foo", "bar", "baz")]
-        [InlineData("Wrong clientId", TestAuthCode, "bar", "baz")]
-        [InlineData("Wrong code verifier", TestAuthCode, TestClientId, "baz")]
-        [InlineData("Empty code verifier", TestAuthCode, TestClientId, "")]
-        public async Task ShouldFailInvalidRequests(string desc, string authCode, string clientId, string codeVerifier)
+        [InlineData("Wrong authCode", "foo", "bar", "baz", TokenResponseErrorCode.InvalidClient)]
+        [InlineData("Wrong clientId", TestAuthCode, "bar", "baz", TokenResponseErrorCode.InvalidRequest)]
+        [InlineData("Wrong code verifier", TestAuthCode, TestClientId, "baz", TokenResponseErrorCode.InvalidRequest)]
+        [InlineData("Empty code verifier", TestAuthCode, TestClientId, "", TokenResponseErrorCode.InvalidRequest)]
+        public async Task ShouldFailInvalidRequests(
+            string desc, 
+            string authCode, 
+            string clientId, 
+            string codeVerifier,
+            TokenResponseErrorCode expectedCode)
         {
             //Arrange
             var client = _factory.CreateClient();
@@ -44,10 +49,13 @@ namespace MyAuth.OAuthPoint.Tests
             //Act
             var resp = await client.PostAsync("/token", reqContent);
             var respContent = await resp.Content.ReadAsStringAsync();
-            _output.WriteLine(respContent);
+
+            var respError = JsonConvert.DeserializeObject<ErrorTokenResponse>(respContent);
+            _output.WriteLine(respError.ErrorDescription);
             
             //Assert
             Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
+            Assert.Equal(expectedCode, respError.ErrorCode);
         }
         
         [Fact]

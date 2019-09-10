@@ -15,31 +15,60 @@ namespace MyAuth.OAuthPoint.Tools
             _loginRequestProvider = loginRequestProvider;
         }
         
-        public async Task<string> Check(TokenRequest tokenRequest)
+        public async Task<ErrorTokenResponse> Check(TokenRequest tokenRequest)
         {
             if (tokenRequest == null)
-                return "Request id empty";
+                return new ErrorTokenResponse
+                {
+                    ErrorCode = TokenResponseErrorCode.InvalidRequest,
+                    ErrorDescription = "Request id empty"
+                };
             if (tokenRequest.ClientId == null)
-                return "ClientId is required";
+                return new ErrorTokenResponse
+                {
+                    ErrorCode = TokenResponseErrorCode.InvalidRequest,
+                    ErrorDescription = "ClientId is required"
+                };
             if (tokenRequest.AuthCode == null)
-                return "Authorization code is required";
+                return new ErrorTokenResponse
+                {
+                    ErrorCode = TokenResponseErrorCode.InvalidRequest,
+                    ErrorDescription = "Authorization code is required"
+                };
+            
             if (tokenRequest.GrantType != "authorization_code")
-                return "Unsupported grant type";
+                return new ErrorTokenResponse{ErrorCode = TokenResponseErrorCode.UnsupportedGrantType};
 
             var loginRequest = await _loginRequestProvider.Provide(tokenRequest.AuthCode);
   
             if (loginRequest == null)
-                return "Login event not found";
-            
+                return new ErrorTokenResponse
+                {
+                    ErrorCode = TokenResponseErrorCode.InvalidClient, 
+                    ErrorDescription = "Login event not found"
+                };
+
             if (loginRequest.ClientId != tokenRequest.ClientId)
-                return "Wrong ClientId";
+                return new ErrorTokenResponse
+                {
+                    ErrorCode = TokenResponseErrorCode.InvalidRequest,
+                    ErrorDescription = "Wrong ClientId"
+                };
             
             if (!string.IsNullOrEmpty(loginRequest.CodeChallenge) && string.IsNullOrEmpty(tokenRequest.CodeVerifier))
-                return "Wrong code verifier";
+                return new ErrorTokenResponse
+                {
+                    ErrorCode = TokenResponseErrorCode.InvalidRequest,
+                    ErrorDescription = "Wrong code verifier"
+                };
 
             if (!string.IsNullOrEmpty(tokenRequest.CodeVerifier) &&
                 !CheckCodeVerifier(loginRequest.CodeChallenge, tokenRequest.CodeVerifier))
-                return "Wrong proof key";
+                return new ErrorTokenResponse
+                {
+                    ErrorCode = TokenResponseErrorCode.InvalidRequest,
+                    ErrorDescription = "Wrong proof key"
+                };
 
             return null;
         }
