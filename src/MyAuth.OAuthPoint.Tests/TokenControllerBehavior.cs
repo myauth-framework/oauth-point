@@ -32,10 +32,17 @@ namespace MyAuth.OAuthPoint.Tests
         {
             //Arrange
             var client = _factory.CreateClient();
-            var query = $"code={authCode}&client_id={clientId}&code_verifier={codeVerifier}";
+            var request = new TokenRequest
+            {
+                AuthCode = authCode,
+                ClientId = clientId,
+                CodeVerifier = codeVerifier,
+                GrantType = "authorization_code"
+            };
+            var reqContent = request.ToUrlEncodedContent();
 
             //Act
-            var resp = await client.GetAsync("/token?" + query);
+            var resp = await client.PostAsync("/token", reqContent);
             var respContent = await resp.Content.ReadAsStringAsync();
             _output.WriteLine(respContent);
             
@@ -48,10 +55,17 @@ namespace MyAuth.OAuthPoint.Tests
         {
             //Arrange
             var client = _factory.CreateClient();
-            var query = $"code={TestAuthCode}&client_id={TestClientId}&code_verifier={TestCodeVerifier}";
-
+            var request = new TokenRequest
+            {
+                AuthCode = TestAuthCode,
+                ClientId = TestClientId,
+                CodeVerifier = TestCodeVerifier,
+                GrantType = "authorization_code"
+            };
+            var reqContent = request.ToUrlEncodedContent();
+            
             //Act
-            var resp = await client.GetAsync("/token?" + query);
+            var resp = await client.PostAsync("/token", reqContent);
             var respContent = await resp.Content.ReadAsStringAsync();
             _output.WriteLine(respContent);
             

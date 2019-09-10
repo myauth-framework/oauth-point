@@ -17,8 +17,8 @@ namespace MyAuth.OAuthPoint.Controllers
             _loginRegistry = loginRegistry;
         }
         
-        [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] TokenRequest tokenRequest)
+        [HttpPost]
+        public async Task<IActionResult> Post([FromForm] TokenRequest tokenRequest)
         {
             var loginReqProvider = new LoginRequestProviderWithCache(_loginRegistry);
             var reqChecker = new TokenRequestChecker(loginReqProvider);

@@ -23,6 +23,8 @@ namespace MyAuth.OAuthPoint.Tools
                 return "ClientId is required";
             if (tokenRequest.AuthCode == null)
                 return "Authorization code is required";
+            if (tokenRequest.GrantType != "authorization_code")
+                return "Unsupported grant type";
 
             var loginRequest = await _loginRequestProvider.Provide(tokenRequest.AuthCode);
   
