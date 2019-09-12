@@ -52,7 +52,8 @@ namespace MyAuth.OAuthPoint.Tests
             //Arrange
             var client = _factory.CreateClient();
             var filename = Path.Combine(GetLoginFilesDir("Valid"), requestFile);
-            var request = new StringContent(File.ReadAllText(filename));
+            var requestContentStr = File.ReadAllText(filename);
+            var request = new StringContent(requestContentStr);
             request.Headers.Remove("Content-Type");
             request.Headers.Add("Content-Type", "application/json");
             

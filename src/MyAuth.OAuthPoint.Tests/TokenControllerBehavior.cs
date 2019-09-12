@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
 using MyAuth.OAuthPoint.Models;
+using MyAuth.OAuthPoint.Tools;
 using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
@@ -14,19 +15,8 @@ using Xunit.Abstractions;
 namespace MyAuth.OAuthPoint.Tests
 {
     using static TestLoginRegistry;
-    public class TokenControllerBehavior: IClassFixture<TestWebApplicationFactory>
+    public partial class TokenControllerBehavior: IClassFixture<TestWebApplicationFactory>
     {
-        private readonly TestWebApplicationFactory _factory;
-        private readonly ITestOutputHelper _output;
-        
-        public TokenControllerBehavior(
-            TestWebApplicationFactory factory,
-            ITestOutputHelper output)
-        {
-            _factory = factory;
-            _output = output;
-        }
-        
         [Theory]
         [InlineData("Wrong authCode", "foo", "bar", "baz", TokenResponseErrorCode.InvalidClient)]
         [InlineData("Wrong clientId", TestAuthCode, "bar", "baz", TokenResponseErrorCode.InvalidRequest)]
@@ -40,7 +30,6 @@ namespace MyAuth.OAuthPoint.Tests
             TokenResponseErrorCode expectedCode)
         {
             //Arrange
-            var client = _factory.CreateClient();
             var request = new TokenRequest
             {
                 AuthCode = authCode,
@@ -48,141 +37,131 @@ namespace MyAuth.OAuthPoint.Tests
                 CodeVerifier = codeVerifier,
                 GrantType = "authorization_code"
             };
-            var reqContent = request.ToUrlEncodedContent();
-
+            
             //Act
-            var resp = await client.PostAsync("/token", reqContent);
-            var respContent = await resp.Content.ReadAsStringAsync();
-
-            var respError = JsonConvert.DeserializeObject<ErrorTokenResponse>(respContent);
-            _output.WriteLine(respError.ErrorDescription);
+            var respError = await IssueToken<ErrorTokenResponse>(request:request);
+            
+            if(respError.Msg.ErrorDescription != null)
+                _output.WriteLine(respError.Msg.ErrorDescription);
             
             //Assert
-            Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
-            Assert.Equal(expectedCode, respError.ErrorCode);
+            Assert.Equal(HttpStatusCode.BadRequest, respError.Code);
+            Assert.Equal(expectedCode, respError.Msg.ErrorCode);
         }
         
         [Fact]
         public async Task ShouldPassValidRequests()
         {
             //Arrange
-            var client = _factory.CreateClient();
-            var request = new TokenRequest
-            {
-                AuthCode = TestAuthCode,
-                ClientId = TestClientId,
-                CodeVerifier = TestCodeVerifier,
-                GrantType = "authorization_code"
-            };
-            var reqContent = request.ToUrlEncodedContent();
             
             //Act
-            var resp = await client.PostAsync("/token", reqContent);
-            var respContent = await resp.Content.ReadAsStringAsync();
-            _output.WriteLine(respContent);
+            var resp = await IssueToken<SuccessTokenResponse>();
             
             //Assert
-            Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, resp.Code);
         }
 
         [Fact]
         public async Task ShouldIssueValidToken()
         {
+            //Act
+            var resp = await IssueToken<SuccessTokenResponse>();
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, resp.Code);
+            Assert.Equal("bearer", resp.Msg.TokenType);
+            Assert.Equal(600, resp.Msg.ExpiresIn);
+            CheckRefreshToken(resp.Msg.RefreshToken);
+            CheckAccessToken(resp.Msg.AccessToken);
+        }
+
+        [Fact]
+        public async Task ShouldRefreshToken()
+        {
+            //Arrange
             var client = _factory.CreateClient();
+            var issueTokenResponse = await IssueToken<SuccessTokenResponse>(client);
+            
             var request = new TokenRequest
             {
-                AuthCode = TestAuthCode,
+                RefreshToken = issueTokenResponse.Msg.RefreshToken,
                 ClientId = TestClientId,
                 CodeVerifier = TestCodeVerifier,
-                GrantType = "authorization_code"
+                GrantType = "refresh_token"
             };
             var reqContent = request.ToUrlEncodedContent();
             
             //Act
-            var resp = await client.PostAsync("/token", reqContent);
-            var respContent = await resp.Content.ReadAsStringAsync();
-            _output.WriteLine(respContent);
-
-            if(!resp.IsSuccessStatusCode)
-                throw new Exception("Wrong response code");
+            var refreshResp = await client.PostAsync("/token", reqContent);
+            var respStr = await refreshResp.Content.ReadAsStringAsync();
             
-            var tokenResp = JsonConvert.DeserializeObject<SuccessTokenResponse>(respContent);
-
+            _output.WriteLine(respStr);
+            
             //Assert
-            Assert.Equal("bearer", tokenResp.TokenType);
-            Assert.Equal(600, tokenResp.ExpiresIn);
-            CheckRefreshToken(tokenResp.RefreshToken);
-            CheckAccessToken(tokenResp.AccessToken);
+            Assert.True(refreshResp.IsSuccessStatusCode);
+
+            var resp = JsonConvert.DeserializeObject<SuccessTokenResponse>(respStr);
+            
+            Assert.Equal("bearer", resp.TokenType);
+            Assert.Equal(600, resp.ExpiresIn);
+            CheckRefreshToken(resp.RefreshToken);
+            CheckAccessToken(resp.AccessToken);
         }
 
-        private void CheckAccessToken(string tokenRespAccessToken)
+        [Fact]
+        public async Task ShouldNotRefreshTokenForInvalidRefreshToken()
         {
-            int dot1Position = tokenRespAccessToken.IndexOf('.');
-            int dot2Position = tokenRespAccessToken.IndexOf('.', dot1Position+1);
-            
-            if(dot1Position == -1 || 
-               dot1Position == 0 || 
-               dot1Position == tokenRespAccessToken.Length-1 ||
-               dot2Position == -1 ||
-               dot2Position == tokenRespAccessToken.Length-1 ||
-               tokenRespAccessToken.IndexOf('.', dot2Position+1) != -1)
-                throw new Exception("Wrong JWT token format");
+            //Arrange
+            var client = _factory.CreateClient();
 
-            var header = GetHeader();
+            var invalidRefreshToken = RefreshToken.Generate(1);
             
-            Assert.Equal("JWT", header.Type); 
-            Assert.Equal("HS256", header.Algorithm);
-            
-            CheckSign();
-
-            var idToken = GetIdToken();
-            
-            Assert.NotNull(idToken);
-            Assert.Equal(TestTokenIssuingOptions.Options.Issuer, idToken.Issuer);
-            Assert.Equal(TestClientId, idToken.Subject);
-            Assert.True(DateTime.Now < idToken.GetExpirationTime());
-            Assert.True(DateTime.Now < idToken.GetExpirationTime());
-            Assert.Contains(idToken.Roles, s => TestRole == s);
-            Assert.Contains(idToken.Climes, c => c.Name == TestClimeName && c.Value == TestClimeValue);
-
-            IdentityToken GetIdToken()
+            var request = new TokenRequest
             {
-                var idTokenBase64 = tokenRespAccessToken.Substring(dot1Position + 1, dot2Position - dot1Position-1);
-                var idTokenBin = WebEncoders.Base64UrlDecode(idTokenBase64);
-                var idTokenStr = Encoding.UTF8.GetString(idTokenBin);
-                return JsonConvert.DeserializeObject<IdentityToken>(idTokenStr);
-            }
+                RefreshToken = invalidRefreshToken.Body,
+                ClientId = TestClientId,
+                CodeVerifier = TestCodeVerifier,
+                GrantType = "refresh_token"
+            };
+            var reqContent = request.ToUrlEncodedContent();
             
-            void CheckSign()
-            {
-                var sign = tokenRespAccessToken.Substring(dot2Position + 1);
-                
-                var dataStr = tokenRespAccessToken.Remove(dot2Position) + TestTokenIssuingOptions.Options.Secret;
-                var dataBin = Encoding.UTF8.GetBytes(dataStr);
-
-                var hashAlg = SHA256.Create();
-                var calcSignBin = hashAlg.ComputeHash(dataBin);
-                var calcSignStr = WebEncoders.Base64UrlEncode(calcSignBin);
-                
-                Assert.Equal(calcSignStr, sign);
-            }
-                
-            JwtHeader GetHeader()
-            {
-                var headerBase64 = tokenRespAccessToken.Remove(dot1Position);
-                var headerBin = WebEncoders.Base64UrlDecode(headerBase64);
-                var headerStr = Encoding.UTF8.GetString(headerBin);
-                
-                return JsonConvert.DeserializeObject<JwtHeader>(headerStr);
-            }
+            //Act
+            var refreshResp = await client.PostAsync("/token", reqContent);
+            var respStr = await refreshResp.Content.ReadAsStringAsync();
+            
+            _output.WriteLine(respStr);
+            
+            //Assert
+            Assert.False(refreshResp.IsSuccessStatusCode);
         }
 
-        private void CheckRefreshToken(string tokenRespRefreshToken)
+        async Task<(TRes Msg, HttpStatusCode Code)> IssueToken<TRes>(HttpClient client = null, TokenRequest request = null)
         {
-            var binGuid = WebEncoders.Base64UrlDecode(tokenRespRefreshToken);
-            var strGuid = Encoding.UTF8.GetString(binGuid);
+            if (client == null)
+            {
+                client = _factory.CreateClient();
+            }
+
+            if (request == null)
+            {
+                request = new TokenRequest
+                {
+                    AuthCode = TestAuthCode,
+                    ClientId = TestClientId,
+                    CodeVerifier = TestCodeVerifier,
+                    GrantType = "authorization_code"
+                };    
+            }
             
-            Assert.True(Guid.TryParse(strGuid, out var resGuid));
+            var reqContent = request.ToUrlEncodedContent();
+            
+            var resp = await client.PostAsync("/token", reqContent);
+            var respStr = await resp.Content.ReadAsStringAsync();
+            _output.WriteLine(respStr);
+            
+            var res = JsonConvert.DeserializeObject<TRes>(respStr);
+
+            return (res, resp.StatusCode);
         }
     }
 }

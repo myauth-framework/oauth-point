@@ -1,4 +1,4 @@
 {
   "RedirectUri": "http://test.host.ru",
-  "UserId" : "user-id"
+  "Subject" : "user-id"
 }

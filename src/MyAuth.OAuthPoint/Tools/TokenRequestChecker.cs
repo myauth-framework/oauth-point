@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -6,41 +7,56 @@ using MyAuth.OAuthPoint.Models;
 
 namespace MyAuth.OAuthPoint.Tools
 {
-    class TokenRequestChecker 
+    class TokenRequestChecker
     {
-        private readonly ILoginRequestProvider _loginRequestProvider;
+        public const string AuthCodeGrantType = "authorization_code";
+        public const string RefreshTokenGrantType = "refresh_token";
+        
+        private static readonly string[] SupportedGrantTypes = {AuthCodeGrantType, RefreshTokenGrantType};
+        
+        private readonly TokenRequest _tokenRequest;
 
-        public TokenRequestChecker(ILoginRequestProvider loginRequestProvider)
+        public TokenRequestChecker(TokenRequest tokenRequest)
         {
-            _loginRequestProvider = loginRequestProvider;
+            _tokenRequest = tokenRequest;
         }
         
-        public async Task<ErrorTokenResponse> Check(TokenRequest tokenRequest)
+        public ErrorTokenResponse CheckState()
         {
-            if (tokenRequest == null)
+            if (_tokenRequest == null)
                 return new ErrorTokenResponse
                 {
                     ErrorCode = TokenResponseErrorCode.InvalidRequest,
                     ErrorDescription = "Request id empty"
                 };
-            if (tokenRequest.ClientId == null)
+            if (_tokenRequest.ClientId == null)
                 return new ErrorTokenResponse
                 {
                     ErrorCode = TokenResponseErrorCode.InvalidRequest,
                     ErrorDescription = "ClientId is required"
                 };
-            if (tokenRequest.AuthCode == null)
+            if (_tokenRequest.GrantType == AuthCodeGrantType && _tokenRequest.AuthCode == null)
                 return new ErrorTokenResponse
                 {
                     ErrorCode = TokenResponseErrorCode.InvalidRequest,
                     ErrorDescription = "Authorization code is required"
                 };
             
-            if (tokenRequest.GrantType != "authorization_code")
+            if (_tokenRequest.GrantType == RefreshTokenGrantType && _tokenRequest.RefreshToken == null)
+                return new ErrorTokenResponse
+                {
+                    ErrorCode = TokenResponseErrorCode.InvalidRequest,
+                    ErrorDescription = "Refresh token is required"
+                };
+            
+            if (!SupportedGrantTypes.Contains(_tokenRequest.GrantType))
                 return new ErrorTokenResponse{ErrorCode = TokenResponseErrorCode.UnsupportedGrantType};
 
-            var loginRequest = await _loginRequestProvider.Provide(tokenRequest.AuthCode);
-  
+            return null;
+        }
+        
+        public ErrorTokenResponse CheckLoginRequest(LoginRequest loginRequest)
+        {
             if (loginRequest == null)
                 return new ErrorTokenResponse
                 {
@@ -48,22 +64,22 @@ namespace MyAuth.OAuthPoint.Tools
                     ErrorDescription = "Login event not found"
                 };
 
-            if (loginRequest.ClientId != tokenRequest.ClientId)
+            if (loginRequest.ClientId != _tokenRequest.ClientId)
                 return new ErrorTokenResponse
                 {
                     ErrorCode = TokenResponseErrorCode.InvalidRequest,
                     ErrorDescription = "Wrong ClientId"
                 };
             
-            if (!string.IsNullOrEmpty(loginRequest.CodeChallenge) && string.IsNullOrEmpty(tokenRequest.CodeVerifier))
+            if (!string.IsNullOrEmpty(loginRequest.CodeChallenge) && string.IsNullOrEmpty(_tokenRequest.CodeVerifier))
                 return new ErrorTokenResponse
                 {
                     ErrorCode = TokenResponseErrorCode.InvalidRequest,
                     ErrorDescription = "Wrong code verifier"
                 };
 
-            if (!string.IsNullOrEmpty(tokenRequest.CodeVerifier) &&
-                !CheckCodeVerifier(loginRequest.CodeChallenge, tokenRequest.CodeVerifier))
+            if (!string.IsNullOrEmpty(_tokenRequest.CodeVerifier) &&
+                !CheckCodeVerifier(loginRequest.CodeChallenge, _tokenRequest.CodeVerifier))
                 return new ErrorTokenResponse
                 {
                     ErrorCode = TokenResponseErrorCode.InvalidRequest,

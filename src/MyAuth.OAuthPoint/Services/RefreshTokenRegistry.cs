@@ -18,7 +18,7 @@ namespace MyAuth.OAuthPoint.Services
 
         Task Remove(string token);
         
-        Task RemoveForSubject(string subject);
+        Task RemoveBySubject(string subject);
     }
     
     public class RefreshTokenDescription
@@ -80,7 +80,7 @@ namespace MyAuth.OAuthPoint.Services
             }
         }
 
-        public async Task RemoveForSubject(string subject)
+        public async Task RemoveBySubject(string subject)
         {
             if (subject == null) throw new ArgumentNullException(nameof(subject));
 
@@ -103,7 +103,7 @@ namespace MyAuth.OAuthPoint.Services
         
         private static async Task UpdateSubjectRefreshTokensList(string token, RefreshTokenDescription desc, IRedisConnection c)
         {
-            var skKey = SubjectRefreshTokensRedisKey.Create(desc.LoginRequest.UserId);
+            var skKey = SubjectRefreshTokensRedisKey.Create(desc.LoginRequest.Subject);
             var sk = new RedisKey<SubjectRefreshTokenList>(skKey, c);
             var subjectRefreshTokenList = await sk.GetAsync();
 

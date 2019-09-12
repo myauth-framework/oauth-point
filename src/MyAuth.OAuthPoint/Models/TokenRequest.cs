@@ -13,6 +13,8 @@ namespace MyAuth.OAuthPoint.Models
         
         [BindProperty(Name="code")]
         public string AuthCode { get; set; }
+        [BindProperty(Name="refresh_token")]
+        public string RefreshToken { get; set; }
         
         [BindProperty(Name="client_id")]
         public string ClientId { get; set; }
@@ -22,10 +24,14 @@ namespace MyAuth.OAuthPoint.Models
             var dict = new Dictionary<string, string>
             {
                 { "grant_type", GrantType},
-                { "code", AuthCode},
                 { "client_id", ClientId},
                 { "code_verifier", CodeVerifier}
             };
+            
+            if(AuthCode != null)
+                dict.Add("code", AuthCode);
+            if(RefreshToken != null)
+                dict.Add("refresh_token", RefreshToken);
 
             return new FormUrlEncodedContent(dict);
         }

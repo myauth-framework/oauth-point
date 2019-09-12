@@ -1,5 +1,5 @@
 {
   "ClientId" : "test-app1",
   "RedirectUri": "http://test.host.ru",
-  "UserId" : "user-id"
+  "Subject" : "user-id"
 }

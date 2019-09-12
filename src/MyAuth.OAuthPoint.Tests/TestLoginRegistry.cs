@@ -28,7 +28,7 @@ namespace MyAuth.OAuthPoint.Tests
                 ClientId = TestClientId,
                 CodeChallenge = TestCodeChallenge,
                 RedirectUri = TestRedirectUri,
-                UserId = TestUserId,
+                Subject = TestUserId,
                 CodeChallengeMethod = "MD5",
                 Climes = new []{ new Clime{Name = TestClimeName, Value = TestClimeValue}  },
                 Roles = new []{ TestRole}

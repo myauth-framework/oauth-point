@@ -33,9 +33,9 @@ namespace MyAuth.OAuthPoint.Tools
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(loginRequest.UserId))
+            if (string.IsNullOrWhiteSpace(loginRequest.Subject))
             {
-                errText =  "UserId is required";
+                errText =  "Subject is required";
                 return false;
             }
 

@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using MyAuth.OAuthPoint.Models;
 using MyAuth.OAuthPoint.Services;
@@ -15,24 +14,33 @@ namespace MyAuth.OAuthPoint.Controllers
     {
         private readonly TokenIssuingOptions _options;
         private readonly ILoginRegistry _loginRegistry;
+        private readonly IRefreshTokenRegistry _refreshTokenRegistry;
 
-        public TokenController(IOptions<TokenIssuingOptions> options, ILoginRegistry loginRegistry)
+        public TokenController(
+            IOptions<TokenIssuingOptions> options, 
+            ILoginRegistry loginRegistry,
+            IRefreshTokenRegistry refreshTokenRegistry)
         {
             _options = options.Value;
             _loginRegistry = loginRegistry;
+            _refreshTokenRegistry = refreshTokenRegistry;
         }
         
         [HttpPost]
         public async Task<IActionResult> Post([FromForm] TokenRequest tokenRequest)
         {
-            var loginReqProvider = new LoginRequestProviderWithCache(_loginRegistry);
-            var reqChecker = new TokenRequestChecker(loginReqProvider);
+            var reqChecker = new TokenRequestChecker(tokenRequest);
             
-            var errResp = await reqChecker.Check(tokenRequest);
+            var errResp = reqChecker.CheckState();
             if (errResp != null)
                 return BadRequest(errResp);
-
-            var loginRequest = await loginReqProvider.Provide(tokenRequest.AuthCode);
+            
+            var loginReqProvider = GetLoginRequestProvider();
+            var loginRequest = await loginReqProvider.Provide();
+            
+            errResp = reqChecker.CheckLoginRequest(loginRequest);
+            if (errResp != null)
+                return BadRequest(errResp);
 
             var accessTokenBuilder = new AccessTokenBuilder(_options.Secret)
             {
@@ -40,16 +48,35 @@ namespace MyAuth.OAuthPoint.Controllers
                 LifeTimeMin = _options.AccessTokenLifeTimeMin
             };
 
-            var refreshToken = RefreshTokenGenerator.Generate();
-            
+            var refreshToken = RefreshToken.Generate(_options.RefreshTokenLifeTimeDays);
+
             var succResp = new SuccessTokenResponse
             {
                 AccessToken = accessTokenBuilder.Build(loginRequest),
                 ExpiresIn = _options.AccessTokenLifeTimeMin * 60,
-                RefreshToken = refreshToken
+                RefreshToken = refreshToken.Body 
             };
+
+            await _refreshTokenRegistry.Register(refreshToken.Body, new RefreshTokenDescription
+            {
+                LoginRequest = loginRequest,
+                NotAfter = refreshToken.NotAfter
+            });
             
             return Ok(succResp);
+
+            ILoginRequestProvider GetLoginRequestProvider()
+            {
+                switch (tokenRequest.GrantType)
+                {
+                    case TokenRequestChecker.AuthCodeGrantType:
+                        return new AuthCodeBasedLoginRequestProvider(tokenRequest.AuthCode, _loginRegistry);
+                    case TokenRequestChecker.RefreshTokenGrantType: 
+                        return new RefreshTokenBasedLoginRequestProvider(tokenRequest.RefreshToken, _refreshTokenRegistry);
+                    default:
+                        throw new IndexOutOfRangeException("Unsupported grant type");
+                }   
+            }
         }
     }
 }

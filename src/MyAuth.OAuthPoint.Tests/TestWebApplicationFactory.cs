@@ -38,6 +38,7 @@ namespace MyAuth.OAuthPoint.Tests
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
                 
                 services.AddSingleton<ILoginRegistry, TestLoginRegistry>();
+                services.AddSingleton<IRefreshTokenRegistry, TestRefreshTokenRegistry>();
                 services.Configure<ExceptionProcessingOptions>(o => o.HideError = false);
                 services.AddLogging(l => l.AddConsole());
                 

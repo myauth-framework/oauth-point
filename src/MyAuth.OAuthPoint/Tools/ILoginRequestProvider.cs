@@ -7,30 +7,46 @@ namespace MyAuth.OAuthPoint.Tools
 {
     interface ILoginRequestProvider
     {
-        Task<LoginRequest> Provide(string authCode);
+        Task<LoginRequest> Provide();
     }
-    
-    public class LoginRequestProviderWithCache : ILoginRequestProvider
+
+    class AuthCodeBasedLoginRequestProvider : ILoginRequestProvider
     {
+        private readonly string _authCode;
         private readonly ILoginRegistry _loginRegistry;
 
-        private readonly IDictionary<string, LoginRequest> _cache =
-            new Dictionary<string, LoginRequest>();
-
-        public LoginRequestProviderWithCache(ILoginRegistry loginRegistry)
+        /// <summary>
+        /// Initializes a new instance of <see cref="AuthCodeBasedLoginRequrestProvider"/>
+        /// </summary>
+        public AuthCodeBasedLoginRequestProvider(string authCode, ILoginRegistry loginRegistry)
         {
+            _authCode = authCode;
             _loginRegistry = loginRegistry;
         }
-
-        public async Task<LoginRequest> Provide(string authCode)
+        
+        public async Task<LoginRequest> Provide()
         {
-            if (_cache.TryGetValue(authCode, out var req))
-                return req;
+            return await _loginRegistry.Get(_authCode);
+        }
+    }
+    
+    class RefreshTokenBasedLoginRequestProvider : ILoginRequestProvider
+    {
+        private readonly string _refreshToken;
+        private readonly IRefreshTokenRegistry _refreshTokenRegistry;
 
-            req = await _loginRegistry.Get(authCode);
-            _cache.Add(authCode, req);
-
-            return req;
+        /// <summary>
+        /// Initializes a new instance of <see cref="RefreshTokenBasedLoginRequestProvider"/>
+        /// </summary>
+        public RefreshTokenBasedLoginRequestProvider(string refreshToken, IRefreshTokenRegistry refreshTokenRegistry)
+        {
+            _refreshToken = refreshToken;
+            _refreshTokenRegistry = refreshTokenRegistry;
+        }
+        
+        public async Task<LoginRequest> Provide()
+        {
+            return await _refreshTokenRegistry.Get(_refreshToken);
         }
     }
 }
