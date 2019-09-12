@@ -1,6 +1,10 @@
 using System;
+using System.Net;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.WebUtilities;
 using MyAuth.OAuthPoint.Models;
 using Newtonsoft.Json;
@@ -9,10 +13,11 @@ using Xunit.Abstractions;
 
 namespace MyAuth.OAuthPoint.Tests
 {
-    public partial class TokenControllerBehavior
+    public partial class TokenControllerBehavior : IClassFixture<TestWebApplicationFactory>
     {
         private readonly TestWebApplicationFactory _factory;
         private readonly ITestOutputHelper _output;
+        private TokensTestTools _tt;
 
         public TokenControllerBehavior(
             TestWebApplicationFactory factory,
@@ -20,6 +25,7 @@ namespace MyAuth.OAuthPoint.Tests
         {
             _factory = factory;
             _output = output;
+            _tt = new TokensTestTools(_factory, _output);
         }
 
         private void CheckAccessToken(string tokenRespAccessToken)
@@ -92,5 +98,13 @@ namespace MyAuth.OAuthPoint.Tests
 
             Assert.True(Guid.TryParse(strGuid, out var resGuid));
         }
+
+        async Task<(TRes Msg, HttpStatusCode Code)> IssueToken<TRes>
+            (HttpClient client = null, TokenRequest request = null) =>
+                await _tt.IssueToken<TRes>(client, request);
+
+        async Task<(TRes Msg, HttpStatusCode Code)> RefreshToken<TRes>
+            (string refreshToken, HttpClient client = null) =>
+                await _tt.RefreshToken<TRes>(refreshToken, client);
     }
 }

@@ -2,9 +2,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MyAuth.OAuthPoint.Models;
 using MyAuth.OAuthPoint.Services;
+using MyAuth.OAuthPoint.Tools;
 
 namespace MyAuth.OAuthPoint.Tests
 {
+    using static TestLoginRegistry;
+    
     class TestRefreshTokenRegistry : IRefreshTokenRegistry
     {
         readonly IDictionary<string, LoginRequest> _loginRequests =
