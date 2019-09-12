@@ -40,6 +40,14 @@ namespace MyAuth.OAuthPoint.Tests
                 services.AddSingleton<ILoginRegistry, TestLoginRegistry>();
                 services.Configure<ExceptionProcessingOptions>(o => o.HideError = false);
                 services.AddLogging(l => l.AddConsole());
+                
+                services.Configure<TokenIssuingOptions>(options =>
+                    {
+                        options.Issuer = TestTokenIssuingOptions.Options.Issuer;
+                        options.Secret = TestTokenIssuingOptions.Options.Secret;
+                        options.AccessTokenLifeTimeMin = TestTokenIssuingOptions.Options.AccessTokenLifeTimeMin;
+                        options.RefreshTokenLifeTimeDays = TestTokenIssuingOptions.Options.RefreshTokenLifeTimeDays;
+                    });
 
                 LoadClients(services);
             }

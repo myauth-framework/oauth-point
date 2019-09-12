@@ -80,6 +80,7 @@ namespace MyAuth.OAuthPoint
                     o.HideError = true
 #endif  
                 );
+                services.Configure<TokenIssuingOptions>(configuration.GetSection("TokenIssuing"));
 
                 services.AddLogging(builder => builder.AddConsole());
 

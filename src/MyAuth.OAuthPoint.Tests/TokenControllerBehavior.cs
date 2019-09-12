@@ -138,7 +138,7 @@ namespace MyAuth.OAuthPoint.Tests
             var idToken = GetIdToken();
             
             Assert.NotNull(idToken);
-            Assert.Equal("MyAuth.OAuthPoint", idToken.Issuer);
+            Assert.Equal(TestTokenIssuingOptions.Options.Issuer, idToken.Issuer);
             Assert.Equal(TestClientId, idToken.Subject);
             Assert.True(DateTime.Now < idToken.GetExpirationTime());
             Assert.True(DateTime.Now < idToken.GetExpirationTime());
@@ -157,7 +157,7 @@ namespace MyAuth.OAuthPoint.Tests
             {
                 var sign = tokenRespAccessToken.Substring(dot2Position + 1);
                 
-                var dataStr = tokenRespAccessToken.Remove(dot2Position) + "qwerty";
+                var dataStr = tokenRespAccessToken.Remove(dot2Position) + TestTokenIssuingOptions.Options.Secret;
                 var dataBin = Encoding.UTF8.GetBytes(dataStr);
 
                 var hashAlg = SHA256.Create();

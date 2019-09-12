@@ -2,10 +2,10 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using MyAuth.OAuthPoint.Models;
 using MyAuth.OAuthPoint.Services;
 using MyAuth.OAuthPoint.Tools;
-using MyLab.Config;
 
 namespace MyAuth.OAuthPoint.Controllers
 {
@@ -13,13 +13,13 @@ namespace MyAuth.OAuthPoint.Controllers
     [ApiController]
     public class TokenController : ControllerBase
     {
+        private readonly TokenIssuingOptions _options;
         private readonly ILoginRegistry _loginRegistry;
-        private readonly IConfiguration _configuration;
 
-        public TokenController(ILoginRegistry loginRegistry, IConfiguration configuration)
+        public TokenController(IOptions<TokenIssuingOptions> options, ILoginRegistry loginRegistry)
         {
+            _options = options.Value;
             _loginRegistry = loginRegistry;
-            _configuration = configuration;
         }
         
         [HttpPost]
@@ -34,12 +34,10 @@ namespace MyAuth.OAuthPoint.Controllers
 
             var loginRequest = await loginReqProvider.Provide(tokenRequest.AuthCode);
 
-            var tokenSettings = _configuration.GetNode<TokenSettingsConfig>();
-            
-            var accessTokenBuilder = new AccessTokenBuilder(tokenSettings.Secret)
+            var accessTokenBuilder = new AccessTokenBuilder(_options.Secret)
             {
-                Issuer = tokenSettings.Issuer,
-                LifeTimeMin = tokenSettings.AccessTokenLifeTimeMin
+                Issuer = _options.Issuer,
+                LifeTimeMin = _options.AccessTokenLifeTimeMin
             };
 
             var refreshToken = RefreshTokenGenerator.Generate();
@@ -47,7 +45,7 @@ namespace MyAuth.OAuthPoint.Controllers
             var succResp = new SuccessTokenResponse
             {
                 AccessToken = accessTokenBuilder.Build(loginRequest),
-                ExpiresIn = tokenSettings.AccessTokenLifeTimeMin * 60,
+                ExpiresIn = _options.AccessTokenLifeTimeMin * 60,
                 RefreshToken = refreshToken
             };
             

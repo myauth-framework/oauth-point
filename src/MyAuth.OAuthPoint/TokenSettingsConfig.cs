@@ -1,9 +1,6 @@
-using MyLab.Config;
-
 namespace MyAuth.OAuthPoint
 {
-    [ConfigNode("TokenSettings")]
-    public class TokenSettingsConfig
+    public class TokenIssuingOptions
     {
         public string Issuer { get; set; }
         public string Secret { get; set; }
