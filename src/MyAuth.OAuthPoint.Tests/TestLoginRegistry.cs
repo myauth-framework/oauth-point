@@ -14,6 +14,9 @@ namespace MyAuth.OAuthPoint.Tests
         public const string TestRedirectUri = "http://test.host.ru/success";
         public const string TestCodeVerifier = "qwerty";
         public const string TestCodeChallenge = "2FeO34RYzgb7xbt2pYxcpA==";
+        public const string TestRole = "Admin";
+        public const string TestClimeName = "Clime";
+        public const string TestClimeValue = "ClimeVal";
         
         private readonly IDictionary<string, LoginRequest> _requests
             = new Dictionary<string, LoginRequest>();
@@ -26,7 +29,9 @@ namespace MyAuth.OAuthPoint.Tests
                 CodeChallenge = TestCodeChallenge,
                 RedirectUri = TestRedirectUri,
                 UserId = TestUserId,
-                CodeChallengeMethod = "MD5"
+                CodeChallengeMethod = "MD5",
+                Climes = new []{ new Clime{Name = TestClimeName, Value = TestClimeValue}  },
+                Roles = new []{ TestRole}
             });
         }
         

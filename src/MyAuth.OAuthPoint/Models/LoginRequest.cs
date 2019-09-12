@@ -8,5 +8,6 @@ namespace MyAuth.OAuthPoint.Models
         public string CodeChallenge { get; set; }
         public string CodeChallengeMethod { get; set; }
         public string[] Roles { get; set; } 
+        public Clime[] Climes { get; set; }
     }
 }

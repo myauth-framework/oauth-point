@@ -71,6 +71,7 @@ namespace MyAuth.OAuthPoint
             
                 services.AddRedisManager(configuration);
                 services.AddSingleton<ILoginRegistry, DefaultLoginRegistry>();
+                services.AddSingleton(configuration);
 
                 services.Configure<ExceptionProcessingOptions>(o =>
 #if DEBUG

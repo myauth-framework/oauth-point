@@ -1,8 +1,11 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using MyAuth.OAuthPoint.Models;
 using MyAuth.OAuthPoint.Services;
 using MyAuth.OAuthPoint.Tools;
+using MyLab.Config;
 
 namespace MyAuth.OAuthPoint.Controllers
 {
@@ -11,10 +14,12 @@ namespace MyAuth.OAuthPoint.Controllers
     public class TokenController : ControllerBase
     {
         private readonly ILoginRegistry _loginRegistry;
+        private readonly IConfiguration _configuration;
 
-        public TokenController(ILoginRegistry loginRegistry)
+        public TokenController(ILoginRegistry loginRegistry, IConfiguration configuration)
         {
             _loginRegistry = loginRegistry;
+            _configuration = configuration;
         }
         
         [HttpPost]
@@ -28,8 +33,25 @@ namespace MyAuth.OAuthPoint.Controllers
                 return BadRequest(errResp);
 
             var loginRequest = await loginReqProvider.Provide(tokenRequest.AuthCode);
+
+            var tokenSettings = _configuration.GetNode<TokenSettingsConfig>();
             
-            return Ok();
+            var accessTokenBuilder = new AccessTokenBuilder(tokenSettings.Secret)
+            {
+                Issuer = tokenSettings.Issuer,
+                LifeTimeMin = tokenSettings.AccessTokenLifeTimeMin
+            };
+
+            var refreshToken = RefreshTokenGenerator.Generate();
+            
+            var succResp = new SuccessTokenResponse
+            {
+                AccessToken = accessTokenBuilder.Build(loginRequest),
+                ExpiresIn = tokenSettings.AccessTokenLifeTimeMin * 60,
+                RefreshToken = refreshToken
+            };
+            
+            return Ok(succResp);
         }
     }
 }

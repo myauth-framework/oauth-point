@@ -29,28 +29,6 @@ namespace MyAuth.OAuthPoint.Tests
             
         }
         
-        /*public void ConfigureServices(IServiceCollection services)
-        {
-            AppConfigurator.Configure(services, Configuration);
-        }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
-
-            app.AddResponceSourceHeader();
-            app.UseMvc();
-        }*/
-        
         class Configurator : IAppConfigurator
         {
             public void Configure(IServiceCollection services, IConfiguration configuration)
