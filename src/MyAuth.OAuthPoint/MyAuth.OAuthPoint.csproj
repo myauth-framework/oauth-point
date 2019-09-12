@@ -11,7 +11,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
         <PackageReference Include="MyLab.Config" Version="1.1.0" />
         <PackageReference Include="MyLab.LogDsl" Version="1.1.4" />
-        <PackageReference Include="MyLab.RedisManager" Version="1.0.1" />
+        <PackageReference Include="MyLab.RedisManager" Version="1.1.1" />
         <PackageReference Include="MyLab.WebErrors" Version="1.0.1" />
         <PackageReference Include="MyLab.WebInteraction" Version="1.0.0" />
     </ItemGroup>

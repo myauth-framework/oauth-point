@@ -14,7 +14,7 @@ namespace MyAuth.OAuthPoint.Services
         Task<LoginRequest> Get(string authCode);
     }
     
-    public class DefaultLoginRegistry : ILoginRegistry
+    class DefaultLoginRegistry : ILoginRegistry
     {
         private readonly IRedisManager _redisManager;
 
