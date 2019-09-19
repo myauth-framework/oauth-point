@@ -1,3 +1,5 @@
+using MyAuth.Common;
+
 namespace MyAuth.OAuthPoint.Models
 {
     public class LoginRequest
