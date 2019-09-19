@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <Authors>Andrey O.</Authors>
+        <Copyright>Copyright (c) 2019 Andrey Osintsev &lt;ozzy.ext@gmail.com&gt;</Copyright>
+        <PackageProjectUrl>https://github.com/ozzy-ext/myauth-oauth-point</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/ozzy-ext/myauth-oauth-point.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <Version>1.0.0</Version>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="DotRedis" Version="1.14.3" />
+        <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.HttpsPolicy" Version="2.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+        <PackageReference Include="MyLab.LogDsl" Version="1.1.4" />
+        <PackageReference Include="MyLab.RedisManager" Version="1.1.1" />
+        <PackageReference Include="MyLab.WebErrors" Version="1.0.1" />
+        <PackageReference Include="MyLab.WebInteraction" Version="1.0.0" />
+    </ItemGroup>
+
+</Project>
