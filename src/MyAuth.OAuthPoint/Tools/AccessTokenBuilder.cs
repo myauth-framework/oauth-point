@@ -9,9 +9,9 @@ namespace MyAuth.OAuthPoint.Tools
 {
     public class AccessTokenBuilder
     {
-        private static string TokenHeaderBase64 = "{\"typ\":\"JWT\",\"alg\":\"HS256\"}";
-        
-        private static HashAlgorithm hashAlg = SHA256.Create();
+        private static readonly string TokenHeaderBase64;
+
+        private readonly HashAlgorithm _hashAlg;
         public string Secret { get; }
         public string Issuer { get; set; }
         public int LifeTimeMin { get; set; }
@@ -34,6 +34,9 @@ namespace MyAuth.OAuthPoint.Tools
         public AccessTokenBuilder(string secret)
         {
             Secret = secret;
+
+            var binSecret = Encoding.UTF8.GetBytes(secret);
+            _hashAlg = new HMACSHA256(binSecret);
         }
         
         public string Build(LoginRequest loginRequest)
@@ -52,10 +55,10 @@ namespace MyAuth.OAuthPoint.Tools
             var binIdToken = Encoding.UTF8.GetBytes(strIdToken);
             var base64IdToken = WebEncoders.Base64UrlEncode(binIdToken);
 
-            var dataForHashing = TokenHeaderBase64 + "." + base64IdToken + Secret;
+            var dataForHashing = TokenHeaderBase64 + "." + base64IdToken;
             var binDataForHashing = Encoding.UTF8.GetBytes(dataForHashing);
             
-            var idTokenHash = hashAlg.ComputeHash(binDataForHashing);
+            var idTokenHash = _hashAlg.ComputeHash(binDataForHashing);
             var idTokenHashBase64 = WebEncoders.Base64UrlEncode(idTokenHash);
 
             var accessToken = TokenHeaderBase64 + "." + base64IdToken + "." + idTokenHashBase64;

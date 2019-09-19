@@ -71,10 +71,11 @@ namespace MyAuth.OAuthPoint.Tests
             {
                 var sign = tokenRespAccessToken.Substring(dot2Position + 1);
 
-                var dataStr = tokenRespAccessToken.Remove(dot2Position) + TestTokenIssuingOptions.Options.Secret;
+                var dataStr = tokenRespAccessToken.Remove(dot2Position);
                 var dataBin = Encoding.UTF8.GetBytes(dataStr);
 
-                var hashAlg = SHA256.Create();
+                var binSecret = Encoding.UTF8.GetBytes(TestTokenIssuingOptions.Options.Secret);
+                var hashAlg = new HMACSHA256(binSecret);
                 var calcSignBin = hashAlg.ComputeHash(dataBin);
                 var calcSignStr = WebEncoders.Base64UrlEncode(calcSignBin);
 
