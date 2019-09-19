@@ -1,7 +1,9 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using MyAuth.Common;
 using MyAuth.OAuthPoint.Models;
 using MyAuth.OAuthPoint.Services;
 using MyAuth.OAuthPoint.Tools;
@@ -42,17 +44,13 @@ namespace MyAuth.OAuthPoint.Controllers
             if (errResp != null)
                 return BadRequest(errResp);
 
-            var accessTokenBuilder = new AccessTokenBuilder(_options.Secret)
-            {
-                Issuer = _options.Issuer,
-                LifeTimeMin = _options.AccessTokenLifeTimeMin
-            };
-
+            var idToken = LoginRequestToIdToken(loginRequest);
+            var accessToken = AccessToken.Build(idToken, _options.Secret);
             var refreshToken = RefreshToken.Generate(_options.RefreshTokenLifeTimeDays);
 
             var succResp = new SuccessTokenResponse
             {
-                AccessToken = accessTokenBuilder.Build(loginRequest),
+                AccessToken = accessToken.Serialize(),
                 ExpiresIn = _options.AccessTokenLifeTimeMin * 60,
                 RefreshToken = refreshToken.Body 
             };
@@ -64,6 +62,20 @@ namespace MyAuth.OAuthPoint.Controllers
             });
             
             return Ok(succResp);
+
+            IdentityToken LoginRequestToIdToken(LoginRequest lr)
+            {
+                var it = new IdentityToken
+                {
+                    Issuer = _options.Issuer,
+                    Subject = lr.Subject,
+                    Roles = lr.Roles,
+                    Climes = lr.Climes
+                };
+                it.SetExpirationTime(DateTime.Now.AddMinutes(_options.AccessTokenLifeTimeMin));
+
+                return it;
+            }
 
             ILoginRequestProvider GetLoginRequestProvider()
             {

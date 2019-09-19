@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.WebUtilities;
+using MyAuth.Common;
 using MyAuth.OAuthPoint.Models;
 using Newtonsoft.Json;
 using Xunit;
@@ -30,66 +31,18 @@ namespace MyAuth.OAuthPoint.Tests
 
         private void CheckAccessToken(string tokenRespAccessToken)
         {
-            int dot1Position = tokenRespAccessToken.IndexOf('.');
-            int dot2Position = tokenRespAccessToken.IndexOf('.', dot1Position + 1);
+            var at = AccessToken.Deserialize(tokenRespAccessToken);
 
-            if (dot1Position == -1 ||
-                dot1Position == 0 ||
-                dot1Position == tokenRespAccessToken.Length - 1 ||
-                dot2Position == -1 ||
-                dot2Position == tokenRespAccessToken.Length - 1 ||
-                tokenRespAccessToken.IndexOf('.', dot2Position + 1) != -1)
-                throw new Exception("Wrong JWT token format");
-
-            var header = GetHeader();
-
-            Assert.Equal("JWT", header.Type);
-            Assert.Equal("HS256", header.Algorithm);
-
-            CheckSign();
-
-            var idToken = GetIdToken();
-
-            Assert.NotNull(idToken);
-            Assert.Equal(TestTokenIssuingOptions.Options.Issuer, idToken.Issuer);
-            Assert.Equal(TestLoginRegistry.TestClientId, idToken.Subject);
-            Assert.True(DateTime.Now < idToken.GetExpirationTime());
-            Assert.True(DateTime.Now < idToken.GetExpirationTime());
-            Assert.Contains(idToken.Roles, s => TestLoginRegistry.TestRole == s);
-            Assert.Contains(idToken.Climes,
+            Assert.Equal("JWT", at.Header.Type);
+            Assert.Equal("HS256", at.Header.Algorithm);
+            Assert.True(at.VerifySignature("qwerty"));
+            Assert.Equal(TestTokenIssuingOptions.Options.Issuer, at.IdToken.Issuer);
+            Assert.Equal(TestLoginRegistry.TestUserId, at.IdToken.Subject);
+            Assert.True(DateTime.Now < at.IdToken.GetExpirationTime());
+            Assert.True(DateTime.Now < at.IdToken.GetExpirationTime());
+            Assert.Contains(at.IdToken.Roles, s => TestLoginRegistry.TestRole == s);
+            Assert.Contains(at.IdToken.Climes,
                 c => c.Name == TestLoginRegistry.TestClimeName && c.Value == TestLoginRegistry.TestClimeValue);
-
-            IdentityToken GetIdToken()
-            {
-                var idTokenBase64 = tokenRespAccessToken.Substring(dot1Position + 1, dot2Position - dot1Position - 1);
-                var idTokenBin = WebEncoders.Base64UrlDecode(idTokenBase64);
-                var idTokenStr = Encoding.UTF8.GetString(idTokenBin);
-                return JsonConvert.DeserializeObject<IdentityToken>(idTokenStr);
-            }
-
-            void CheckSign()
-            {
-                var sign = tokenRespAccessToken.Substring(dot2Position + 1);
-
-                var dataStr = tokenRespAccessToken.Remove(dot2Position);
-                var dataBin = Encoding.UTF8.GetBytes(dataStr);
-
-                var binSecret = Encoding.UTF8.GetBytes(TestTokenIssuingOptions.Options.Secret);
-                var hashAlg = new HMACSHA256(binSecret);
-                var calcSignBin = hashAlg.ComputeHash(dataBin);
-                var calcSignStr = WebEncoders.Base64UrlEncode(calcSignBin);
-
-                Assert.Equal(calcSignStr, sign);
-            }
-
-            JwtHeader GetHeader()
-            {
-                var headerBase64 = tokenRespAccessToken.Remove(dot1Position);
-                var headerBin = WebEncoders.Base64UrlDecode(headerBase64);
-                var headerStr = Encoding.UTF8.GetString(headerBin);
-
-                return JsonConvert.DeserializeObject<JwtHeader>(headerStr);
-            }
         }
 
         private void CheckRefreshToken(string tokenRespRefreshToken)
