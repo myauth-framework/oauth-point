@@ -126,7 +126,7 @@ namespace MyAuth.OAuthPoint.Tests
                 {
                      c.DeleteKeysAsync(
                         RefreshTokenRedisKey.Create(Token1),
-                        RefreshTokenRedisKey.Create(Token2)).RunSynchronously();
+                        RefreshTokenRedisKey.Create(Token2)).Wait();
                 }
             }   
         }
