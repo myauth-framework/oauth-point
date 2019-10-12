@@ -1,14 +1,12 @@
 using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.WebUtilities;
-using MyAuth.Common;
+using Microsoft.IdentityModel.Tokens;
 using MyAuth.OAuthPoint.Models;
-using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -18,7 +16,7 @@ namespace MyAuth.OAuthPoint.Tests
     {
         private readonly TestWebApplicationFactory _factory;
         private readonly ITestOutputHelper _output;
-        private TokensTestTools _tt;
+        private readonly TokensTestTools _tt;
 
         public TokenControllerBehavior(
             TestWebApplicationFactory factory,
@@ -27,30 +25,41 @@ namespace MyAuth.OAuthPoint.Tests
             _factory = factory;
             _output = output;
             _tt = new TokensTestTools(_factory, _output);
+
+            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
         }
 
         private void CheckAccessToken(string tokenRespAccessToken)
         {
-            var at = AccessToken.Deserialize(tokenRespAccessToken);
+            var sth = new JwtSecurityTokenHandler();
+            var at = sth.ReadJwtToken(tokenRespAccessToken);
 
-            Assert.Equal("JWT", at.Header.Type);
-            Assert.Equal("HS256", at.Header.Algorithm);
-            Assert.True(at.VerifySignature("qwerty"));
-            Assert.Equal(TestTokenIssuingOptions.Options.Issuer, at.IdToken.Issuer);
-            Assert.Equal(TestLoginRegistry.TestUserId, at.IdToken.Subject);
-            Assert.True(DateTime.Now < at.IdToken.GetExpirationTime());
-            Assert.True(DateTime.Now < at.IdToken.GetExpirationTime());
-            Assert.Contains(at.IdToken.Roles, s => TestLoginRegistry.TestRole == s);
-            Assert.Contains(at.IdToken.Climes,
-                c => c.Name == TestLoginRegistry.TestClimeName && c.Value == TestLoginRegistry.TestClimeValue);
-        }
+
+            Assert.Equal("JWT", at.Header.Typ);
+            Assert.Equal("HS256", at.Header.Alg);
+
+            sth.ValidateToken(tokenRespAccessToken, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                ValidateIssuer = true,
+                ValidIssuer = TestTokenIssuingOptions.Options.Issuer,
+                ValidateLifetime = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("qwertyqwertyqwerty")),
+                ValidateAudience = true,
+                ValidAudience = TestLoginRegistry.TestAudience
+            }, out _);
+
+            Assert.Equal(TestLoginRegistry.TestUserId, at.Subject);
+            Assert.Contains(at.Claims, c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" && c.Value == TestLoginRegistry.TestRole);
+            Assert.Contains(at.Claims, c => c.Type == TestLoginRegistry.TestClimeName && c.Value == TestLoginRegistry.TestClimeValue);
+        }   
 
         private void CheckRefreshToken(string tokenRespRefreshToken)
         {
             var binGuid = WebEncoders.Base64UrlDecode(tokenRespRefreshToken);
             var strGuid = Encoding.UTF8.GetString(binGuid);
 
-            Assert.True(Guid.TryParse(strGuid, out var resGuid));
+            Assert.True(Guid.TryParse(strGuid, out _));
         }
 
         async Task<(TRes Msg, HttpStatusCode Code)> IssueToken<TRes>

@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Net.WebSockets;
 using System.Threading.Tasks;
-using MyAuth.Common;
 using MyAuth.OAuthPoint.Models;
 using MyAuth.OAuthPoint.Services;
 
@@ -18,6 +16,7 @@ namespace MyAuth.OAuthPoint.Tests
         public const string TestRole = "Admin";
         public const string TestClimeName = "Clime";
         public const string TestClimeValue = "ClimeVal";
+        public const string TestAudience = "test.host.ru";
         
         private readonly IDictionary<string, LoginRequest> _requests
             = new Dictionary<string, LoginRequest>();
@@ -31,8 +30,9 @@ namespace MyAuth.OAuthPoint.Tests
                 RedirectUri = TestRedirectUri,
                 Subject = TestUserId,
                 CodeChallengeMethod = "MD5",
-                Climes = new []{ new Clime{Name = TestClimeName, Value = TestClimeValue}  },
-                Roles = new []{ TestRole}
+                Claims = new []{ new LoginRequest.Claim{Name = TestClimeName, Value = TestClimeValue}  },
+                Roles = new []{ TestRole},
+                Audience = new [] {TestAudience}
             });
         }
         

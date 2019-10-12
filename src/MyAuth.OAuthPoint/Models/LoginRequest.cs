@@ -1,4 +1,3 @@
-using MyAuth.Common;
 
 namespace MyAuth.OAuthPoint.Models
 {
@@ -9,7 +8,15 @@ namespace MyAuth.OAuthPoint.Models
         public string Subject { get; set; }
         public string CodeChallenge { get; set; }
         public string CodeChallengeMethod { get; set; }
-        public string[] Roles { get; set; } 
-        public Clime[] Climes { get; set; }
+        public string[] Roles { get; set; }
+        public string[] Audience { get; set; }
+        public Claim[] Claims { get; set; }
+
+
+        public class Claim
+        {
+            public string Name { get; set; }
+            public string Value { get; set; }
+        }
     }
 }

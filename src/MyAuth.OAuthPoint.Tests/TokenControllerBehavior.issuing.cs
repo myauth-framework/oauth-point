@@ -63,7 +63,7 @@ namespace MyAuth.OAuthPoint.Tests
             //Assert
             Assert.Equal(HttpStatusCode.OK, resp.Code);
             Assert.Equal("bearer", resp.Msg.TokenType);
-            Assert.Equal(1705032704, resp.Msg.ExpiresIn);
+            Assert.Equal(60, resp.Msg.ExpiresIn);
             CheckRefreshToken(resp.Msg.RefreshToken);
             CheckAccessToken(resp.Msg.AccessToken);
         }
