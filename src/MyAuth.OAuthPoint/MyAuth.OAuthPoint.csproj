@@ -7,7 +7,7 @@
         <PackageProjectUrl>https://github.com/ozzy-ext/myauth-oauth-point</PackageProjectUrl>
         <RepositoryUrl>https://github.com/ozzy-ext/myauth-oauth-point.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <Version>1.0.1</Version>
+        <Version>1.0.2</Version>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,11 +15,11 @@
         <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />
         <PackageReference Include="Microsoft.AspNetCore.HttpsPolicy" Version="2.2.0" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
-        <PackageReference Include="MyAuth.Common" Version="1.0.1" />
         <PackageReference Include="MyLab.LogDsl" Version="1.1.4" />
         <PackageReference Include="MyLab.RedisManager" Version="1.1.1" />
         <PackageReference Include="MyLab.WebErrors" Version="1.0.1" />
         <PackageReference Include="MyLab.WebInteraction" Version="1.0.0" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.5.0" />
     </ItemGroup>
 
 </Project>
