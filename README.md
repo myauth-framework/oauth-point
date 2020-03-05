@@ -1,5 +1,7 @@
 # MyAuth.OAuthPoint
 
+[![Docker image](https://img.shields.io/docker/v/ozzyext/myauth-oauth-point)](https://hub.docker.com/repository/docker/ozzyext/myauth-oauth-point)
+
 ## Обзор 
 
 Серверное приложение для организации инфраструктуры авторизации на базе протокола [OAuth2](https://tools.ietf.org/html/rfc6749) и [JWT](https://tools.ietf.org/html/rfc7519) токенах. Отвечет за работу с токенами:
@@ -237,3 +239,5 @@
 Отзывает все токены обновления указанного субъекта (пользователя).
 
 **subject** - субъект (идентификатор пользователя).
+
+## Настройка
