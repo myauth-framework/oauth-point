@@ -317,7 +317,7 @@
 
 ## Развёртывание
 
-Сервис может быть развёрнут на базе `docker`. [Проект в docker-hub](https://hub.docker.com/repository/docker/ozzyext/myauth-oauth-point).
+Сервис может быть развёрнут на базе `docker`. [Проект в docker-hub](https://hub.docker.com/r/ozzyext/myauth-oauth-point).
 
 ```bash
 docker pull ozzyext/myauth-oauth-point:latest
