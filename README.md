@@ -296,7 +296,7 @@
     "Id": "test-app3",
     "Verification": "true",
     "AllowUris": [
-      "http://dev.host.ru".
+      "http://dev.host.ru",
       "http://test.host.ru",
       "http://prod.host.ru"
     ]
