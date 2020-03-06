@@ -1,6 +1,6 @@
 # MyAuth.OAuthPoint
 
-[![Docker image](https://img.shields.io/docker/v/ozzyext/myauth-oauth-point)](https://hub.docker.com/repository/docker/ozzyext/myauth-oauth-point)
+[![Docker image](https://img.shields.io/docker/v/ozzyext/myauth-oauth-point)](https://hub.docker.com/r/ozzyext/myauth-oauth-point)
 
 ## Обзор 
 
@@ -296,7 +296,7 @@
     "Id": "test-app3",
     "Verification": "true",
     "AllowUris": [
-      "http://dev.host.ru".
+      "http://dev.host.ru",
       "http://test.host.ru",
       "http://prod.host.ru"
     ]
@@ -317,7 +317,7 @@
 
 ## Развёртывание
 
-Сервис может быть развёрнут на базе `docker`. [Проект в docker-hub](https://hub.docker.com/repository/docker/ozzyext/myauth-oauth-point).
+Сервис может быть развёрнут на базе `docker`. [Проект в docker-hub](https://hub.docker.com/r/ozzyext/myauth-oauth-point).
 
 ```bash
 docker pull ozzyext/myauth-oauth-point:latest
