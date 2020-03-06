@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/aspnet
+FROM mcr.microsoft.com/dotnet/core/aspnet:2.2
 
 ADD ./out/app /app/
 
