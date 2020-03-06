@@ -1,6 +1,6 @@
 # MyAuth.OAuthPoint
 
-[![Docker image](https://img.shields.io/docker/v/ozzyext/myauth-oauth-point)](https://hub.docker.com/repository/docker/ozzyext/myauth-oauth-point)
+[![Docker image](https://img.shields.io/docker/v/ozzyext/myauth-oauth-point)](https://hub.docker.com/r/ozzyext/myauth-oauth-point)
 
 ## Обзор 
 
