@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace MyAuth.OAuthPoint.Services
@@ -15,14 +16,27 @@ namespace MyAuth.OAuthPoint.Services
         public bool Verification { get; set; }
         public string[] AllowUris { get; set; }
     }
+
+    public class ClientListOptions
+    {
+        public ClientEntry[] List { get; set; }
+    }
     
     class DefaultClientRegistry : IClientRegistry
     {
         private readonly Dictionary<string, ClientEntry> _clients;
 
+        public DefaultClientRegistry(IOptions<ClientListOptions> options)
+            :this(options?.Value?.List)
+        {
+
+        }
+
         public DefaultClientRegistry(ClientEntry[] clients)
         {
-            _clients = clients.ToDictionary(c => c.Id, c => c);
+            _clients = clients != null
+                ? clients.ToDictionary(c => c.Id, c => c)
+                : new Dictionary<string, ClientEntry>();
         }
         
         public ClientEntry GetClient(string id)

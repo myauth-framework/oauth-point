@@ -17,7 +17,14 @@ namespace MyAuth.OAuthPoint.Tests
     {
         protected override IWebHostBuilder CreateWebHostBuilder()
         {
-            return WebHost.CreateDefaultBuilder().UseStartup<TestStartup>();
+            return WebHost.CreateDefaultBuilder()
+                .UseStartup<TestStartup>()
+                .ConfigureAppConfiguration((builderContext, config) =>
+                {
+                    config.AddJsonFile($"appsettings.json", optional: false, reloadOnChange: true);
+                    config.AddJsonFile("appsettings.Development.json", true, true);
+                    config.AddJsonFile("appsettings.override.json", true, true);
+                });
         }
     }
     
@@ -50,14 +57,6 @@ namespace MyAuth.OAuthPoint.Tests
                         options.RefreshTokenLifeTimeDays = TestTokenIssuingOptions.Options.RefreshTokenLifeTimeDays;
                     });
 
-                LoadClients(services);
-            }
-            
-            private void LoadClients(IServiceCollection services)
-            {
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "clients.json");
-                var registry = DefaultClientRegistry.LoadFromJson(File.ReadAllText(filePath));
-                services.AddSingleton<IClientRegistry>(registry);
             }
         }
     }

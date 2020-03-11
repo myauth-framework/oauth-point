@@ -5,8 +5,8 @@ namespace MyAuth.OAuthPoint.Tests
         public static readonly TokenIssuingOptions Options = new TokenIssuingOptions
         {
             Issuer= "MyAuth.OAuthPoint",
-            AccessTokenLifeTimeMin = 1000,
-            RefreshTokenLifeTimeDays = 1000,
+            AccessTokenLifeTimeMin = 100000,
+            RefreshTokenLifeTimeDays = 100000,
             Secret = "qwertyqwertyqwerty"
         };
     }
