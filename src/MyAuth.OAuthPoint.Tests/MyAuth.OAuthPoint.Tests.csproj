@@ -21,9 +21,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="clients.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
       <None Update="Requests\Login\Invalid\with-wrong-redirect-uri.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
