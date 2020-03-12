@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.IO;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using MyLab.RemoteConfig;
 
 namespace MyAuth.OAuthPoint
 {
@@ -20,16 +15,8 @@ namespace MyAuth.OAuthPoint
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
-                .ConfigureAppConfiguration((builderContext, config) =>
-                {
-                    config.AddJsonFile($"appsettings.json", optional: false, reloadOnChange: true);
-                    
-                    #if DEBUG
-                    config.AddJsonFile("appsettings.Development.json", true, true);
-                    #endif
-                    
-                    config.AddJsonFile("appsettings.override.json", true, true);
-                })
+                .LoadRemoteConfigConnectionFromEnvironmentVars()
+                .AddRemoteConfiguration()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory());
     }
