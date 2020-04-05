@@ -26,7 +26,7 @@ namespace MyAuth.OAuthPoint.Tools
         {
             var claims = new List<Claim>();
             claims.AddRange(loginRequest.Claims.Select(c => new Claim(c.Name, c.Value)));
-            claims.AddRange(loginRequest.Roles.Select(c => new Claim("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", c)));
+            claims.AddRange(loginRequest.Roles.Select(c => new Claim("roles", c)));
             claims.Add(new Claim("sub", loginRequest.Subject));
 
             var a = audience == null || audience.Length == 0 

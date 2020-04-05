@@ -50,7 +50,8 @@ namespace MyAuth.OAuthPoint.Tests
             }, out _);
 
             Assert.Equal(TestLoginRegistry.TestUserId, at.Subject);
-            Assert.Contains(at.Claims, c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" && c.Value == TestLoginRegistry.TestRole);
+            Assert.Contains(at.Claims, c => c.Type == "roles" && c.Value == TestLoginRegistry.TestRole);
+            //Assert.Contains(at.Claims, c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" && c.Value == TestLoginRegistry.TestRole);
             Assert.Contains(at.Claims, c => c.Type == TestLoginRegistry.TestClimeName && c.Value == TestLoginRegistry.TestClimeValue);
         }   
 
