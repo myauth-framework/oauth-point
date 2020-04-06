@@ -1,6 +1,6 @@
 # MyAuth.OAuthPoint
 
-[![Docker image](https://img.shields.io/docker/v/ozzyext/myauth-oauth-point)](https://hub.docker.com/r/ozzyext/myauth-oauth-point)
+[![Docker image](https://img.shields.io/docker/v/ozzyext/myauth-oauth-point?sort=semver)](https://hub.docker.com/r/ozzyext/myauth-oauth-point)
 
 ## Обзор 
 
@@ -267,7 +267,7 @@
 * **Redis** - раздел, определяющий конфигурацию подключения к `Redis`:
   * **Host** - IP или имя хоста;
   * **Port** (опциональный) - порт, 6379 - по умолчанию;
-  * **Password (опциональный) ** - пароль, пустой - по умолчанию;
+  * **Password (опциональный)** - пароль, пустой - по умолчанию;
   * **DbIndex** (опциональный)  - индекс базы данных, 0 - по умолчанию;
   * **Encoding** (опциональный)  - кодировка, по умолчанию - установленная для приложения по умолчанию;
 * **TokenIssuing** - раздел, определяющий конфигурацию выпуска токенов:
