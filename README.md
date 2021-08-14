@@ -127,17 +127,17 @@
 
 ```json
 {
-  "GrantType": "authorization_code",
-  "CodeVerifier": "qwerty",
-  "AuthCode": "5b28afded2a149bc8436f70f2ecc4c05",
-  "ClientId": "android-default"
+  "grant_type": "authorization_code",
+  "code_verifier": "qwerty",
+  "code": "5b28afded2a149bc8436f70f2ecc4c05",
+  "client_id": "android-default"
 }
 ```
 
-* **GrantType** - тип запроса. `authorization_code` - запрос токена по коду авторизации;
-* **CodeVerifier** - оригинальная последовательность, хэш которой был получен сервисом ранее, при вызове `/login`, и которая была передана клиенту в результате успешной авторизации;
-* **AuthCode** - код авторизации, полученный клиентом от `Login service` в результате успешной авторизации;
-* **ClientId** - идентификатор клиента - приложения.
+* **grant_type** - тип запроса. `authorization_code` - запрос токена по коду авторизации;
+* **code_verifier** - оригинальная последовательность, хэш которой был получен сервисом ранее, при вызове `/login`, и которая была передана клиенту в результате успешной авторизации;
+* **code** - код авторизации, полученный клиентом от `Login service` в результате успешной авторизации;
+* **client_id** - идентификатор клиента - приложения.
 
 #### Запрос первыпуска
 
@@ -146,18 +146,18 @@
 ```json
 
 {
-  "GrantType": "refresh_token",
-  "CodeVerifier": "qwerty",
-  "RefreshToken": "YmE4ZGU2YzRjY2Y4NDU5NTlhMmQwMWY3NGVmZjIzMjY",
-  "ClientId": "android-default"
+  "grant_type": "refresh_token",
+  "code_verifier": "qwerty",
+  "refresh_token": "YmE4ZGU2YzRjY2Y4NDU5NTlhMmQwMWY3NGVmZjIzMjY",
+  "client_id": "android-default"
 }
 
 ```
 
-* **GrantType** - тип запроса. `refresh_token`- запрос токена по токену обновления;
-* **CodeVerifier** - оригинальная последовательность, хэш которой был получен сервисом ранее, при вызове `/login`, и которая была передана клиенту в результате успешной авторизации;
-* **RefreshToken**- токен обновления, полученный при одном из предвдущих выпусков токена доступа;
-* **ClientId** - идентификатор клиента - приложения.
+* **grant_type** - тип запроса. `refresh_token`- запрос токена по токену обновления;
+* **code_verifier** - оригинальная последовательность, хэш которой был получен сервисом ранее, при вызове `/login`, и которая была передана клиенту в результате успешной авторизации;
+* **refresh_token**- токен обновления, полученный при одном из предвдущих выпусков токена доступа;
+* **client_id** - идентификатор клиента - приложения.
 
 #### Ответ
 
