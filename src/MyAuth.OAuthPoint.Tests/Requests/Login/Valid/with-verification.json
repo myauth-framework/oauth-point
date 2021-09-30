@@ -1,7 +1,0 @@
-{
-  "ClientId" : "test-app2",
-  "Subject" : "user-id",
-  "RedirectUri": "http://test.host.ru",
-  "CodeChallenge" : "MTIzMTIzMTIz",
-  "CodeChallengeMethod" : "MD5"
-}

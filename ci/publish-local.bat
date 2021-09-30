@@ -1,0 +1,1 @@
+docker build -f ./Dockerfile -t ghcr.io/myauth-framework/oauth-point:local ../src
