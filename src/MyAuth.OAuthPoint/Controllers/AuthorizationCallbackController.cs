@@ -31,7 +31,7 @@ namespace MyAuth.OAuthPoint.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery(Name = "login_session_id")] string loginId)
+        public IActionResult Get([FromQuery(Name = "login_session_id")] string loginId)
         {
             var lSession = _authorizationService.GetLoginSession(loginId);
 

@@ -33,7 +33,7 @@ namespace MyAuth.OAuthPoint.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get(AuthorizationRequest request)
+        public IActionResult Get(AuthorizationRequest request)
         {
             try
             {
