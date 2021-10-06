@@ -4,16 +4,29 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace MyAuth.OAuthPoint.Models
+#if MYAUTH_CLIENT
+namespace MyAuth.OAuthPoint.Client.Models
+#else
+namespace MyAuth.OAuthPoint.Models 
+#endif
 {
+    /// <summary>
+    /// The base for object with claim properties
+    /// </summary>
     public abstract class ScopeClaims
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="ScopeClaims"/>
+        /// </summary>
         protected ScopeClaims()
         {
             
         }
 
-        public IDictionary<string, JObject> WriteClaims()
+        /// <summary>
+        /// Converts claims to <see cref="Dictionary{TKey,TValue}"/>
+        /// </summary>
+        public IDictionary<string, JObject> ToDictionary()
         {
             return GetType()
                 .GetProperties()

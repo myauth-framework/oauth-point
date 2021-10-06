@@ -1,6 +1,10 @@
 ﻿using Newtonsoft.Json;
 
-namespace MyAuth.OAuthPoint.Models
+#if MYAUTH_CLIENT
+namespace MyAuth.OAuthPoint.Client.Models
+#else
+namespace MyAuth.OAuthPoint.Models 
+#endif
 {
     /// <summary>
     /// This scope value requests access to the phone_number and phone_number_verified Claims.

@@ -6,9 +6,9 @@ using MyAuth.OAuthPoint.Services;
 using MyLab.Log.Dsl;
 using MyLab.WebErrors;
 
-namespace MyAuth.OAuthPoint.Controllers
+namespace MyAuth.OAuthPoint.Controllers.Api
 {
-    [Route("login")]
+    [Route("api/v1/login")]
     [ApiController]
     public class LoginController : ControllerBase
     {

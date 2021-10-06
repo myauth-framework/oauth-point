@@ -4,14 +4,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MyAuth.OAuthPoint.Controllers.Oidc;
 using MyAuth.OAuthPoint.Services;
 using MyAuth.OAuthPoint.Tools;
 using MyLab.Log.Dsl;
 using MyLab.WebErrors;
 
-namespace MyAuth.OAuthPoint.Controllers
+namespace MyAuth.OAuthPoint.Controllers.Api
 {
-    [Route("authorization-callback")]
+    [Route("api/v1/authorization-callback")]
     [ApiController]
     public class AuthorizationCallbackController : ControllerBase
     {
@@ -42,7 +43,7 @@ namespace MyAuth.OAuthPoint.Controllers
 
             if (sessState.Error != null)
             {
-                return UrlRedirector.RedirectCallbackError(sessState.RedirectUri, sessState.Error.Error, sessState.Error.Description, sessState.State);
+                return UrlRedirector.RedirectError(sessState.RedirectUri, sessState.Error.Error, sessState.Error.Description, sessState.State);
             }
 
             var authCookie = new LoginSessionCookie(loginId)

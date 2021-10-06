@@ -5,7 +5,11 @@ VisualStudioVersion = 16.0.31702.278
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyAuth.OAuthPoint", "MyAuth.OAuthPoint\MyAuth.OAuthPoint.csproj", "{614FB649-8605-4F7B-831A-EE9C03257CFD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{DDCA55F6-4E2F-4A38-9CBF-7BF6AE7D9B0E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "UnitTests\UnitTests.csproj", "{DDCA55F6-4E2F-4A38-9CBF-7BF6AE7D9B0E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyAuth.OAuthPoint.Client", "MyAuth.OAuthPoint.Client\MyAuth.OAuthPoint.Client.csproj", "{CA01395D-A9B6-4901-91F9-B68C92EB7443}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FuncTests", "FuncTests\FuncTests.csproj", "{A277BCFA-7EE7-41D2-B216-ED936085ECCF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{DDCA55F6-4E2F-4A38-9CBF-7BF6AE7D9B0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DDCA55F6-4E2F-4A38-9CBF-7BF6AE7D9B0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DDCA55F6-4E2F-4A38-9CBF-7BF6AE7D9B0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA01395D-A9B6-4901-91F9-B68C92EB7443}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA01395D-A9B6-4901-91F9-B68C92EB7443}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA01395D-A9B6-4901-91F9-B68C92EB7443}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA01395D-A9B6-4901-91F9-B68C92EB7443}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A277BCFA-7EE7-41D2-B216-ED936085ECCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A277BCFA-7EE7-41D2-B216-ED936085ECCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A277BCFA-7EE7-41D2-B216-ED936085ECCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A277BCFA-7EE7-41D2-B216-ED936085ECCF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

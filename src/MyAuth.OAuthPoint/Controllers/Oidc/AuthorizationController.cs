@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -9,9 +7,9 @@ using MyAuth.OAuthPoint.Services;
 using MyAuth.OAuthPoint.Tools;
 using MyLab.Log.Dsl;
 
-namespace MyAuth.OAuthPoint.Controllers
+namespace MyAuth.OAuthPoint.Controllers.Oidc
 {
-    [Route("authorization")]
+    [Route("oidc/v1/authorization")]
     [ApiController]
     public class AuthorizationController : ControllerBase
     {
@@ -33,7 +31,7 @@ namespace MyAuth.OAuthPoint.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get(AuthorizationRequest request)
+        public IActionResult Get([FromQuery]AuthorizationRequest request)
         {
             try
             {
@@ -63,9 +61,11 @@ namespace MyAuth.OAuthPoint.Controllers
                     .AndFactIs("error-msg", e.Message)
                     .Write();
 
-                return request.RedirectUri != null
-                    ? UrlRedirector.RedirectCallbackError(request.RedirectUri, e.Reason, e.Message, request.State)
-                    : UrlRedirector.RedirectDefaultError(_options.DefaultErrorEndpoint, e.Message);
+                return UrlRedirector.RedirectError(
+                    request.RedirectUri ?? _options.DefaultErrorEndpoint, 
+                    e.Reason, 
+                    e.Message, 
+                    request.State);
             }
         }
     }

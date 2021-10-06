@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Specialized;
+using System.Linq;
+using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using MyAuth.OAuthPoint.Models;
+using static System.String;
 
 namespace MyAuth.OAuthPoint.Tools
 {
     static class UrlRedirector
     {
-        public static IActionResult RedirectDefaultError(string defaultErrorEp, string errorDescription)
-        {
-            return new RedirectResult(new UriBuilder(defaultErrorEp){Query = "error_description=" + errorDescription}.ToString());
-        }
-
-        public static IActionResult RedirectCallbackError(string clientCallbackEp, AuthorizationRequestProcessingError error, string errorDescription, string state)
+        public static IActionResult RedirectError(string clientCallbackEp, AuthorizationRequestProcessingError error, string errorDescription, string state)
         {
             if (error == AuthorizationRequestProcessingError.Undefined)
                 return null;
@@ -28,16 +26,16 @@ namespace MyAuth.OAuthPoint.Tools
                 query.Add("state", state);
             }
 
-            var url = new UriBuilder(clientCallbackEp) { Query = query.ToString() ?? "" };
+            var url = new UriBuilder(clientCallbackEp) { Query = NameValuesToQueryString(query) };
 
-            return new RedirectResult(url.ToString());
+            return new RedirectResult(url.ToString(), false);
         }
 
         public static IActionResult RedirectToLogin(string loginEp, string loginId)
         {
             var url = new UriBuilder(loginEp) {Query = "login_id=" + loginId}.ToString();
 
-            return new RedirectResult(url);
+            return new RedirectResult(url, false);
         }
 
         public static IActionResult RedirectSuccessCallback(string callbackEp, string authCode, string state)
@@ -52,9 +50,14 @@ namespace MyAuth.OAuthPoint.Tools
                 query.Add("state", state);
             }
 
-            var url = new UriBuilder(callbackEp) { Query = query.ToString() ?? "" };
+            var url = new UriBuilder(callbackEp) { Query = NameValuesToQueryString(query) };
 
-            return new RedirectResult(url.ToString());
+            return new RedirectResult(url.ToString(), false);
+        }
+
+        static string NameValuesToQueryString(NameValueCollection c)
+        {
+            return Join("&",c.AllKeys.Select(a => a + "=" + HttpUtility.UrlEncode(c[a])));
         }
     }
 }

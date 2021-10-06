@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>.\MyAuth.OAuthPoint.Client.xml</DocumentationFile>
+    <DefineConstants>TRACE;MYAUTH_CLIENT</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>.\MyAuth.OAuthPoint.Client.xml</DocumentationFile>
+    <DefineConstants>TRACE;MYAUTH_CLIENT</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\MyAuth.OAuthPoint\Models\AddressClaim.cs" Link="Models\AddressClaim.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\AddressScopeClaims.cs" Link="Models\AddressScopeClaims.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\AuthorizedUserInfo.cs" Link="Models\AuthorizedUserInfo.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\CustomScopeClaims.cs" Link="Models\CustomScopeClaims.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\EmailScopeClaims.cs" Link="Models\EmailScopeClaims.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\LoginError.cs" Link="Models\LoginError.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\LoginErrorType.cs" Link="Models\LoginErrorType.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\PhoneScopeClaims.cs" Link="Models\PhoneScopeClaims.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\ProfileScopeClaims.cs" Link="Models\ProfileScopeClaims.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\ScopeClaims.cs" Link="Models\ScopeClaims.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MyLab.ApiClient" Version="3.9.22" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
+
+</Project>

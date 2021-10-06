@@ -13,3 +13,4 @@ namespace MyAuth.OAuthPoint.Services
         void SaveError(string loginSessionId, LoginError loginError);
     }
 }
+ 

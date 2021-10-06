@@ -1,7 +1,11 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace MyAuth.OAuthPoint.Models
+#if MYAUTH_CLIENT
+namespace MyAuth.OAuthPoint.Client.Models
+#else
+namespace MyAuth.OAuthPoint.Models 
+#endif
 {
     /// <summary>
     /// This scope value requests access to the address Claim.

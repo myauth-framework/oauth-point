@@ -1,7 +1,17 @@
 ﻿using Newtonsoft.Json;
 
-namespace MyAuth.OAuthPoint.Models
+#if MYAUTH_CLIENT
+namespace MyAuth.OAuthPoint.Client.Models
+#else
+namespace MyAuth.OAuthPoint.Models 
+#endif
 {
+    /// <summary>
+    /// Contains address claim properties
+    /// </summary>
+    /// <remarks>
+    /// https://openid.net/specs/openid-connect-core-1_0.html#AddressClaim
+    /// </remarks>
     public class AddressClaim
     {
         /// <summary>

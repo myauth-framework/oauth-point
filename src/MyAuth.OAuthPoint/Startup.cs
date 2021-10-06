@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MyAuth.OAuthPoint.Services;
 
 namespace MyAuth.OAuthPoint
 {
@@ -26,6 +27,9 @@ namespace MyAuth.OAuthPoint
         {
             services.AddControllers();
 
+            services.AddSingleton<ILoginService, LoginService>()
+                .AddLocalization();
+
             services.AddOptions<AuthOptions>("Auth");
         }
 
@@ -38,8 +42,6 @@ namespace MyAuth.OAuthPoint
             }
 
             app.UseRouting();
-
-            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
