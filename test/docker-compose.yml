@@ -1,0 +1,16 @@
+version: '3.2'
+services:
+  mysql:
+    container_name: mysql
+    image: 'mysql:8.0.26'
+    environment:
+      - MYSQL_ROOT_PASSWORD=qwerty
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+    volumes:
+      - 'db-data:/var/lib/mysql'
+      - './db-share:/data/share'
+    ports:
+      - '3306:3306'
+volumes:
+  db-data: null
