@@ -17,36 +17,11 @@ namespace MyAuth.OAuthPoint.Tools
             if (error == AuthorizationRequestProcessingError.Undefined)
                 return null;
 
-            var query = new NameValueCollection();
-
-            switch (error)
+            var query = new NameValueCollection
             {
-                case AuthorizationRequestProcessingError.InvalidRequest:
-                    query.Add("error", "invalid_request");
-                    break;
-                case AuthorizationRequestProcessingError.UnauthorizedClient:
-                    query.Add("error", "unauthorized_client");
-                    break;
-                case AuthorizationRequestProcessingError.AccessDenied:
-                    query.Add("error", "access_denied");
-                    break;
-                case AuthorizationRequestProcessingError.UnsupportedResponseType:
-                    query.Add("error", "unsupported_response_type");
-                    break;
-                case AuthorizationRequestProcessingError.InvalidScope:
-                    query.Add("error", "invalid_scope");
-                    break;
-                case AuthorizationRequestProcessingError.ServerError:
-                    query.Add("error", "server_error");
-                    break;
-                case AuthorizationRequestProcessingError.TempUnavailable:
-                    query.Add("error", "temporarily_unavailable");
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            query.Add("error_description", errorDescription);
+                {"error", EnumNameAttribute.GetName(error)}, 
+                {"error_description", errorDescription}
+            };
 
             if (state != null)
             {

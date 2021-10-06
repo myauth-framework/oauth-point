@@ -15,18 +15,18 @@ namespace MyAuth.OAuthPoint.Controllers
     [ApiController]
     public class AuthorizationController : ControllerBase
     {
-        private readonly IAuthorizationService _authorizationService;
+        private readonly ILoginService _loginService;
         private readonly AuthOptions _options;
         private readonly IDslLogger _log;
         private readonly AuthorizationRequestValidator _reqValidator;
 
         public AuthorizationController(
-            IAuthorizationService authorizationService, 
+            ILoginService loginService, 
             IOptions<AuthOptions> options, 
             ILogger<AuthorizationController> logger,
             IStringLocalizer<AuthorizationRequestValidator> localizer)
         {
-            _authorizationService = authorizationService;
+            _loginService = loginService;
             _options = options.Value;
             _log = logger.Dsl();
             _reqValidator = new AuthorizationRequestValidator(localizer);
@@ -41,14 +41,14 @@ namespace MyAuth.OAuthPoint.Controllers
 
                 if (LoginSessionCookie.TryLoad(Request, out var authCookie))
                 {
-                    var lSession = _authorizationService.GetLoginSession(authCookie.SessionId);
-                    if (lSession != null && lSession.Error == null)
+                    var lSession = _loginService.GetLoginSession(authCookie.SessionId);
+                    if (lSession != null && lSession.InitDetails.Error == null)
                     {
-                        return UrlRedirector.RedirectSuccessCallback(lSession.RedirectUri, lSession.AuthorizationCode, lSession.State);
+                        return UrlRedirector.RedirectSuccessCallback(lSession.InitDetails.RedirectUri, lSession.InitDetails.AuthorizationCode, lSession.InitDetails.State);
                     }
                 }
 
-                var loginId = _authorizationService.CreateLoginSession();
+                _loginService.CreateLoginSession(out var loginId);
 
                 return UrlRedirector.RedirectToLogin(_options.LoginEndpoint, loginId);
             }
