@@ -1,27 +1,76 @@
-﻿using MyAuth.OAuthPoint.Models;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using MyAuth.OAuthPoint.Db;
+using MyAuth.OAuthPoint.Models;
+using MyLab.Db;
+using MyLab.Log.Dsl;
 
 namespace MyAuth.OAuthPoint.Services
 {
     class LoginService : ILoginService
     {
-        public void CreateLoginSession(out string loginSessionId)
+        private readonly IDbManager _db;
+        private readonly AuthOptions _opt;
+        private readonly IDslLogger _log;
+
+        public LoginService(IOptions<AuthOptions> opts, IDbManager db, ILogger<LoginService> log)
         {
-            throw new System.NotImplementedException();
+            _db = db;
+            _opt = opts.Value;
+            _log = log.Dsl();
         }
 
-        public LoginSession GetLoginSession(string loginSessionId)
+        public async Task<string> CreateLoginSessionAsync(AuthorizationRequest authorizationRequest)
         {
-            throw new System.NotImplementedException();
+            var newSessionId = Guid.NewGuid().ToString("N");
+            var newSessionExpiry = DateTime.Now.AddSeconds(_opt.LoginInitiationExpirySeconds);
+
+            await using var dataContext = _db.Use();
+            var creator = new SessionDbCreator(dataContext,newSessionId, newSessionExpiry, authorizationRequest);
+
+            await creator.Create();
+
+            return newSessionId;
         }
 
-        public void SaveSuccess(string loginSessionId, AuthorizedUserInfo authorizedUserInfo)
+        public async Task<LoginSession> GetLoginSessionAsync(string loginSessionId)
         {
-            throw new System.NotImplementedException();
+            await using var db = _db.Use();
+            var provider = new SessionDbProvider(db, loginSessionId);
+
+            return await provider.ProvideAsync();
         }
 
-        public void SaveError(string loginSessionId, LoginError loginError)
+        public async Task SaveSuccessAsync(string loginSessionId, AuthorizedUserInfo authorizedUserInfo)
         {
-            throw new System.NotImplementedException();
+            await using var dbConnection = _db.Use();
+
+            var completer = new SessionDbInitiationCompleter(dbConnection, loginSessionId);
+
+            var newExpiry = DateTime.Now.AddDays(_opt.LoginSessionExpiryDays);
+
+            await completer.CompleteSuccessful(authorizedUserInfo, newExpiry);
+
+            _log?.Warning("Login compete successfully")
+                .AndFactIs("session-id", loginSessionId)
+                .AndFactIs("subject", authorizedUserInfo.Subject)
+                .Write();
+        }
+
+        public async Task SaveErrorAsync(string loginSessionId, LoginError loginError)
+        {
+            await using var dataConnection = _db.Use();
+
+            var completer = new SessionDbInitiationCompleter(dataConnection, loginSessionId);
+            
+            await completer.CompleteWithErrorAsync(loginError);
+
+            _log?.Warning("Login error")
+                .AndFactIs("error", loginError)
+                .AndFactIs("session-id", loginSessionId)
+                .Write();
         }
     }
 }

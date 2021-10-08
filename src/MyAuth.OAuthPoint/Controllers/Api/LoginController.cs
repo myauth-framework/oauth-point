@@ -30,7 +30,7 @@ namespace MyAuth.OAuthPoint.Controllers.Api
         [ErrorToResponse(typeof(LoginSessionInvalidOperationException), HttpStatusCode.Conflict)]
         public IActionResult PostSuccess([FromRoute]string loginSessionId, [FromBody]AuthorizedUserInfo authorizedUserInfo)
         {
-            _loginService.SaveSuccess(loginSessionId, authorizedUserInfo);
+            _loginService.SaveSuccessAsync(loginSessionId, authorizedUserInfo);
             
             return Ok();
         }
@@ -40,7 +40,7 @@ namespace MyAuth.OAuthPoint.Controllers.Api
         [ErrorToResponse(typeof(LoginSessionInvalidOperationException), HttpStatusCode.Conflict)]
         public IActionResult PostError([FromRoute] string loginSessionId, [FromBody] LoginError loginError)
         {
-            _loginService.SaveError(loginSessionId, loginError);
+            _loginService.SaveErrorAsync(loginSessionId, loginError);
 
             return Ok();
         }

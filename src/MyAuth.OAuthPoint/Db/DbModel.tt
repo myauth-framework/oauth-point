@@ -7,9 +7,15 @@
 
 	NamespaceName = "MyAuth.OAuthPoint.Db";
 	DataContextName = "MyAuthOAuthPointDb";
-
-
+	
 	LoadMySqlMetadata("localhost", "myauth-sso", "root", "qwerty");
+
+	Tables["session_initiations"].Columns["error_code"].Type = "MyAuth.OAuthPoint.Models.AuthorizationRequestProcessingError";
+
+	foreach(var t in Tables.Values)
+	{
+		t.TypeName = t.TypeName + "Db";
+	}
 
 	GenerateModel();
 #>

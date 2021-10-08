@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -31,7 +32,7 @@ namespace MyAuth.OAuthPoint.Controllers.Oidc
         }
 
         [HttpGet]
-        public IActionResult Get([FromQuery]AuthorizationRequest request)
+        public async Task<IActionResult> Get([FromQuery]AuthorizationRequest request)
         {
             try
             {
@@ -39,14 +40,14 @@ namespace MyAuth.OAuthPoint.Controllers.Oidc
 
                 if (LoginSessionCookie.TryLoad(Request, out var authCookie))
                 {
-                    var lSession = _loginService.GetLoginSession(authCookie.SessionId);
+                    var lSession = await _loginService.GetLoginSessionAsync(authCookie.SessionId);
                     if (lSession != null && lSession.InitDetails.Error == null)
                     {
                         return UrlRedirector.RedirectSuccessCallback(lSession.InitDetails.RedirectUri, lSession.InitDetails.AuthorizationCode, lSession.InitDetails.State);
                     }
                 }
 
-                _loginService.CreateLoginSession(out var loginId);
+                var loginId = await _loginService.CreateLoginSessionAsync(request);
 
                 return UrlRedirector.RedirectToLogin(_options.LoginEndpoint, loginId);
             }

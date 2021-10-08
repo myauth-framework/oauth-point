@@ -85,6 +85,109 @@
             End-User's preferred postal address. The value of the address member is a JSON [RFC4627] structure containing some or all of the members defined in Section 5.1.1.
             </summary>
         </member>
+        <member name="T:MyAuth.OAuthPoint.Client.Models.AuthorizationRequestProcessingError">
+            <summary>
+            Authorization process error
+            </summary>
+        </member>
+        <member name="F:MyAuth.OAuthPoint.Client.Models.AuthorizationRequestProcessingError.Undefined">
+            <summary>
+            Undefined value
+            </summary>
+        </member>
+        <member name="F:MyAuth.OAuthPoint.Client.Models.AuthorizationRequestProcessingError.InvalidRequest">
+            <summary>
+            The request is missing a required parameter, includes an
+            invalid parameter value, includes a parameter more than
+            once, or is otherwise malformed.
+            </summary>
+        </member>
+        <member name="F:MyAuth.OAuthPoint.Client.Models.AuthorizationRequestProcessingError.UnauthorizedClient">
+            <summary>
+            The client is not authorized to request an authorization
+            code using this method.
+            </summary>
+        </member>
+        <member name="F:MyAuth.OAuthPoint.Client.Models.AuthorizationRequestProcessingError.AccessDenied">
+            <summary>
+            The resource owner or authorization server denied the
+            request.
+            </summary>
+        </member>
+        <member name="F:MyAuth.OAuthPoint.Client.Models.AuthorizationRequestProcessingError.UnsupportedResponseType">
+            <summary>
+            The authorization server does not support obtaining an
+            authorization code using this method.
+            </summary>
+        </member>
+        <member name="F:MyAuth.OAuthPoint.Client.Models.AuthorizationRequestProcessingError.InvalidScope">
+            <summary>
+            The requested scope is invalid, unknown, or malformed.
+            </summary>
+        </member>
+        <member name="F:MyAuth.OAuthPoint.Client.Models.AuthorizationRequestProcessingError.ServerError">
+            <summary>
+            The authorization server encountered an unexpected
+            condition that prevented it from fulfilling the request.
+            (This error code is needed because a 500 Internal Server
+            Error HTTP status code cannot be returned to the client
+            via an HTTP redirect.)
+            </summary>
+        </member>
+        <member name="F:MyAuth.OAuthPoint.Client.Models.AuthorizationRequestProcessingError.TempUnavailable">
+            <summary>
+            The authorization server is currently unable to handle
+            the request due to a temporary overloading or maintenance
+            of the server.  (This error code is needed because a 503
+            Service Unavailable HTTP status code cannot be returned
+            to the client via an HTTP redirect.)
+            </summary>
+        </member>
+        <member name="F:MyAuth.OAuthPoint.Client.Models.AuthorizationRequestProcessingError.InteractionRequired">
+            <summary>
+            The Authorization Server requires End-User interaction of some form to proceed. This error MAY be returned when the prompt parameter value in the Authentication Request is none, but the Authentication Request cannot be completed without displaying a user interface for End-User interaction.
+            </summary>
+        </member>
+        <member name="F:MyAuth.OAuthPoint.Client.Models.AuthorizationRequestProcessingError.LoginRequired">
+            <summary>
+            The Authorization Server requires End-User authentication. This error MAY be returned when the prompt parameter value in the Authentication Request is none, but the Authentication Request cannot be completed without displaying a user interface for End-User authentication.
+            </summary>
+        </member>
+        <member name="F:MyAuth.OAuthPoint.Client.Models.AuthorizationRequestProcessingError.AccountSelectionRequired">
+            <summary>
+            The End-User is REQUIRED to select a session at the Authorization Server. The End-User MAY be authenticated at the Authorization Server with different associated accounts, but the End-User did not select a session. This error MAY be returned when the prompt parameter value in the Authentication Request is none, but the Authentication Request cannot be completed without displaying a user interface to prompt for a session to use.
+            </summary>
+        </member>
+        <member name="F:MyAuth.OAuthPoint.Client.Models.AuthorizationRequestProcessingError.ConsentRequired">
+            <summary>
+            The Authorization Server requires End-User consent. This error MAY be returned when the prompt parameter value in the Authentication Request is none, but the Authentication Request cannot be completed without displaying a user interface for End-User consent.
+            </summary>
+        </member>
+        <member name="F:MyAuth.OAuthPoint.Client.Models.AuthorizationRequestProcessingError.InvalidRequestUri">
+            <summary>
+            The request_uri in the Authorization Request returns an error or contains invalid data.
+            </summary>
+        </member>
+        <member name="F:MyAuth.OAuthPoint.Client.Models.AuthorizationRequestProcessingError.InvalidRequestObject">
+            <summary>
+            The request parameter contains an invalid Request Object.
+            </summary>
+        </member>
+        <member name="F:MyAuth.OAuthPoint.Client.Models.AuthorizationRequestProcessingError.RequestNotSupported">
+            <summary>
+            The OP does not support use of the request parameter defined in Section 6.
+            </summary>
+        </member>
+        <member name="F:MyAuth.OAuthPoint.Client.Models.AuthorizationRequestProcessingError.RequestUriNotSupported">
+            <summary>
+            The OP does not support use of the request_uri parameter defined in Section 6.
+            </summary>
+        </member>
+        <member name="F:MyAuth.OAuthPoint.Client.Models.AuthorizationRequestProcessingError.RegistrationNotSupported">
+            <summary>
+            The OP does not support use of the registration parameter defined in Section 7.2.1.
+            </summary>
+        </member>
         <member name="T:MyAuth.OAuthPoint.Client.Models.AuthorizedUserInfo">
             <summary>
             Information about authorized user
@@ -125,6 +228,16 @@
             Contains claim for custom scope
             </summary>
         </member>
+        <member name="M:MyAuth.OAuthPoint.Client.Models.CustomScopeClaims.#ctor">
+            <summary>
+            Initializes a new instance of <see cref="T:MyAuth.OAuthPoint.Client.Models.CustomScopeClaims"/>
+            </summary>
+        </member>
+        <member name="M:MyAuth.OAuthPoint.Client.Models.CustomScopeClaims.#ctor(System.Collections.Generic.IDictionary{System.String,Newtonsoft.Json.Linq.JObject})">
+            <summary>
+            Initializes a new instance of <see cref="T:MyAuth.OAuthPoint.Client.Models.CustomScopeClaims"/>
+            </summary>
+        </member>
         <member name="T:MyAuth.OAuthPoint.Client.Models.EmailScopeClaims">
             <summary>
             This scope value requests access to the email and email_verified Claims.
@@ -145,44 +258,14 @@
             Describes login process error
             </summary>
         </member>
-        <member name="P:MyAuth.OAuthPoint.Client.Models.LoginError.Type">
+        <member name="P:MyAuth.OAuthPoint.Client.Models.LoginError.AuthError">
             <summary>
-            Error type
+            OpenID Connect authorization error code
             </summary>
         </member>
         <member name="P:MyAuth.OAuthPoint.Client.Models.LoginError.Description">
             <summary>
             Human readable description
-            </summary>
-        </member>
-        <member name="T:MyAuth.OAuthPoint.Client.Models.LoginErrorType">
-            <summary>
-            Login process type
-            </summary>
-        </member>
-        <member name="F:MyAuth.OAuthPoint.Client.Models.LoginErrorType.Undefined">
-            <summary>
-            Undefined
-            </summary>
-        </member>
-        <member name="F:MyAuth.OAuthPoint.Client.Models.LoginErrorType.UserCancel">
-            <summary>
-            User cancel login
-            </summary>
-        </member>
-        <member name="F:MyAuth.OAuthPoint.Client.Models.LoginErrorType.ServerReject">
-            <summary>
-            Server reject user credentials
-            </summary>
-        </member>
-        <member name="F:MyAuth.OAuthPoint.Client.Models.LoginErrorType.ServerError">
-            <summary>
-            Unhandled server error
-            </summary>
-        </member>
-        <member name="F:MyAuth.OAuthPoint.Client.Models.LoginErrorType.TemporarilyUnavailable">
-            <summary>
-            Server can't process login temporarily
             </summary>
         </member>
         <member name="T:MyAuth.OAuthPoint.Client.Models.PhoneScopeClaims">

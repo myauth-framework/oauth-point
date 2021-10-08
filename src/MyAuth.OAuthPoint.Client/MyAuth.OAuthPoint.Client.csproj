@@ -17,11 +17,11 @@
   <ItemGroup>
     <Compile Include="..\MyAuth.OAuthPoint\Models\AddressClaim.cs" Link="Models\AddressClaim.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\AddressScopeClaims.cs" Link="Models\AddressScopeClaims.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\AuthorizationRequestProcessingError.cs" Link="Models\AuthorizationRequestProcessingError.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\AuthorizedUserInfo.cs" Link="Models\AuthorizedUserInfo.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\CustomScopeClaims.cs" Link="Models\CustomScopeClaims.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\EmailScopeClaims.cs" Link="Models\EmailScopeClaims.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\LoginError.cs" Link="Models\LoginError.cs" />
-    <Compile Include="..\MyAuth.OAuthPoint\Models\LoginErrorType.cs" Link="Models\LoginErrorType.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\PhoneScopeClaims.cs" Link="Models\PhoneScopeClaims.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\ProfileScopeClaims.cs" Link="Models\ProfileScopeClaims.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\ScopeClaims.cs" Link="Models\ScopeClaims.cs" />

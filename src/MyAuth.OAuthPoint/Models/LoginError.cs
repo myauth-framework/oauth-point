@@ -10,9 +10,9 @@ namespace MyAuth.OAuthPoint.Models
     public class LoginError
     {
         /// <summary>
-        /// Error type
+        /// OpenID Connect authorization error code
         /// </summary>
-        public LoginErrorType Type { get; set; }
+        public AuthorizationRequestProcessingError AuthError { get; set; }
         /// <summary>
         /// Human readable description
         /// </summary>

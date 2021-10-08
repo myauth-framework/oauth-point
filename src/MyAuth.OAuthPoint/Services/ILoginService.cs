@@ -1,16 +1,17 @@
-﻿using MyAuth.OAuthPoint.Models;
+﻿using System.Threading.Tasks;
+using MyAuth.OAuthPoint.Models;
 
 namespace MyAuth.OAuthPoint.Services
 {
     public interface ILoginService
     {
-        void CreateLoginSession(out string loginSessionId);
+        Task<string> CreateLoginSessionAsync(AuthorizationRequest authorizationRequest);
 
-        LoginSession GetLoginSession(string loginSessionId);
+        Task<LoginSession> GetLoginSessionAsync(string loginSessionId);
 
-        void SaveSuccess(string loginSessionId, AuthorizedUserInfo authorizedUserInfo);
+        Task SaveSuccessAsync(string loginSessionId, AuthorizedUserInfo authorizedUserInfo);
 
-        void SaveError(string loginSessionId, LoginError loginError);
+        Task SaveErrorAsync(string loginSessionId, LoginError loginError);
     }
 }
  

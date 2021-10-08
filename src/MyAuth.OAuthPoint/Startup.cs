@@ -1,15 +1,12 @@
+using LinqToDB;
+using LinqToDB.DataProvider.MySql;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using MyAuth.OAuthPoint.Services;
+using MyLab.Db;
 
 namespace MyAuth.OAuthPoint
 {
@@ -26,8 +23,8 @@ namespace MyAuth.OAuthPoint
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-
             services.AddSingleton<ILoginService, LoginService>()
+                .AddDbTools(Configuration, new MySqlDataProvider(ProviderName.MySql))
                 .AddLocalization();
 
             services.AddOptions<AuthOptions>("Auth");

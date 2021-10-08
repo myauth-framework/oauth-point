@@ -34,5 +34,10 @@ namespace MyAuth.OAuthPoint.Models
                 .Where(p => p.Attribute != null)
                 .ToDictionary(p => p.Attribute.PropertyName, p => JObject.FromObject(p.Property.GetValue(this)));
         }
+
+        public void Load(IDictionary<string, JObject> claims)
+        {
+
+        }
     }
 }

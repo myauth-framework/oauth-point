@@ -3,48 +3,16 @@ using System.Collections.Specialized;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Testing;
+using LinqToDB.Data;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using MyAuth.OAuthPoint;
-using MyAuth.OAuthPoint.Client;
-using MyLab.ApiClient.Test;
+using MyLab.Db;
+using MyLab.DbTest;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace FuncTests
 {
-    public class MyAuthPointBehavior : IDisposable
+    public partial class MyAuthPointBehavior : IDisposable, IClassFixture<TmpDbFixture<MyAuthOAuthPointDbInitializer>>
     {
-        private readonly ITestOutputHelper _output;
-        private readonly TestApi<Startup, IOidcServiceContractV1> _oidcTestApi;
-
-        public MyAuthPointBehavior(ITestOutputHelper output)
-        {
-            _output = output;
-
-            _oidcTestApi = new TestApi<Startup, IOidcServiceContractV1>()
-            {
-                Output = output,
-                ServiceOverrider = srv =>
-                {
-                    srv.Configure<AuthOptions>(opt =>
-                    {
-                        opt.DefaultErrorEndpoint = "http://host.net/error";
-                        opt.LoginEndpoint = "http://host.net/login";
-                    });
-
-                    srv.AddLogging(lb =>
-                    {
-                        lb.AddXUnit(_output);
-                        lb.AddFilter(level => true);
-                    });
-                }
-            };
-        }
-
         [Theory]
         [InlineData("unsupported_response_type", "invalid", "valid", "http://host.net/cb", "openapi")]
         [InlineData("invalid_request", null, "valid", "http://host.net/cb", "openapi")]
@@ -54,7 +22,12 @@ namespace FuncTests
         public async Task ShouldRedirectToErrPageWhenError(string expectedErrorCode, string responseType, string clientId, string redirectUri, string scope)
         {
             //Arrange
-            var oidc = _oidcTestApi.Start();
+            var dataInitializer = new TestDataDbInitializer();
+            var db = await _dbFixture.CreateDbAsync(dataInitializer);
+
+            var oidc = _oidcTestApi.Start(
+                s => s.AddSingleton<IDbManager>(db)
+            );
 
             //Act
             var resp = await oidc.Call(s => s.Authorization(
@@ -75,24 +48,39 @@ namespace FuncTests
         public async Task ShouldRedirectToExpectedPageWhenNoError()
         {
             //Arrange
-            var oidc = _oidcTestApi.Start();
+            var dataInitializer = new TestDataDbInitializer();
+            var db = await _dbFixture.CreateDbAsync(dataInitializer);
+
+            var oidc = _oidcTestApi.Start(
+                s => s.AddSingleton<IDbManager>(db)
+            );
+
+            Uri? newLocationUrl = null;
+            NameValueCollection query = null;
 
             //Act
             var resp = await oidc.Call(s => s.Authorization(
                 "code", "valid", "valid", "openid", null));
 
-            var newLocationUrl = resp.ResponseMessage.Headers.Location;
-            var query = HttpUtility.ParseQueryString(newLocationUrl.Query);
+            if (resp.StatusCode == HttpStatusCode.Redirect)
+            {
+                newLocationUrl = resp.ResponseMessage.Headers.Location;
+
+                if(newLocationUrl != null)
+                    query = HttpUtility.ParseQueryString(newLocationUrl.Query);
+            }
 
             //Assert
-            Assert.Equal("http://local.loc/login", newLocationUrl.GetLeftPart(UriPartial.Path));
             Assert.Equal(HttpStatusCode.Redirect, resp.StatusCode);
-            Assert.NotNull(query["login_id"]);
+            Assert.Equal("http://host.net/login", newLocationUrl.GetLeftPart(UriPartial.Path));
+            Assert.NotNull(query?["login_id"]);
         }
+    }
 
-        public void Dispose()
+    public class TestDataDbInitializer : ITestDbInitializer
+    {
+        public async Task InitializeAsync(DataConnection dataConnection)
         {
-            _oidcTestApi?.Dispose();
         }
     }
 }

@@ -12,6 +12,20 @@ namespace MyAuth.OAuthPoint.Models
     /// </summary>
     public class CustomScopeClaims : Dictionary<string, JObject>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="CustomScopeClaims"/>
+        /// </summary>
+        public CustomScopeClaims()
+        {
+            
+        }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="CustomScopeClaims"/>
+        /// </summary>
+        public CustomScopeClaims(IDictionary<string, JObject> initial): base(initial)
+        {
+            
+        }
     }
 }

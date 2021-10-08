@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
@@ -35,9 +36,9 @@ namespace MyAuth.OAuthPoint.Controllers.Api
 
         [HttpGet]
         [ErrorToResponse(typeof(LoginSessionNotFoundException), HttpStatusCode.NotFound)]
-        public IActionResult Get([FromQuery(Name = "login_session_id")] string loginId)
+        public async Task<IActionResult> Get([FromQuery(Name = "login_session_id")] string loginId)
         {
-            var lSession = _loginService.GetLoginSession(loginId);
+            var lSession = await _loginService.GetLoginSessionAsync(loginId);
 
             var sessState = lSession.InitDetails;
 
@@ -48,7 +49,7 @@ namespace MyAuth.OAuthPoint.Controllers.Api
 
             var authCookie = new LoginSessionCookie(loginId)
             {
-                Expiry = TimeSpan.FromDays(_options.LoginExpiryDays)
+                Expiry = TimeSpan.FromDays(_options.LoginSessionExpiryDays)
             };
             authCookie.Save(Response);
 

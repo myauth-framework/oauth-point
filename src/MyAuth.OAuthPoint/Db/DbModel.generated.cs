@@ -27,19 +27,19 @@ namespace MyAuth.OAuthPoint.Db
 		/// <summary>
 		/// Session scope claims
 		/// </summary>
-		public ITable<Claim>             Claims             { get { return this.GetTable<Claim>(); } }
+		public ITable<ClaimDb>             Claims             { get { return this.GetTable<ClaimDb>(); } }
 		/// <summary>
 		/// Contains login sessions
 		/// </summary>
-		public ITable<LoginSession>      LoginSessions      { get { return this.GetTable<LoginSession>(); } }
+		public ITable<LoginSessionDb>      LoginSessions      { get { return this.GetTable<LoginSessionDb>(); } }
 		/// <summary>
 		/// Info about session initiation
 		/// </summary>
-		public ITable<SessionInitiation> SessionInitiations { get { return this.GetTable<SessionInitiation>(); } }
+		public ITable<SessionInitiationDb> SessionInitiations { get { return this.GetTable<SessionInitiationDb>(); } }
 		/// <summary>
 		/// Scopes which related to sessions
 		/// </summary>
-		public ITable<SessionScope>      SessionScopes      { get { return this.GetTable<SessionScope>(); } }
+		public ITable<SessionScopeDb>      SessionScopes      { get { return this.GetTable<SessionScopeDb>(); } }
 
 		public MyAuthOAuthPointDb()
 		{
@@ -76,7 +76,7 @@ namespace MyAuth.OAuthPoint.Db
 	/// Session scope claims
 	/// </summary>
 	[Table("claims")]
-	public partial class Claim
+	public partial class ClaimDb
 	{
 		/// <summary>
 		/// Claim identifier
@@ -98,7 +98,7 @@ namespace MyAuth.OAuthPoint.Db
 		/// FK_Claim_To_SessionScope
 		/// </summary>
 		[Association(ThisKey="SessionScope", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="FK_Claim_To_SessionScope", BackReferenceName="ClaimToSessionScopes")]
-		public SessionScope ClaimToSessionScope { get; set; }
+		public SessionScopeDb ClaimToSessionScope { get; set; }
 
 		#endregion
 	}
@@ -107,7 +107,7 @@ namespace MyAuth.OAuthPoint.Db
 	/// Contains login sessions
 	/// </summary>
 	[Table("login_sessions")]
-	public partial class LoginSession
+	public partial class LoginSessionDb
 	{
 		/// <summary>
 		/// Session identifier (GUID)
@@ -122,17 +122,27 @@ namespace MyAuth.OAuthPoint.Db
 		/// </summary>
 		[Column("client_id"),              NotNull] public string    ClientId { get; set; } // char(32)
 		/// <summary>
-		/// When user login successfully
+		/// When subject authorized successfully
 		/// </summary>
 		[Column("login_dt"),     Nullable         ] public DateTime? LoginDt  { get; set; } // datetime
+		/// <summary>
+		/// Authorized subject identifier
+		/// </summary>
+		[Column("subject"),      Nullable         ] public string    Subject  { get; set; } // varchar(50)
 
 		#region Associations
+
+		/// <summary>
+		/// FK_Initiation_To_Session_BackReference
+		/// </summary>
+		[Association(ThisKey="Id", OtherKey="SessionId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToOne, IsBackReference=true)]
+		public SessionInitiationDb InitiationToSession { get; set; }
 
 		/// <summary>
 		/// FK_SessScope_To_Session_BackReference
 		/// </summary>
 		[Association(ThisKey="Id", OtherKey="SessionId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
-		public IEnumerable<SessionScope> SessScopeToSessions { get; set; }
+		public IEnumerable<SessionScopeDb> SessScopeToSessions { get; set; }
 
 		#endregion
 	}
@@ -141,43 +151,57 @@ namespace MyAuth.OAuthPoint.Db
 	/// Info about session initiation
 	/// </summary>
 	[Table("session_initiations")]
-	public partial class SessionInitiation
+	public partial class SessionInitiationDb
 	{
 		/// <summary>
 		/// Session identifier (GUID)
 		/// </summary>
-		[Column("session_id"),         PrimaryKey,  NotNull] public string    SessionId         { get; set; } // char(32)
+		[Column("session_id"),         PrimaryKey,  NotNull] public string                                                       SessionId         { get; set; } // char(32)
 		/// <summary>
 		/// Redirect URI from request
 		/// </summary>
-		[Column("redirect_uri"),                    NotNull] public string    RedirectUri       { get; set; } // varchar(2048)
+		[Column("redirect_uri"),                    NotNull] public string                                                       RedirectUri       { get; set; } // varchar(2048)
 		/// <summary>
 		/// Statefrom request
 		/// </summary>
-		[Column("state"),                 Nullable         ] public string    State             { get; set; } // varchar(512)
+		[Column("state"),                 Nullable         ] public string                                                       State             { get; set; } // varchar(512)
 		/// <summary>
 		/// Issued authorization code (GUID)
 		/// </summary>
-		[Column("authorization_code"),    Nullable         ] public string    AuthorizationCode { get; set; } // char(32)
+		[Column("authorization_code"),    Nullable         ] public string                                                       AuthorizationCode { get; set; } // char(32)
 		/// <summary>
-		/// Error code (from specification)
+		/// Error code (from specification)  https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.2.1
 		/// </summary>
-		[Column("error_code"),            Nullable         ] public string    ErrorCode         { get; set; } // varchar(50)
+		[Column("error_code"),            Nullable         ] public MyAuth.OAuthPoint.Models.AuthorizationRequestProcessingError ErrorCode         { get; set; } // varchar(50)
 		/// <summary>
 		/// Error description
 		/// </summary>
-		[Column("erro_desription"),       Nullable         ] public string    ErroDesription    { get; set; } // varchar(1024)
+		[Column("error_desription"),      Nullable         ] public string                                                       ErrorDesription   { get; set; } // varchar(1024)
 		/// <summary>
 		/// When initiation was completed
 		/// </summary>
-		[Column("complete_dt"),           Nullable         ] public DateTime? CompleteDt        { get; set; } // datetime
+		[Column("complete_dt"),           Nullable         ] public DateTime?                                                    CompleteDt        { get; set; } // datetime
+		/// <summary>
+		/// Request scope list (space separated)
+		/// </summary>
+		[Column("scope"),                           NotNull] public string                                                       Scope             { get; set; } // varchar(256)
+
+		#region Associations
+
+		/// <summary>
+		/// FK_Initiation_To_Session
+		/// </summary>
+		[Association(ThisKey="SessionId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.OneToOne, KeyName="FK_Initiation_To_Session", BackReferenceName="InitiationToSession")]
+		public LoginSessionDb Session { get; set; }
+
+		#endregion
 	}
 
 	/// <summary>
 	/// Scopes which related to sessions
 	/// </summary>
 	[Table("session_scopes")]
-	public partial class SessionScope
+	public partial class SessionScopeDb
 	{
 		[Column("id"),         PrimaryKey, Identity] public int    Id        { get; set; } // int
 		/// <summary>
@@ -191,7 +215,7 @@ namespace MyAuth.OAuthPoint.Db
 		/// <summary>
 		/// &apos;Y&apos; if scope contains in required scope list. Else - auth server send it but will be ignored
 		/// </summary>
-		[Column("requierd"),   NotNull             ] public char   Requierd  { get; set; } // enum('Y','N')
+		[Column("required"),   NotNull             ] public char   Required  { get; set; } // enum('Y','N')
 
 		#region Associations
 
@@ -199,38 +223,38 @@ namespace MyAuth.OAuthPoint.Db
 		/// FK_Claim_To_SessionScope_BackReference
 		/// </summary>
 		[Association(ThisKey="Id", OtherKey="SessionScope", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
-		public IEnumerable<Claim> ClaimToSessionScopes { get; set; }
+		public IEnumerable<ClaimDb> ClaimToSessionScopes { get; set; }
 
 		/// <summary>
 		/// FK_SessScope_To_Session
 		/// </summary>
 		[Association(ThisKey="SessionId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="FK_SessScope_To_Session", BackReferenceName="SessScopeToSessions")]
-		public LoginSession Session { get; set; }
+		public LoginSessionDb Session { get; set; }
 
 		#endregion
 	}
 
 	public static partial class TableExtensions
 	{
-		public static Claim Find(this ITable<Claim> table, int Id)
+		public static ClaimDb Find(this ITable<ClaimDb> table, int Id)
 		{
 			return table.FirstOrDefault(t =>
 				t.Id == Id);
 		}
 
-		public static LoginSession Find(this ITable<LoginSession> table, string Id)
+		public static LoginSessionDb Find(this ITable<LoginSessionDb> table, string Id)
 		{
 			return table.FirstOrDefault(t =>
 				t.Id == Id);
 		}
 
-		public static SessionInitiation Find(this ITable<SessionInitiation> table, string SessionId)
+		public static SessionInitiationDb Find(this ITable<SessionInitiationDb> table, string SessionId)
 		{
 			return table.FirstOrDefault(t =>
 				t.SessionId == SessionId);
 		}
 
-		public static SessionScope Find(this ITable<SessionScope> table, int Id)
+		public static SessionScopeDb Find(this ITable<SessionScopeDb> table, int Id)
 		{
 			return table.FirstOrDefault(t =>
 				t.Id == Id);
