@@ -25,9 +25,9 @@ namespace MyAuth.OAuthPoint
             services.AddControllers();
             services.AddSingleton<ILoginService, LoginService>()
                 .AddDbTools(Configuration, new MySqlDataProvider(ProviderName.MySql))
-                .AddLocalization();
+                .AddLocalization(lo => lo.ResourcesPath = "Resources");
 
-            services.AddOptions<AuthOptions>("Auth");
+            services.Configure<AuthOptions>(Configuration.GetSection("Auth"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -39,6 +39,7 @@ namespace MyAuth.OAuthPoint
             }
 
             app.UseRouting();
+
 
             app.UseEndpoints(endpoints =>
             {
