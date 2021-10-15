@@ -9,7 +9,7 @@
             MyAuth API endpoints
             </summary>
         </member>
-        <member name="M:MyAuth.OAuthPoint.Client.IApiServiceV1.SuccessLogin(System.String,MyAuth.OAuthPoint.Client.Models.AuthorizedUserInfo)">
+        <member name="M:MyAuth.OAuthPoint.Client.IApiServiceV1.SuccessLogin(System.String,MyAuth.OAuthPoint.Client.Models.AuthorizedSubjectInfo)">
             <summary>
             Complete login process successfully
             </summary>
@@ -29,13 +29,48 @@
             OpenID Connect endpoints
             </summary>
         </member>
-        <member name="M:MyAuth.OAuthPoint.Client.IOidcServiceContractV1.Authorization(System.String,System.String,System.String,System.String,System.String)">
+        <member name="M:MyAuth.OAuthPoint.Client.IOidcServiceContractV1.Authorization(System.String,System.String,System.String,System.String,System.String,System.String)">
             <summary>
             `authorization` endpoint
             </summary>
             <remarks>
             https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
             </remarks>
+        </member>
+        <member name="T:MyAuth.OAuthPoint.Client.Models.AuthorizedSubjectInfo">
+            <summary>
+            Information about authorized user
+            </summary>
+        </member>
+        <member name="P:MyAuth.OAuthPoint.Client.Models.AuthorizedSubjectInfo.Subject">
+            <summary>
+            Subject (user) identifier
+            </summary>
+        </member>
+        <member name="P:MyAuth.OAuthPoint.Client.Models.AuthorizedSubjectInfo.Profile">
+            <summary>
+            Claims for `profile` scope
+            </summary>
+        </member>
+        <member name="P:MyAuth.OAuthPoint.Client.Models.AuthorizedSubjectInfo.Address">
+            <summary>
+            Claims for `address` scope
+            </summary>
+        </member>
+        <member name="P:MyAuth.OAuthPoint.Client.Models.AuthorizedSubjectInfo.Email">
+            <summary>
+            Claims for `email` scope
+            </summary>
+        </member>
+        <member name="P:MyAuth.OAuthPoint.Client.Models.AuthorizedSubjectInfo.Phone">
+            <summary>
+            Claims for `phone` scope
+            </summary>
+        </member>
+        <member name="P:MyAuth.OAuthPoint.Client.Models.AuthorizedSubjectInfo.CustomScopes">
+            <summary>
+            Claims for custom scopes
+            </summary>
         </member>
         <member name="T:MyAuth.OAuthPoint.Client.Models.AddressClaim">
             <summary>
@@ -188,41 +223,6 @@
             The OP does not support use of the registration parameter defined in Section 7.2.1.
             </summary>
         </member>
-        <member name="T:MyAuth.OAuthPoint.Client.Models.AuthorizedUserInfo">
-            <summary>
-            Information about authorized user
-            </summary>
-        </member>
-        <member name="P:MyAuth.OAuthPoint.Client.Models.AuthorizedUserInfo.Subject">
-            <summary>
-            Subject (user) identifier
-            </summary>
-        </member>
-        <member name="P:MyAuth.OAuthPoint.Client.Models.AuthorizedUserInfo.Profile">
-            <summary>
-            Claims for `profile` scope
-            </summary>
-        </member>
-        <member name="P:MyAuth.OAuthPoint.Client.Models.AuthorizedUserInfo.Address">
-            <summary>
-            Claims for `address` scope
-            </summary>
-        </member>
-        <member name="P:MyAuth.OAuthPoint.Client.Models.AuthorizedUserInfo.Email">
-            <summary>
-            Claims for `email` scope
-            </summary>
-        </member>
-        <member name="P:MyAuth.OAuthPoint.Client.Models.AuthorizedUserInfo.Phone">
-            <summary>
-            Claims for `phone` scope
-            </summary>
-        </member>
-        <member name="P:MyAuth.OAuthPoint.Client.Models.AuthorizedUserInfo.CustomScopes">
-            <summary>
-            Claims for custom scopes
-            </summary>
-        </member>
         <member name="T:MyAuth.OAuthPoint.Client.Models.CustomScopeClaims">
             <summary>
             Contains claim for custom scope
@@ -371,6 +371,16 @@
         <member name="M:MyAuth.OAuthPoint.Client.Models.ScopeClaims.ToDictionary">
             <summary>
             Converts claims to <see cref="T:System.Collections.Generic.Dictionary`2"/>
+            </summary>
+        </member>
+        <member name="T:MyAuth.OAuthPoint.Client.LoginSessionCookieName">
+            <summary>
+            Defines login session cookie name
+            </summary>
+        </member>
+        <member name="F:MyAuth.OAuthPoint.Client.LoginSessionCookieName.Name">
+            <summary>
+            Name value
             </summary>
         </member>
     </members>

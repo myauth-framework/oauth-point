@@ -3,10 +3,8 @@ using Microsoft.AspNetCore.Http;
 
 namespace MyAuth.OAuthPoint.Tools
 {
-    public class LoginSessionCookie
+    class LoginSessionCookie
     {
-        const string CookieName = "MyAuth:LoginSessionId";
-
         public string SessionId { get; }
 
         public TimeSpan? Expiry { get; set; }
@@ -25,12 +23,12 @@ namespace MyAuth.OAuthPoint.Tools
                 opts.Expires = DateTimeOffset.Now.Add(Expiry.Value);
             }
 
-            response.Cookies.Append(CookieName, SessionId, opts);
+            response.Cookies.Append(LoginSessionCookieName.Name, SessionId, opts);
         }
 
         public static bool TryLoad(HttpRequest request, out LoginSessionCookie cookie)
         {
-            cookie = request.Cookies.TryGetValue(CookieName, out var val)
+            cookie = request.Cookies.TryGetValue(LoginSessionCookieName.Name, out var val)
                 ? new LoginSessionCookie(val)
                 : null;
             return cookie != null;

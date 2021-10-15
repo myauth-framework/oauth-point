@@ -29,6 +29,18 @@ namespace MyAuth.OAuthPoint.Db
 		/// </summary>
 		public ITable<ClaimDb>             Claims             { get { return this.GetTable<ClaimDb>(); } }
 		/// <summary>
+		/// Registered clients
+		/// </summary>
+		public ITable<ClientDb>            Clients            { get { return this.GetTable<ClientDb>(); } }
+		/// <summary>
+		/// Alowed client redirect URIs
+		/// </summary>
+		public ITable<ClientRedirectUriDb> ClientRedirectUris { get { return this.GetTable<ClientRedirectUriDb>(); } }
+		/// <summary>
+		/// Scopes allowed for client
+		/// </summary>
+		public ITable<ClientScopeDb>       ClientScopes       { get { return this.GetTable<ClientScopeDb>(); } }
+		/// <summary>
 		/// Contains login sessions
 		/// </summary>
 		public ITable<LoginSessionDb>      LoginSessions      { get { return this.GetTable<LoginSessionDb>(); } }
@@ -99,6 +111,106 @@ namespace MyAuth.OAuthPoint.Db
 		/// </summary>
 		[Association(ThisKey="SessionScope", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="FK_Claim_To_SessionScope", BackReferenceName="ClaimToSessionScopes")]
 		public SessionScopeDb ClaimToSessionScope { get; set; }
+
+		#endregion
+	}
+
+	/// <summary>
+	/// Registered clients
+	/// </summary>
+	[Table("clients")]
+	public partial class ClientDb
+	{
+		/// <summary>
+		/// Client identifier (Guid)
+		/// </summary>
+		[Column("id"),      PrimaryKey,  NotNull] public string Id      { get; set; } // char(32)
+		/// <summary>
+		/// Name
+		/// </summary>
+		[Column("name"),                 NotNull] public string Name    { get; set; } // varchar(50)
+		/// <summary>
+		/// Is enabled
+		/// </summary>
+		[Column("enabled"),              NotNull] public char   Enabled { get; set; } // enum('Y','N')
+		/// <summary>
+		/// Is deleted
+		/// </summary>
+		[Column("deleted"),    Nullable         ] public char?  Deleted { get; set; } // enum('Y','N')
+
+		#region Associations
+
+		/// <summary>
+		/// RedirectUriToClient_BackReference
+		/// </summary>
+		[Association(ThisKey="Id", OtherKey="ClientId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
+		public IEnumerable<ClientRedirectUriDb> RedirectUriToClients { get; set; }
+
+		/// <summary>
+		/// ScopesToClient_BackReference
+		/// </summary>
+		[Association(ThisKey="Id", OtherKey="ClientId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
+		public IEnumerable<ClientScopeDb> ScopesToClients { get; set; }
+
+		#endregion
+	}
+
+	/// <summary>
+	/// Alowed client redirect URIs
+	/// </summary>
+	[Table("client_redirect_uri")]
+	public partial class ClientRedirectUriDb
+	{
+		/// <summary>
+		/// Row identifier
+		/// </summary>
+		[Column("id"),        PrimaryKey, Identity] public int    Id       { get; set; } // int
+		/// <summary>
+		/// Client identifier
+		/// </summary>
+		[Column("client_id"), NotNull             ] public string ClientId { get; set; } // char(32)
+		/// <summary>
+		/// URI value
+		/// </summary>
+		[Column("uri"),       NotNull             ] public string Uri      { get; set; } // varchar(2048)
+
+		#region Associations
+
+		/// <summary>
+		/// RedirectUriToClient
+		/// </summary>
+		[Association(ThisKey="ClientId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="RedirectUriToClient", BackReferenceName="RedirectUriToClients")]
+		public ClientDb Client { get; set; }
+
+		#endregion
+	}
+
+	/// <summary>
+	/// Scopes allowed for client
+	/// </summary>
+	[Table("client_scopes")]
+	public partial class ClientScopeDb
+	{
+		/// <summary>
+		/// Row identifier
+		/// </summary>
+		[Column("id"),         PrimaryKey, Identity] public int    Id        { get; set; } // int
+		/// <summary>
+		/// Client identifier
+		/// </summary>
+		[Column("client_id"),  NotNull             ] public string ClientId  { get; set; } // char(32)
+		/// <summary>
+		/// Scope name
+		/// </summary>
+		[Column("scope_name"), NotNull             ] public string ScopeName { get; set; } // varchar(50)
+
+		#region Associations
+
+		/// <summary>
+		/// ScopesToClient
+		/// </summary>
+		[Association(ThisKey="ClientId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="ScopesToClient", BackReferenceName="ScopesToClients")]
+		public ClientDb Client { get; set; }
 
 		#endregion
 	}
@@ -237,6 +349,24 @@ namespace MyAuth.OAuthPoint.Db
 	public static partial class TableExtensions
 	{
 		public static ClaimDb Find(this ITable<ClaimDb> table, int Id)
+		{
+			return table.FirstOrDefault(t =>
+				t.Id == Id);
+		}
+
+		public static ClientDb Find(this ITable<ClientDb> table, string Id)
+		{
+			return table.FirstOrDefault(t =>
+				t.Id == Id);
+		}
+
+		public static ClientRedirectUriDb Find(this ITable<ClientRedirectUriDb> table, int Id)
+		{
+			return table.FirstOrDefault(t =>
+				t.Id == Id);
+		}
+
+		public static ClientScopeDb Find(this ITable<ClientScopeDb> table, int Id)
 		{
 			return table.FirstOrDefault(t =>
 				t.Id == Id);

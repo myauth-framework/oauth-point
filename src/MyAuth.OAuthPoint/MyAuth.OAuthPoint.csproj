@@ -41,10 +41,4 @@
     </Compile>
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="Resources\Controllers.Api.AuthorizationCallbackController.resx">
-      <Generator></Generator>
-    </EmbeddedResource>
-  </ItemGroup>
-
 </Project>

@@ -14,6 +14,9 @@ namespace FuncTests
             await dataConnection.CreateTableAsync<SessionScopeDb>();
             await dataConnection.CreateTableAsync<SessionInitiationDb>();
             await dataConnection.CreateTableAsync<ClaimDb>();
+            await dataConnection.CreateTableAsync<ClientDb>();
+            await dataConnection.CreateTableAsync<ClientRedirectUriDb>();
+            await dataConnection.CreateTableAsync<ClientScopeDb>();
         }
     }
 }

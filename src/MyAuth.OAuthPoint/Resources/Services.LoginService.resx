@@ -117,7 +117,13 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="LoginSessionNotFound" xml:space="preserve">
-    <value>Login session not found. My be expired.</value>
+  <data name="ClientNotFound" xml:space="preserve">
+    <value>Client not found</value>
+  </data>
+  <data name="DisallowedRedirectUri" xml:space="preserve">
+    <value>The disallowed redirect uri is specified</value>
+  </data>
+  <data name="DisallowedScopes" xml:space="preserve">
+    <value>The disallowed scopes are specified</value>
   </data>
 </root>

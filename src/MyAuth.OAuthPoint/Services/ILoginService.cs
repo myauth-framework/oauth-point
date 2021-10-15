@@ -8,8 +8,9 @@ namespace MyAuth.OAuthPoint.Services
         Task<string> CreateLoginSessionAsync(AuthorizationRequest authorizationRequest);
 
         Task<LoginSession> GetLoginSessionAsync(string loginSessionId);
+        Task<LoginSession> GetActiveLoginSessionAsync(string loginSessionId);
 
-        Task SaveSuccessAsync(string loginSessionId, AuthorizedUserInfo authorizedUserInfo);
+        Task SaveSuccessAsync(string loginSessionId, AuthorizedSubjectInfo authorizedSubjectInfo);
 
         Task SaveErrorAsync(string loginSessionId, LoginError loginError);
     }

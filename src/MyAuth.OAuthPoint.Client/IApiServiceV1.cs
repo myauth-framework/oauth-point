@@ -14,7 +14,7 @@ namespace MyAuth.OAuthPoint.Client
         /// Complete login process successfully
         /// </summary>
         [Post("{loginSessionId}/error")]
-        Task SuccessLogin([Path] string loginSessionId, [JsonContent] AuthorizedUserInfo authorizedUserInfo);
+        Task SuccessLogin([Path] string loginSessionId, [JsonContent] AuthorizedSubjectInfo authorizedSubjectInfo);
 
         /// <summary>
         /// Complete login process failed

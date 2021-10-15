@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using MyLab.ApiClient;
 
@@ -23,6 +24,7 @@ namespace MyAuth.OAuthPoint.Client
             [Query("client_id")] string clientId,
             [Query("redirect_uri")] string redirectUri,
             [Query("scope")] string scope,
-            [Query("state")] string state = null);
+            [Query("state")] string state = null,
+            [Header("Cookie")] string cookie = null);
     }
 }

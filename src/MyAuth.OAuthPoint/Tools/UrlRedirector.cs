@@ -13,7 +13,7 @@ namespace MyAuth.OAuthPoint.Tools
         public static IActionResult RedirectError(string clientCallbackEp, AuthorizationRequestProcessingError error, string errorDescription, string state)
         {
             if (error == AuthorizationRequestProcessingError.Undefined)
-                return null;
+                throw new InvalidOperationException("Undefined auth processing error type from db");
 
             var query = new NameValueCollection
             {

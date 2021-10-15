@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Specialized;
-using Microsoft.AspNetCore.Mvc;
 using MyAuth.OAuthPoint.Models;
 
-namespace MyAuth.OAuthPoint.Tools
+namespace MyAuth.OAuthPoint
 {
     class AuthorizationRequestProcessingException : Exception
     {

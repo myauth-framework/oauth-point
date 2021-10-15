@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Resources;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -8,6 +7,7 @@ using Microsoft.Extensions.Options;
 using MyAuth.OAuthPoint.Models;
 using MyAuth.OAuthPoint.Services;
 using MyAuth.OAuthPoint.Tools;
+using MyLab.Log;
 using MyLab.Log.Dsl;
 
 namespace MyAuth.OAuthPoint.Controllers.Oidc
@@ -25,7 +25,7 @@ namespace MyAuth.OAuthPoint.Controllers.Oidc
             ILoginService loginService, 
             IOptions<AuthOptions> options, 
             ILogger<AuthorizationController> logger,
-            IStringLocalizer<AuthorizationRequestValidator> localizer)
+            IStringLocalizer<AuthorizationController> localizer)
         {
             _loginService = loginService;
             _options = options.Value;
@@ -42,16 +42,58 @@ namespace MyAuth.OAuthPoint.Controllers.Oidc
 
                 if (LoginSessionCookie.TryLoad(Request, out var authCookie))
                 {
-                    var lSession = await _loginService.GetLoginSessionAsync(authCookie.SessionId);
-                    if (lSession != null && lSession.InitDetails.Error == null)
+                    LoginSession lSession = null;
+                    
+                    try
                     {
-                        return UrlRedirector.RedirectSuccessCallback(lSession.InitDetails.RedirectUri, lSession.InitDetails.AuthorizationCode, lSession.InitDetails.State);
+                        lSession = await _loginService.GetActiveLoginSessionAsync(authCookie.SessionId);
+                    }
+                    catch (Exception e) when(e is LoginSessionNotFoundException || e is LoginSessionExpiredException)
+                    {
+                        _log.Warning("Active session not found by cookie")
+                            .AndFactIs("session-id", authCookie.SessionId)
+                            .AndFactIs("request", request)
+                            .AndFactIs("error", ExceptionDto.Create(e))
+                            .Write();
+                    }
+
+                    if (lSession != null)
+                    {
+                        if (lSession.ClientId == request.ClientId &&
+                            lSession.InitDetails.RedirectUri == request.RedirectUri &&
+                            lSession.InitDetails.Scope == request.Scope)
+                        {
+                            return UrlRedirector.RedirectSuccessCallback(lSession.InitDetails.RedirectUri,
+                                lSession.InitDetails.AuthorizationCode, lSession.InitDetails.State);
+                        }
+                        else
+                        {
+                            _log.Warning("Session found by cookie but parameters mismatch")
+                                .AndFactIs("session-id", authCookie.SessionId)
+                                .AndFactIs("request", request)
+                                .AndFactIs("stored-client-id", lSession.ClientId)
+                                .AndFactIs("stored-redirect-uri", lSession.InitDetails.RedirectUri)
+                                .AndFactIs("stored-scope", lSession.InitDetails.Scope)
+                                .Write();
+                        }
                     }
                 }
 
                 var loginId = await _loginService.CreateLoginSessionAsync(request);
 
                 return UrlRedirector.RedirectToLogin(_options.LoginEndpoint, loginId);
+            }
+            catch (RedirectUriException e)
+            {
+                _log.Warning(e)
+                    .AndFactIs("request", request)
+                    .Write();
+
+                return UrlRedirector.RedirectError(
+                    _options.DefaultErrorEndpoint,
+                    AuthorizationRequestProcessingError.InvalidRequest,
+                    e.Message,
+                    request.State);
             }
             catch (AuthorizationRequestProcessingException e)
             {

@@ -26,16 +26,18 @@ namespace MyAuth.OAuthPoint.Controllers.Api
         }
 
         [HttpPost("{loginSessionId}/success")]
+        [ErrorToResponse(typeof(LoginSessionExpiredException), HttpStatusCode.NotFound)]
         [ErrorToResponse(typeof(LoginSessionNotFoundException), HttpStatusCode.NotFound)]
         [ErrorToResponse(typeof(LoginSessionInvalidOperationException), HttpStatusCode.Conflict)]
-        public IActionResult PostSuccess([FromRoute]string loginSessionId, [FromBody]AuthorizedUserInfo authorizedUserInfo)
+        public IActionResult PostSuccess([FromRoute]string loginSessionId, [FromBody]AuthorizedSubjectInfo authorizedSubjectInfo)
         {
-            _loginService.SaveSuccessAsync(loginSessionId, authorizedUserInfo);
+            _loginService.SaveSuccessAsync(loginSessionId, authorizedSubjectInfo);
             
             return Ok();
         }
 
         [HttpPost("{loginSessionId}/error")]
+        [ErrorToResponse(typeof(LoginSessionExpiredException), HttpStatusCode.NotFound)]
         [ErrorToResponse(typeof(LoginSessionNotFoundException), HttpStatusCode.NotFound)]
         [ErrorToResponse(typeof(LoginSessionInvalidOperationException), HttpStatusCode.Conflict)]
         public IActionResult PostError([FromRoute] string loginSessionId, [FromBody] LoginError loginError)

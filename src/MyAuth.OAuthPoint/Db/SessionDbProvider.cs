@@ -8,6 +8,7 @@ using LinqToDB.Data;
 using MyAuth.OAuthPoint.Models;
 using MyAuth.OAuthPoint.Tools;
 using MyLab.Db;
+using MyLab.Log;
 
 namespace MyAuth.OAuthPoint.Db
 {
@@ -24,47 +25,36 @@ namespace MyAuth.OAuthPoint.Db
 
         public async Task<LoginSession> ProvideAsync()
         {
-            var sessionInfo = await LoadSessionInfoAsync(_dataConnection, _loginSessionId);
+            var session = await LoadSessionInfoAsync(_dataConnection, _loginSessionId);
 
-            if (sessionInfo != null)
+            if (session == null)
+                throw new LoginSessionNotFoundException()
+                    .AndFactIs("login-session-id", _loginSessionId);
+
+            var claims = await LoadClaimsAsync(_loginSessionId, _dataConnection);
+
+            var addressScope = TryCreateScope<AddressScopeClaims>(claims, StandardClaimsScopes.Address);
+            var phoneScope = TryCreateScope<PhoneScopeClaims>(claims, StandardClaimsScopes.Phone);
+            var emailScope = TryCreateScope<EmailScopeClaims>(claims, StandardClaimsScopes.Email);
+            var profileScope = TryCreateScope<ProfileScopeClaims>(claims, StandardClaimsScopes.Profile);
+
+            var customScopes = SelectCustomScopes(claims);
+
+            session.AuthorizedSubjectInfo = new AuthorizedSubjectInfo
             {
-                if (sessionInfo.IsUserAuthorized)
-                {
+                Subject = session.SubjectId,
+                Address = addressScope,
+                Email = emailScope,
+                Phone = phoneScope,
+                Profile = profileScope
+            };
 
-                    var claims = await LoadClaimsAsync(_loginSessionId, _dataConnection);
-
-                    var addressScope = TryCreateScope<AddressScopeClaims>(claims, StandardClaimsScopes.Address);
-                    var phoneScope = TryCreateScope<PhoneScopeClaims>(claims, StandardClaimsScopes.Phone);
-                    var emailScope = TryCreateScope<EmailScopeClaims>(claims, StandardClaimsScopes.Email);
-                    var profileScope = TryCreateScope<ProfileScopeClaims>(claims, StandardClaimsScopes.Profile);
-
-                    var customScopes = SelectCustomScopes(claims);
-
-                    sessionInfo.Session.AuthorizedUserInfo = new AuthorizedUserInfo
-                    {
-                        Subject = sessionInfo.Subject,
-                        Address = addressScope,
-                        Email = emailScope,
-                        Phone = phoneScope,
-                        Profile = profileScope
-                    };
-
-                    if (customScopes.Count != 0)
-                    {
-                        sessionInfo.Session.AuthorizedUserInfo.CustomScopes = customScopes;
-                    }
-                }
-                else
-                {
-                    throw new LoginSessionInvalidOperationException(_loginSessionId);
-                }
-            }
-            else
+            if (customScopes.Count != 0)
             {
-                throw new LoginSessionNotFoundException(_loginSessionId);
+                session.AuthorizedSubjectInfo.CustomScopes = customScopes;
             }
 
-            return sessionInfo.Session;
+            return session;
         }
 
         private static Dictionary<string, CustomScopeClaims> SelectCustomScopes(Tuple<string, string, string>[] claims)
@@ -97,13 +87,11 @@ namespace MyAuth.OAuthPoint.Db
                 .ToArrayAsync();
         }
 
-        Task<SessionInfo> LoadSessionInfoAsync(DataConnection dbConnection, string loginSessionId)
+        Task<LoginSession> LoadSessionInfoAsync(DataConnection dbConnection, string loginSessionId)
         {
             return dbConnection.Tab<LoginSessionDb>()
-                .Where(s => s.Id == loginSessionId && s.Expiry > DateTime.Now)
-                .Select(s => new SessionInfo
-                {
-                    Session = new LoginSession
+                .Where(s => s.Id == loginSessionId)
+                .Select(s => new LoginSession
                     {
                         Id = s.Id,
                         Expiry = s.Expiry,
@@ -111,20 +99,19 @@ namespace MyAuth.OAuthPoint.Db
                         InitDetails = new LoginInitDetails
                         {
                             RedirectUri = s.InitiationToSession.RedirectUri,
+                            Scope = s.InitiationToSession.Scope,
                             State = s.InitiationToSession.State,
                             AuthorizationCode = s.InitiationToSession.AuthorizationCode,
-                            Error = s.InitiationToSession.ErrorCode != AuthorizationRequestProcessingError.Undefined
-                                ? null
-                                : new LoginSessionError
-                                {
-                                    Error = s.InitiationToSession.ErrorCode,
-                                    Description = s.InitiationToSession.ErrorDesription
-                                }
-                        }
-                    },
-                    IsUserAuthorized = s.LoginDt != null,
-                    Subject = s.Subject
-                })
+                            Error = new LoginSessionError
+                            {
+                                Error = s.InitiationToSession.ErrorCode,
+                                Description = s.InitiationToSession.ErrorDesription
+                            }
+                        },
+                        IsSubjectAuthorized = s.LoginDt != null,
+                        SubjectId = s.Subject
+                    }
+                )
                 .FirstOrDefaultAsync();
         }
 
@@ -144,13 +131,6 @@ namespace MyAuth.OAuthPoint.Db
             scope.Load(scopeClaims);
 
             return scope;
-        }
-
-        class SessionInfo
-        {
-            public LoginSession Session { get; set; }
-            public bool IsUserAuthorized { get; set; }
-            public string Subject { get; set; }
         }
     }
 }

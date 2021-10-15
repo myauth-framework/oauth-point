@@ -1,5 +1,4 @@
 ﻿using System;
-using MyAuth.OAuthPoint.Tools;
 
 namespace MyAuth.OAuthPoint.Models
 {
@@ -12,6 +11,9 @@ namespace MyAuth.OAuthPoint.Models
 
         public LoginInitDetails InitDetails { get; set; }
 
-        public AuthorizedUserInfo AuthorizedUserInfo { get; set; }
+        public string SubjectId { get; set; }
+        public bool IsSubjectAuthorized { get; set; }
+
+        public AuthorizedSubjectInfo AuthorizedSubjectInfo { get; set; }
     }
 }

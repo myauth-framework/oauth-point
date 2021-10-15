@@ -6,6 +6,7 @@ using LinqToDB;
 using LinqToDB.Data;
 using MyAuth.OAuthPoint.Models;
 using MyLab.Db;
+using MyLab.Log;
 using Newtonsoft.Json.Linq;
 
 namespace MyAuth.OAuthPoint.Db
@@ -30,10 +31,11 @@ namespace MyAuth.OAuthPoint.Db
                 .UpdateAsync();
 
             if(updated == 0)
-                throw new LoginSessionNotFoundException(_loginSessionId);
+                throw new LoginSessionNotFoundException()
+                    .AndFactIs("login-session-id", _loginSessionId);
         }
 
-        public async Task CompleteSuccessful(AuthorizedUserInfo authorizedUserInfo, DateTime newExpiry)
+        public async Task CompleteSuccessful(AuthorizedSubjectInfo authorizedSubjectInfo, DateTime newExpiry)
         {
             var sessionInfo = await _dataConnection
                 .Tab<SessionInitiationDb>()
@@ -42,31 +44,33 @@ namespace MyAuth.OAuthPoint.Db
                 .FirstOrDefaultAsync();
 
             if (sessionInfo == null)
-                throw new LoginSessionNotFoundException(_loginSessionId);
+                throw new LoginSessionNotFoundException()
+                    .AndFactIs("login-session-id", _loginSessionId);
 
             if (sessionInfo.Completed)
-                throw new LoginSessionInvalidOperationException(_loginSessionId);
+                throw new LoginSessionInvalidOperationException()
+                    .AndFactIs("login-session-id", _loginSessionId);
 
             var requiredSessionScopes = sessionInfo.Scope;
 
             var scopes = new Dictionary<string, IDictionary<string, JObject>>();
 
-            if (authorizedUserInfo.CustomScopes.Count != 0)
+            if (authorizedSubjectInfo.CustomScopes.Count != 0)
             {
-                foreach (var customScope in authorizedUserInfo.CustomScopes)
+                foreach (var customScope in authorizedSubjectInfo.CustomScopes)
                 {
                     scopes.Add(customScope.Key, customScope.Value);
                 }
             }
 
-            if (authorizedUserInfo.Email != null)
-                scopes.Add(StandardClaimsScopes.Email, authorizedUserInfo.Email.ToDictionary());
-            if (authorizedUserInfo.Phone != null)
-                scopes.Add(StandardClaimsScopes.Phone, authorizedUserInfo.Phone.ToDictionary());
-            if (authorizedUserInfo.Address != null)
-                scopes.Add(StandardClaimsScopes.Address, authorizedUserInfo.Address.ToDictionary());
-            if (authorizedUserInfo.Profile != null)
-                scopes.Add(StandardClaimsScopes.Profile, authorizedUserInfo.Profile.ToDictionary());
+            if (authorizedSubjectInfo.Email != null)
+                scopes.Add(StandardClaimsScopes.Email, authorizedSubjectInfo.Email.ToDictionary());
+            if (authorizedSubjectInfo.Phone != null)
+                scopes.Add(StandardClaimsScopes.Phone, authorizedSubjectInfo.Phone.ToDictionary());
+            if (authorizedSubjectInfo.Address != null)
+                scopes.Add(StandardClaimsScopes.Address, authorizedSubjectInfo.Address.ToDictionary());
+            if (authorizedSubjectInfo.Profile != null)
+                scopes.Add(StandardClaimsScopes.Profile, authorizedSubjectInfo.Profile.ToDictionary());
 
             await _dataConnection.PerformAutoTransactionAsync(async dc =>
             {
