@@ -15,7 +15,7 @@ using Xunit.Abstractions;
 
 namespace FuncTests
 {
-    public partial class AuthorizationRequestProcessingBehavior : IDisposable, IClassFixture<TmpDbFixture<MyAuthOAuthPointDbInitializer>>
+    public partial class AuthorizationControllerBehavior : IDisposable, IClassFixture<TmpDbFixture<MyAuthOAuthPointDbInitializer>>
     {
         private readonly ITestOutputHelper _output;
         private readonly TmpDbFixture<MyAuthOAuthPointDbInitializer> _dbFixture;
@@ -24,7 +24,7 @@ namespace FuncTests
         private const string TestConfigLoginEndpoint = "http://host.net/login";
         private const string TestConfigDefaultErrorEndpoint = "http://host.net/error";
 
-        public AuthorizationRequestProcessingBehavior(ITestOutputHelper output, TmpDbFixture<MyAuthOAuthPointDbInitializer> dbFixture)
+        public AuthorizationControllerBehavior(ITestOutputHelper output, TmpDbFixture<MyAuthOAuthPointDbInitializer> dbFixture)
         {
             _output = output;
             _dbFixture = dbFixture;
