@@ -35,7 +35,7 @@ namespace MyAuth.OAuthPoint.Db
                     .AndFactIs("login-session-id", _loginSessionId);
         }
 
-        public async Task CompleteSuccessful(AuthorizedSubjectInfo authorizedSubjectInfo, DateTime newExpiry)
+        public async Task CompleteSuccessfulAsync(AuthorizedSubjectInfo authorizedSubjectInfo, DateTime newExpiry)
         {
             var sessionInfo = await _dataConnection
                 .Tab<SessionInitiationDb>()
@@ -95,6 +95,12 @@ namespace MyAuth.OAuthPoint.Db
             });
 
             
+        }
+
+        public Task<bool> IsSessionCompleted()
+        {
+            return _dataConnection.Tab<SessionInitiationDb>()
+                .AnyAsync(s => s.SessionId == _loginSessionId && s.CompleteDt != null);
         }
     }
 }

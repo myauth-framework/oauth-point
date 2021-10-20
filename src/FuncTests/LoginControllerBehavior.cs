@@ -1,24 +1,20 @@
 ﻿using System;
-using System.Linq;
 using System.Net;
-using System.Security;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MyAuth.OAuthPoint;
 using MyAuth.OAuthPoint.Client;
+using MyAuth.OAuthPoint.Client.Models;
 using MyAuth.OAuthPoint.Db;
-using MyAuth.OAuthPoint.Models;
 using MyLab.ApiClient.Test;
-using MyLab.Db;
 using MyLab.DbTest;
 using Xunit;
 using Xunit.Abstractions;
-using LoginSessionCookieName = MyAuth.OAuthPoint.Client.LoginSessionCookieName;
 
 namespace FuncTests
 {
-    public class AuthorizationCallbackControllerBehavior : IDisposable, IClassFixture<TmpDbFixture<MyAuthOAuthPointDbInitializer>>
+    public class LoginControllerBehavior : IDisposable, IClassFixture<TmpDbFixture<MyAuthOAuthPointDbInitializer>>
     {
         private readonly ITestOutputHelper _output;
         private readonly TmpDbFixture<MyAuthOAuthPointDbInitializer> _dbFixture;
@@ -27,7 +23,7 @@ namespace FuncTests
         private const string TestConfigLoginEndpoint = "http://host.net/login";
         private const string TestConfigDefaultErrorEndpoint = "http://host.net/error";
 
-        public AuthorizationCallbackControllerBehavior(ITestOutputHelper output, TmpDbFixture<MyAuthOAuthPointDbInitializer> dbFixture)
+        public LoginControllerBehavior(ITestOutputHelper output, TmpDbFixture<MyAuthOAuthPointDbInitializer> dbFixture)
         {
             _output = output;
             _dbFixture = dbFixture;
@@ -55,24 +51,37 @@ namespace FuncTests
         }
 
         [Fact]
-        public async Task ShouldReturn404IfSessionNotFound()
+        public async Task ShouldReturn404WhenSaveSuccessfulForAbsentSession()
         {
             //Arrange
             var sessionId = Guid.NewGuid().ToString("N");
-            
-
             var db = await _dbFixture.CreateDbAsync();
             var api = _testApi.Start(s => s.AddSingleton(db));
 
             //Act
-            var resp = await api.Call(s => s.CallbackLogin(sessionId));
+            var resp = await api.Call(s => s.SuccessLogin(sessionId, new AuthorizedSubjectInfo()));
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
         }
 
         [Fact]
-        public async Task ShouldReturn404IfSessionExpired()
+        public async Task ShouldReturn404WhenSaveErrorForAbsentSession()
+        {
+            //Arrange
+            var sessionId = Guid.NewGuid().ToString("N");
+            var db = await _dbFixture.CreateDbAsync();
+            var api = _testApi.Start(s => s.AddSingleton(db));
+
+            //Act
+            var resp = await api.Call(s => s.FailLogin(sessionId, new LoginError()));
+
+            //Assert
+            Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
+        }
+
+        [Fact]
+        public async Task ShouldReturn404WhenSaveSuccessfulForExpiredSession()
         {
             //Arrange
             var sessionId = Guid.NewGuid().ToString("N");
@@ -82,20 +91,36 @@ namespace FuncTests
             var api = _testApi.Start(s => s.AddSingleton(db));
 
             //Act
-            var resp = await api.Call(s => s.CallbackLogin(sessionId));
+            var resp = await api.Call(s => s.SuccessLogin(sessionId, new AuthorizedSubjectInfo()));
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
         }
 
         [Fact]
-        public async Task ShouldRedirectToErrorWhenWasLoginError()
+        public async Task ShouldReturn404WhenSaveErrorForExpiredSession()
+        {
+            //Arrange
+            var sessionId = Guid.NewGuid().ToString("N");
+            var dataInitializer = TestTools.CreateDataIniterWithExpiredSession(sessionId);
+
+            var db = await _dbFixture.CreateDbAsync(dataInitializer);
+            var api = _testApi.Start(s => s.AddSingleton(db));
+
+            //Act
+            var resp = await api.Call(s => s.FailLogin(sessionId, new LoginError()));
+
+            //Assert
+            Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
+        }
+
+        [Fact]
+        public async Task ShouldReturn409WhenSaveSuccessfulForAlreadyCompletedSession()
         {
             //Arrange
             var sessionId = Guid.NewGuid().ToString("N");
             var clientId = Guid.NewGuid().ToString("N");
             var redirectUri = "http://host.net/cb";
-
             var dataInitializer = new DataDbInitializer
             {
                 Clients = new[] { new ClientDb { Id = clientId, Name = "foo" } },
@@ -103,20 +128,19 @@ namespace FuncTests
                 {
                     new LoginSessionDb
                     {
-                        Id = sessionId, 
+                        Id = sessionId,
                         ClientId = clientId,
-                        Expiry = DateTime.MaxValue
+                        Expiry = DateTime.MaxValue,
                     }
                 },
                 SessionInitiations = new[]
                 {
                     new SessionInitiationDb
                     {
-                        ErrorCode = AuthorizationRequestProcessingError.InvalidRequestObject,
-                        ErrorDesription = "error",
                         RedirectUri = redirectUri,
                         SessionId = sessionId,
                         Scope = "no-mater-scope",
+                        CompleteDt = DateTime.Now
                     }
                 }
             };
@@ -124,104 +148,34 @@ namespace FuncTests
             var db = await _dbFixture.CreateDbAsync(dataInitializer);
             var api = _testApi.Start(s => s.AddSingleton(db));
 
-            //Act
-            var resp = await api.Call(s => s.CallbackLogin(sessionId));
-
-            TestTools.TryExtractRedirect(resp, out var locationLeftPart, out var query);
-
-            //Assert
-            Assert.Equal(HttpStatusCode.Redirect, resp.StatusCode);
-            Assert.Equal(redirectUri, locationLeftPart);
-            Assert.Equal("invalid_request_object", query["error"]);
-            Assert.Equal("error", query["error_description"]);
-        }
-
-        [Fact]
-        public async Task ShouldRedirectToCallbackWhenLoginSuccess()
-        {
-            //Arrange
-            var sessionId = Guid.NewGuid().ToString("N");
-            var clientId = Guid.NewGuid().ToString("N");
-            var authCode = Guid.NewGuid().ToString("N");
-            var state = Guid.NewGuid().ToString("N");
-            var redirectUri = "http://host.net/cb";
-
-            var dataInitializer = new DataDbInitializer
+            var authInfo = new AuthorizedSubjectInfo
             {
-                Clients = new[]
-                {
-                    new ClientDb
-                    {
-                        Id = clientId, 
-                        Name = "foo"
-                    }
-                },
-                LoginSessions= new []
-                {
-                    new LoginSessionDb
-                    {
-                        Id = sessionId,
-                        ClientId = clientId,
-                        LoginDt = DateTime.Now,
-                        Expiry = DateTime.MaxValue
-                    }
-                },
-                SessionInitiations = new[]
-                {
-                    new SessionInitiationDb
-                    {
-                        RedirectUri = redirectUri,
-                        AuthorizationCode = authCode,
-                        CompleteDt = DateTime.Now,
-                        State = state,
-                        SessionId = sessionId,
-                        Scope = "no-mater-scope"
-                    }
-                }
+                Subject = "foo"
             };
 
-            var db = await _dbFixture.CreateDbAsync(dataInitializer);
-            var api = _testApi.Start(s => s.AddSingleton(db));
-
             //Act
-            var resp = await api.Call(s => s.CallbackLogin(sessionId));
-
-            TestTools.TryExtractRedirect(resp, out var locationLeftPart, out var query);
+            var resp = await api.Call(s => s.SuccessLogin(sessionId, authInfo));
 
             //Assert
-            Assert.Equal(HttpStatusCode.Redirect, resp.StatusCode);
-            Assert.Equal(redirectUri, locationLeftPart);
-            Assert.Equal(authCode, query["code"]);
-            Assert.Equal(state, query["state"]);
+            Assert.Equal(HttpStatusCode.Conflict, resp.StatusCode);
         }
 
         [Fact]
-        public async Task ShouldSetLoginCookieWhenLoginSuccess()
+        public async Task ShouldReturn409WhenSaveErrorForAlreadyCompletedSession()
         {
             //Arrange
             var sessionId = Guid.NewGuid().ToString("N");
             var clientId = Guid.NewGuid().ToString("N");
-            var authCode = Guid.NewGuid().ToString("N");
-            var state = Guid.NewGuid().ToString("N");
             var redirectUri = "http://host.net/cb";
-
             var dataInitializer = new DataDbInitializer
             {
-                Clients = new[]
-                {
-                    new ClientDb
-                    {
-                        Id = clientId,
-                        Name = "foo"
-                    }
-                },
+                Clients = new[] { new ClientDb { Id = clientId, Name = "foo" } },
                 LoginSessions = new[]
                 {
                     new LoginSessionDb
                     {
                         Id = sessionId,
                         ClientId = clientId,
-                        LoginDt = DateTime.Now,
                         Expiry = DateTime.MaxValue
                     }
                 },
@@ -230,11 +184,9 @@ namespace FuncTests
                     new SessionInitiationDb
                     {
                         RedirectUri = redirectUri,
-                        AuthorizationCode = authCode,
-                        CompleteDt = DateTime.Now,
-                        State = state,
                         SessionId = sessionId,
-                        Scope = "no-mater-scope"
+                        Scope = "no-mater-scope",
+                        CompleteDt = DateTime.Now
                     }
                 }
             };
@@ -242,16 +194,16 @@ namespace FuncTests
             var db = await _dbFixture.CreateDbAsync(dataInitializer);
             var api = _testApi.Start(s => s.AddSingleton(db));
 
-            //Act
-            var resp = await api.Call(s => s.CallbackLogin(sessionId));
+            var loginError = new LoginError
+            {
+                AuthError = AuthorizationRequestProcessingError.InvalidRequest
+            };
 
-            var cookiesWasFound = resp.ResponseMessage.Headers.TryGetValues("Set-Cookie", out var values);
-            var foundLoginCookies = values?.FirstOrDefault(c => c.StartsWith(LoginSessionCookieName.Name + "="));
+            //Act
+            var resp = await api.Call(s => s.FailLogin(sessionId, loginError));
 
             //Assert
-            Assert.True(cookiesWasFound);
-            Assert.NotNull(foundLoginCookies);
-            Assert.StartsWith($"{LoginSessionCookieName.Name}={sessionId}", foundLoginCookies);
+            Assert.Equal(HttpStatusCode.Conflict, resp.StatusCode);
         }
 
         public void Dispose()

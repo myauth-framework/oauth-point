@@ -79,9 +79,15 @@ namespace MyAuth.OAuthPoint.Services
 
             var completer = new SessionDbInitiationCompleter(dbConnection, loginSessionId);
 
+            if (await completer.IsSessionCompleted())
+            {
+                throw new LoginSessionInvalidOperationException()
+                    .AndFactIs("session-id", loginSessionId);
+            }
+
             var newExpiry = DateTime.Now.AddDays(_opt.LoginSessionExpiryDays);
 
-            await completer.CompleteSuccessful(authorizedSubjectInfo, newExpiry);
+            await completer.CompleteSuccessfulAsync(authorizedSubjectInfo, newExpiry);
 
             _log?.Warning("Login compete successfully")
                 .AndFactIs("session-id", loginSessionId)
@@ -94,7 +100,13 @@ namespace MyAuth.OAuthPoint.Services
             await using var dataConnection = _db.Use();
 
             var completer = new SessionDbInitiationCompleter(dataConnection, loginSessionId);
-            
+
+            if (await completer.IsSessionCompleted())
+            {
+                throw new LoginSessionInvalidOperationException()
+                    .AndFactIs("session-id", loginSessionId);
+            }
+
             await completer.CompleteWithErrorAsync(loginError);
 
             _log?.Warning("Login error")

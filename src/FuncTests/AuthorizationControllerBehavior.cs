@@ -10,7 +10,7 @@ using Xunit;
 
 namespace FuncTests
 {
-    public partial class AuthorizationRequestProcessingBehavior
+    public partial class AuthorizationControllerBehavior
     {
         [Theory]
         [InlineData("Unsupported resp type", "unsupported_response_type", "invalid", "valid", "http://host.net/cb", "openapi")]

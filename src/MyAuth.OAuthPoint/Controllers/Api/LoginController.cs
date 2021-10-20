@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MyAuth.OAuthPoint.Models;
@@ -29,9 +30,9 @@ namespace MyAuth.OAuthPoint.Controllers.Api
         [ErrorToResponse(typeof(LoginSessionExpiredException), HttpStatusCode.NotFound)]
         [ErrorToResponse(typeof(LoginSessionNotFoundException), HttpStatusCode.NotFound)]
         [ErrorToResponse(typeof(LoginSessionInvalidOperationException), HttpStatusCode.Conflict)]
-        public IActionResult PostSuccess([FromRoute]string loginSessionId, [FromBody]AuthorizedSubjectInfo authorizedSubjectInfo)
+        public async Task<IActionResult> PostSuccess([FromRoute]string loginSessionId, [FromBody]AuthorizedSubjectInfo authorizedSubjectInfo)
         {
-            _loginService.SaveSuccessAsync(loginSessionId, authorizedSubjectInfo);
+            await _loginService.SaveSuccessAsync(loginSessionId, authorizedSubjectInfo);
             
             return Ok();
         }
@@ -40,9 +41,9 @@ namespace MyAuth.OAuthPoint.Controllers.Api
         [ErrorToResponse(typeof(LoginSessionExpiredException), HttpStatusCode.NotFound)]
         [ErrorToResponse(typeof(LoginSessionNotFoundException), HttpStatusCode.NotFound)]
         [ErrorToResponse(typeof(LoginSessionInvalidOperationException), HttpStatusCode.Conflict)]
-        public IActionResult PostError([FromRoute] string loginSessionId, [FromBody] LoginError loginError)
+        public async Task<IActionResult> PostError([FromRoute] string loginSessionId, [FromBody] LoginError loginError)
         {
-            _loginService.SaveErrorAsync(loginSessionId, loginError);
+            await _loginService.SaveErrorAsync(loginSessionId, loginError);
 
             return Ok();
         }

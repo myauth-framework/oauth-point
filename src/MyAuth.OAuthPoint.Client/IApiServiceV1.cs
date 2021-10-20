@@ -13,13 +13,13 @@ namespace MyAuth.OAuthPoint.Client
         /// <summary>
         /// Complete login process successfully
         /// </summary>
-        [Post("{loginSessionId}/error")]
+        [Post("login/{loginSessionId}/error")]
         Task SuccessLogin([Path] string loginSessionId, [JsonContent] AuthorizedSubjectInfo authorizedSubjectInfo);
 
         /// <summary>
         /// Complete login process failed
         /// </summary>
-        [Post("{loginSessionId}/error")]
+        [Post("login/{loginSessionId}/error")]
         Task FailLogin([Path] string loginSessionId, [JsonContent] LoginError loginError);
 
         /// <summary>
@@ -28,4 +28,5 @@ namespace MyAuth.OAuthPoint.Client
         [Get("authorization-callback")]
         Task CallbackLogin([Query("login_session_id")]string loginSessionId);
     }
+
 }
