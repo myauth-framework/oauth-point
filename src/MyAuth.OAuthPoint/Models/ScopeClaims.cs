@@ -13,9 +13,9 @@ namespace MyAuth.OAuthPoint.Models
 #endif
 {
     /// <summary>
-    /// Contains scope claims with json value
+    /// Contains scope claims with 
     /// </summary>
-    public class JsonScope
+    public class ScopeClaims
     {
         /// <summary>
         /// Scope identifier
@@ -24,6 +24,6 @@ namespace MyAuth.OAuthPoint.Models
         /// <summary>
         /// Claims
         /// </summary>
-        public JsonClaimsCollection Claims { get; set; }
+        public ClaimsCollection Claims { get; set; }
     }
 }

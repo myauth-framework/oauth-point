@@ -25,37 +25,41 @@ namespace MyAuth.OAuthPoint.Db
 	public partial class MyAuthOAuthPointDb : LinqToDB.Data.DataConnection
 	{
 		/// <summary>
+		/// Available audiences for client
+		/// </summary>
+		public ITable<ClientAvailableAudienceDb> ClientAvailableAudiences { get { return this.GetTable<ClientAvailableAudienceDb>(); } }
+		/// <summary>
 		/// Client available scopes
 		/// </summary>
-		public ITable<ClientAvailableScopeDb>  ClientAvailableScopes  { get { return this.GetTable<ClientAvailableScopeDb>(); } }
+		public ITable<ClientAvailableScopeDb>    ClientAvailableScopes    { get { return this.GetTable<ClientAvailableScopeDb>(); } }
 		/// <summary>
 		/// Available redirect URI for client
 		/// </summary>
-		public ITable<ClientAvailableUriDb>    ClientAvailableUris    { get { return this.GetTable<ClientAvailableUriDb>(); } }
+		public ITable<ClientAvailableUriDb>      ClientAvailableUris      { get { return this.GetTable<ClientAvailableUriDb>(); } }
 		/// <summary>
 		/// Registered clients
 		/// </summary>
-		public ITable<ClientDb>                Clients                { get { return this.GetTable<ClientDb>(); } }
+		public ITable<ClientDb>                  Clients                  { get { return this.GetTable<ClientDb>(); } }
 		/// <summary>
 		/// Login sessions
 		/// </summary>
-		public ITable<LoginSessionDb>          LoginSessions          { get { return this.GetTable<LoginSessionDb>(); } }
+		public ITable<LoginSessionDb>            LoginSessions            { get { return this.GetTable<LoginSessionDb>(); } }
 		/// <summary>
 		/// Additional subject claims for access token
 		/// </summary>
-		public ITable<SubjectAccessClaimDb>    SubjectAccessClaims    { get { return this.GetTable<SubjectAccessClaimDb>(); } }
+		public ITable<SubjectAccessClaimDb>      SubjectAccessClaims      { get { return this.GetTable<SubjectAccessClaimDb>(); } }
 		/// <summary>
 		/// Subject available scopes
 		/// </summary>
-		public ITable<SubjectAvailableScopeDb> SubjectAvailableScopes { get { return this.GetTable<SubjectAvailableScopeDb>(); } }
+		public ITable<SubjectAvailableScopeDb>   SubjectAvailableScopes   { get { return this.GetTable<SubjectAvailableScopeDb>(); } }
 		/// <summary>
 		/// Subjects
 		/// </summary>
-		public ITable<SubjectDb>               Subjects               { get { return this.GetTable<SubjectDb>(); } }
+		public ITable<SubjectDb>                 Subjects                 { get { return this.GetTable<SubjectDb>(); } }
 		/// <summary>
 		/// Subject claims for identity
 		/// </summary>
-		public ITable<SubjectIdentityClaimDb>  SubjectIdentityClaims  { get { return this.GetTable<SubjectIdentityClaimDb>(); } }
+		public ITable<SubjectIdentityClaimDb>    SubjectIdentityClaims    { get { return this.GetTable<SubjectIdentityClaimDb>(); } }
 
 		public MyAuthOAuthPointDb()
 		{
@@ -86,6 +90,36 @@ namespace MyAuth.OAuthPoint.Db
 
 		partial void InitDataContext  ();
 		partial void InitMappingSchema();
+	}
+
+	/// <summary>
+	/// Available audiences for client
+	/// </summary>
+	[Table("client_available_audiences")]
+	public partial class ClientAvailableAudienceDb
+	{
+		/// <summary>
+		/// Row identifier
+		/// </summary>
+		[Column("id"),        PrimaryKey, Identity] public int    Id       { get; set; } // int
+		/// <summary>
+		/// URI
+		/// </summary>
+		[Column("uri"),       NotNull             ] public string Uri      { get; set; } // varchar(250)
+		/// <summary>
+		/// Client identifier
+		/// </summary>
+		[Column("client_id"), NotNull             ] public string ClientId { get; set; } // char(32)
+
+		#region Associations
+
+		/// <summary>
+		/// ClientAvailableAudienceToClient
+		/// </summary>
+		[Association(ThisKey="ClientId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="ClientAvailableAudienceToClient", BackReferenceName="ClientAvailableAudienceToClients")]
+		public ClientDb Client { get; set; }
+
+		#endregion
 	}
 
 	/// <summary>
@@ -176,6 +210,12 @@ namespace MyAuth.OAuthPoint.Db
 		[Column("enabled_dt"),       Nullable         ] public DateTime?                      EnabledDt    { get; set; } // datetime
 
 		#region Associations
+
+		/// <summary>
+		/// ClientAvailableAudienceToClient_BackReference
+		/// </summary>
+		[Association(ThisKey="Id", OtherKey="ClientId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
+		public IEnumerable<ClientAvailableAudienceDb> ClientAvailableAudienceToClients { get; set; }
 
 		/// <summary>
 		/// ClientAvailableScopesToClient_BackReference
@@ -438,6 +478,12 @@ namespace MyAuth.OAuthPoint.Db
 
 	public static partial class TableExtensions
 	{
+		public static ClientAvailableAudienceDb Find(this ITable<ClientAvailableAudienceDb> table, int Id)
+		{
+			return table.FirstOrDefault(t =>
+				t.Id == Id);
+		}
+
 		public static ClientAvailableScopeDb Find(this ITable<ClientAvailableScopeDb> table, int Id)
 		{
 			return table.FirstOrDefault(t =>

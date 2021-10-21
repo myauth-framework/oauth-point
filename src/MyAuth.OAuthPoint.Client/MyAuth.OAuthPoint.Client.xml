@@ -150,6 +150,91 @@
             The OP does not support use of the registration parameter defined in Section 7.2.1.
             </summary>
         </member>
+        <member name="T:MyAuth.OAuthPoint.Client.Models.ClaimsCollection">
+            <summary>
+            Contains claims with json values
+            </summary>
+        </member>
+        <member name="M:MyAuth.OAuthPoint.Client.Models.ClaimsCollection.#ctor">
+            <summary>
+            Initializes a new instance of <see cref="T:MyAuth.OAuthPoint.Client.Models.ClaimsCollection"/>
+            </summary>
+        </member>
+        <member name="M:MyAuth.OAuthPoint.Client.Models.ClaimsCollection.#ctor(System.Collections.Generic.IDictionary{System.String,MyAuth.OAuthPoint.Client.Models.ClaimValue})">
+            <summary>
+            Initializes a new instance of <see cref="T:MyAuth.OAuthPoint.Client.Models.ClaimsCollection"/>
+            </summary>
+        </member>
+        <member name="T:MyAuth.OAuthPoint.Client.Models.ClaimValue">
+            <summary>
+            Represent claim value
+            </summary>
+        </member>
+        <member name="P:MyAuth.OAuthPoint.Client.Models.ClaimValue.String">
+            <summary>
+            String value
+            </summary>
+        </member>
+        <member name="P:MyAuth.OAuthPoint.Client.Models.ClaimValue.Int">
+            <summary>
+            Int value
+            </summary>
+        </member>
+        <member name="P:MyAuth.OAuthPoint.Client.Models.ClaimValue.Double">
+            <summary>
+            Double value
+            </summary>
+        </member>
+        <member name="P:MyAuth.OAuthPoint.Client.Models.ClaimValue.Object">
+            <summary>
+            Json object value
+            </summary>
+        </member>
+        <member name="P:MyAuth.OAuthPoint.Client.Models.ClaimValue.Bool">
+            <summary>
+            Bool object value
+            </summary>
+        </member>
+        <member name="P:MyAuth.OAuthPoint.Client.Models.ClaimValue.DateTime">
+            <summary>
+            DateTime object value
+            </summary>
+        </member>
+        <member name="M:MyAuth.OAuthPoint.Client.Models.ClaimValue.#ctor(System.DateTime)">
+            <summary>
+            Initializes a new instance of <see cref="T:MyAuth.OAuthPoint.Client.Models.ClaimValue"/>
+            </summary>
+        </member>
+        <member name="M:MyAuth.OAuthPoint.Client.Models.ClaimValue.#ctor(System.Boolean)">
+            <summary>
+            Initializes a new instance of <see cref="T:MyAuth.OAuthPoint.Client.Models.ClaimValue"/>
+            </summary>
+        </member>
+        <member name="M:MyAuth.OAuthPoint.Client.Models.ClaimValue.#ctor(System.Double)">
+            <summary>
+            Initializes a new instance of <see cref="T:MyAuth.OAuthPoint.Client.Models.ClaimValue"/>
+            </summary>
+        </member>
+        <member name="M:MyAuth.OAuthPoint.Client.Models.ClaimValue.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of <see cref="T:MyAuth.OAuthPoint.Client.Models.ClaimValue"/>
+            </summary>
+        </member>
+        <member name="M:MyAuth.OAuthPoint.Client.Models.ClaimValue.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of <see cref="T:MyAuth.OAuthPoint.Client.Models.ClaimValue"/>
+            </summary>
+        </member>
+        <member name="M:MyAuth.OAuthPoint.Client.Models.ClaimValue.#ctor(System.Object)">
+            <summary>
+            Initializes a new instance of <see cref="T:MyAuth.OAuthPoint.Client.Models.ClaimValue"/>
+            </summary>
+        </member>
+        <member name="M:MyAuth.OAuthPoint.Client.Models.ClaimValue.#ctor(Newtonsoft.Json.Linq.JObject)">
+            <summary>
+            Initializes a new instance of <see cref="T:MyAuth.OAuthPoint.Client.Models.ClaimValue"/>
+            </summary>
+        </member>
         <member name="T:MyAuth.OAuthPoint.Client.Models.LoginErrorRequest">
             <summary>
             Describes login process error
@@ -165,32 +250,17 @@
             Human readable description
             </summary>
         </member>
-        <member name="T:MyAuth.OAuthPoint.Client.Models.JsonClaimsCollection">
+        <member name="T:MyAuth.OAuthPoint.Client.Models.ScopeClaims">
             <summary>
-            Contains claims with json values
+            Contains scope claims with 
             </summary>
         </member>
-        <member name="M:MyAuth.OAuthPoint.Client.Models.JsonClaimsCollection.#ctor">
-            <summary>
-            Initializes a new instance of <see cref="T:MyAuth.OAuthPoint.Client.Models.JsonClaimsCollection"/>
-            </summary>
-        </member>
-        <member name="M:MyAuth.OAuthPoint.Client.Models.JsonClaimsCollection.#ctor(System.Collections.Generic.IDictionary{System.String,Newtonsoft.Json.Linq.JObject})">
-            <summary>
-            Initializes a new instance of <see cref="T:MyAuth.OAuthPoint.Client.Models.JsonClaimsCollection"/>
-            </summary>
-        </member>
-        <member name="T:MyAuth.OAuthPoint.Client.Models.JsonScope">
-            <summary>
-            Contains scope claims with json value
-            </summary>
-        </member>
-        <member name="P:MyAuth.OAuthPoint.Client.Models.JsonScope.Id">
+        <member name="P:MyAuth.OAuthPoint.Client.Models.ScopeClaims.Id">
             <summary>
             Scope identifier
             </summary>
         </member>
-        <member name="P:MyAuth.OAuthPoint.Client.Models.JsonScope.Claims">
+        <member name="P:MyAuth.OAuthPoint.Client.Models.ScopeClaims.Claims">
             <summary>
             Claims
             </summary>

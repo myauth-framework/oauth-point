@@ -15,7 +15,7 @@ namespace MyAuth.OAuthPoint.Models.DataContract
     public class LoginSuccessRequest
     {
         public string Subject { get; set; }
-        public JsonScope[] IdentityScopes { get; set; }
-        public JsonClaimsCollection AccessClaims { get; set; }
+        public ScopeClaims[] IdentityScopes { get; set; }
+        public ClaimsCollection AccessClaims { get; set; }
     }
 }

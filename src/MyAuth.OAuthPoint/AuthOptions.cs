@@ -10,5 +10,8 @@
         public string DefaultErrorEndpoint { get; set; }
 
         public string ClientPasswordSalt { get; set; }
+        public string TokenIssuer { get; set; }
+        public string TokenSecret { get; set; }
+        public int AccessTokenExpirySeconds{ get; set; }
     }
 }

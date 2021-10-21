@@ -17,10 +17,11 @@
   <ItemGroup>
     <Compile Include="..\MyAuth.OAuthPoint\LoginSessionCookieName.cs" Link="LoginSessionCookieName.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\AuthorizationRequestProcessingError.cs" Link="Models\AuthorizationRequestProcessingError.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\ClaimsCollection.cs" Link="Models\ClaimsCollection.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\ClaimValue.cs" Link="Models\ClaimValue.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\DataContract\LoginErrorRequest.cs" Link="Models\LoginErrorRequest.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\DataContract\LoginSuccessRequest.cs" Link="Models\LoginSuccessRequest.cs" />
-    <Compile Include="..\MyAuth.OAuthPoint\Models\JsonClaimsCollection.cs" Link="Models\JsonClaimsCollection.cs" />
-    <Compile Include="..\MyAuth.OAuthPoint\Models\JsonScope.cs" Link="Models\JsonScope.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\ScopeClaims.cs" Link="Models\ScopeClaims.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\TokenRequestProcessingError.cs" Link="Models\TokenRequestProcessingError.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Tools\EnumNameAttribute.cs" Link="Tools\EnumNameAttribute.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Tools\EnumNameJsonConverter.cs" Link="Tools\EnumNameJsonConverter.cs" />

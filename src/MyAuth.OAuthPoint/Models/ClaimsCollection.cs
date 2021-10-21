@@ -10,19 +10,19 @@ namespace MyAuth.OAuthPoint.Models
     /// <summary>
     /// Contains claims with json values
     /// </summary>
-    public class JsonClaimsCollection : Dictionary<string, JObject>
+    public class ClaimsCollection : Dictionary<string, ClaimValue>
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="JsonClaimsCollection"/>
+        /// Initializes a new instance of <see cref="ClaimsCollection"/>
         /// </summary>
-        public JsonClaimsCollection()
+        public ClaimsCollection()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="JsonClaimsCollection"/>
+        /// Initializes a new instance of <see cref="ClaimsCollection"/>
         /// </summary>
-        public JsonClaimsCollection(IDictionary<string, JObject> initial): base(initial)
+        public ClaimsCollection(IDictionary<string, ClaimValue> initial): base(initial)
         {
         }
     }

@@ -50,7 +50,7 @@ namespace MyAuth.OAuthPoint.Tools
                         new SubjectIdentityClaimDb
                         {
                             Name = c.Key,
-                            Value = ClaimValueToString(c.Value),
+                            Value = c.Value.ToString(),
                             ScopeId = sc.Id,
                             SubjectId = _succReq.Subject
                         }))
@@ -74,7 +74,7 @@ namespace MyAuth.OAuthPoint.Tools
                     new SubjectAccessClaimDb
                     {
                         Name = cl.Key,
-                        Value = ClaimValueToString(cl.Value),
+                        Value = cl.Value.ToString(),
                         SubjectId = _succReq.Subject
                     })
                 .ToArray();
@@ -94,6 +94,6 @@ namespace MyAuth.OAuthPoint.Tools
         }
 
 
-        string ClaimValueToString(JObject claimValue) => claimValue.ToString().Trim('\"');
+        //string ClaimValueToString(JObject claimValue) => claimValue.ToString().Trim('\"');
     }
 }
