@@ -10,13 +10,16 @@ namespace FuncTests
     {
         public async Task InitializeAsync(DataConnection dataConnection)
         {
-            await dataConnection.CreateTableAsync<LoginSessionDb>();
-            await dataConnection.CreateTableAsync<SessionScopeDb>();
-            await dataConnection.CreateTableAsync<SessionInitiationDb>();
-            await dataConnection.CreateTableAsync<ClaimDb>();
             await dataConnection.CreateTableAsync<ClientDb>();
-            await dataConnection.CreateTableAsync<ClientRedirectUriDb>();
-            await dataConnection.CreateTableAsync<ClientScopeDb>();
+            await dataConnection.CreateTableAsync<ClientAvailableUriDb>();
+            await dataConnection.CreateTableAsync<ClientAvailableScopeDb>();
+
+            await dataConnection.CreateTableAsync<SubjectDb>();
+            await dataConnection.CreateTableAsync<SubjectAccessClaimDb>();
+            await dataConnection.CreateTableAsync<SubjectAvailableScopeDb>();
+            await dataConnection.CreateTableAsync<SubjectIdentityClaimDb>();
+
+            await dataConnection.CreateTableAsync<LoginSessionDb>();
         }
     }
 }

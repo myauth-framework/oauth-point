@@ -98,24 +98,22 @@ namespace FuncTests
 
             var dataInitializer = new DataDbInitializer
             {
-                Clients = new[] { new ClientDb { Id = clientId, Name = "foo" } },
+                Clients = new[] { new ClientDb
+                {
+                    Id = clientId, 
+                    Name = "foo", 
+                    PasswordHash = TestTools.ClientPasswordHash
+                } },
                 LoginSessions = new[]
                 {
                     new LoginSessionDb
                     {
                         Id = sessionId, 
                         ClientId = clientId,
-                        Expiry = DateTime.MaxValue
-                    }
-                },
-                SessionInitiations = new[]
-                {
-                    new SessionInitiationDb
-                    {
+                        Expiry = DateTime.MaxValue,
                         ErrorCode = AuthorizationRequestProcessingError.InvalidRequestObject,
-                        ErrorDesription = "error",
+                        ErrorDesc = "error",
                         RedirectUri = redirectUri,
-                        SessionId = sessionId,
                         Scope = "no-mater-scope",
                     }
                 }
@@ -153,7 +151,8 @@ namespace FuncTests
                     new ClientDb
                     {
                         Id = clientId, 
-                        Name = "foo"
+                        Name = "foo",
+                        PasswordHash = TestTools.ClientPasswordHash
                     }
                 },
                 LoginSessions= new []
@@ -162,19 +161,11 @@ namespace FuncTests
                     {
                         Id = sessionId,
                         ClientId = clientId,
-                        LoginDt = DateTime.Now,
-                        Expiry = DateTime.MaxValue
-                    }
-                },
-                SessionInitiations = new[]
-                {
-                    new SessionInitiationDb
-                    {
+                        Expiry = DateTime.MaxValue,
                         RedirectUri = redirectUri,
-                        AuthorizationCode = authCode,
-                        CompleteDt = DateTime.Now,
+                        AuthCode = authCode,
+                        CompletedDt = DateTime.Now,
                         State = state,
-                        SessionId = sessionId,
                         Scope = "no-mater-scope"
                     }
                 }
@@ -212,7 +203,8 @@ namespace FuncTests
                     new ClientDb
                     {
                         Id = clientId,
-                        Name = "foo"
+                        Name = "foo",
+                        PasswordHash = TestTools.ClientPasswordHash
                     }
                 },
                 LoginSessions = new[]
@@ -221,19 +213,11 @@ namespace FuncTests
                     {
                         Id = sessionId,
                         ClientId = clientId,
-                        LoginDt = DateTime.Now,
-                        Expiry = DateTime.MaxValue
-                    }
-                },
-                SessionInitiations = new[]
-                {
-                    new SessionInitiationDb
-                    {
+                        Expiry = DateTime.MaxValue,
                         RedirectUri = redirectUri,
-                        AuthorizationCode = authCode,
-                        CompleteDt = DateTime.Now,
+                        AuthCode= authCode,
+                        CompletedDt = DateTime.Now,
                         State = state,
-                        SessionId = sessionId,
                         Scope = "no-mater-scope"
                     }
                 }

@@ -4,9 +4,11 @@
     {
         public string LoginEndpoint { get; set; }
 
-        public int LoginInitiationExpirySeconds { get; set; } = 60;
-        public int LoginSessionExpiryDays { get; set; } = 10;
+        public int LoginExpirySeconds { get; set; } = 60;
+        public int SessionExpiryDays { get; set; } = 10;
 
         public string DefaultErrorEndpoint { get; set; }
+
+        public string ClientPasswordSalt { get; set; }
     }
 }

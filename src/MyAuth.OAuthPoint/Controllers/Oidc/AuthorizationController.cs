@@ -5,9 +5,9 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyAuth.OAuthPoint.Models;
+using MyAuth.OAuthPoint.Models.DataContract;
 using MyAuth.OAuthPoint.Services;
 using MyAuth.OAuthPoint.Tools;
-using MyLab.Log;
 using MyLab.Log.Dsl;
 
 namespace MyAuth.OAuthPoint.Controllers.Oidc
@@ -16,18 +16,21 @@ namespace MyAuth.OAuthPoint.Controllers.Oidc
     [ApiController]
     public class AuthorizationController : ControllerBase
     {
-        private readonly ILoginService _loginService;
+        private readonly ISessionProvider _sessionProvider;
+        private readonly ISessionCreator _sessionCreator;
         private readonly AuthOptions _options;
         private readonly IDslLogger _log;
         private readonly AuthorizationRequestValidator _reqValidator;
 
         public AuthorizationController(
-            ILoginService loginService, 
+            ISessionProvider sessionProvider, 
+            ISessionCreator sessionCreator,
             IOptions<AuthOptions> options, 
             ILogger<AuthorizationController> logger,
             IStringLocalizer<AuthorizationController> localizer)
         {
-            _loginService = loginService;
+            _sessionProvider = sessionProvider;
+            _sessionCreator = sessionCreator;
             _options = options.Value;
             _log = logger.Dsl();
             _reqValidator = new AuthorizationRequestValidator(localizer);
@@ -42,44 +45,38 @@ namespace MyAuth.OAuthPoint.Controllers.Oidc
 
                 if (LoginSessionCookie.TryLoad(Request, out var authCookie))
                 {
-                    LoginSession lSession = null;
-                    
-                    try
+                    var foundSess = await _sessionProvider.ProvideOAuth2DetailsAsync(authCookie.SessionId, true);
+
+                    if (foundSess == null)
                     {
-                        lSession = await _loginService.GetActiveLoginSessionAsync(authCookie.SessionId);
-                    }
-                    catch (Exception e) when(e is LoginSessionNotFoundException || e is LoginSessionExpiredException)
-                    {
-                        _log.Warning("Active session not found by cookie")
+                        _log.Debug("Active session not found by cookie")
                             .AndFactIs("session-id", authCookie.SessionId)
                             .AndFactIs("request", request)
-                            .AndFactIs("error", ExceptionDto.Create(e))
                             .Write();
                     }
-
-                    if (lSession != null)
+                    else
                     {
-                        if (lSession.ClientId == request.ClientId &&
-                            lSession.InitDetails.RedirectUri == request.RedirectUri &&
-                            lSession.InitDetails.Scope == request.Scope)
-                        {
-                            return UrlRedirector.RedirectSuccessCallback(lSession.InitDetails.RedirectUri,
-                                lSession.InitDetails.AuthorizationCode, lSession.InitDetails.State);
-                        }
-                        else
+                        if (foundSess.ClientId != request.ClientId ||
+                            foundSess.RedirectUri != request.RedirectUri ||
+                            foundSess.Scope != request.Scope)
                         {
                             _log.Warning("Session found by cookie but parameters mismatch")
                                 .AndFactIs("session-id", authCookie.SessionId)
                                 .AndFactIs("request", request)
-                                .AndFactIs("stored-client-id", lSession.ClientId)
-                                .AndFactIs("stored-redirect-uri", lSession.InitDetails.RedirectUri)
-                                .AndFactIs("stored-scope", lSession.InitDetails.Scope)
+                                .AndFactIs("stored-client-id", foundSess.ClientId)
+                                .AndFactIs("stored-redirect-uri", foundSess.RedirectUri)
+                                .AndFactIs("stored-scope", foundSess.Scope)
                                 .Write();
+                        }
+                        else
+                        {
+                            return UrlRedirector.RedirectSuccessCallback(foundSess.RedirectUri,
+                                foundSess.AuthorizationCode, foundSess.State);
                         }
                     }
                 }
 
-                var loginId = await _loginService.CreateLoginSessionAsync(request);
+                var loginId = await _sessionCreator.CreateLoginSessionAsync(request);
 
                 return UrlRedirector.RedirectToLogin(_options.LoginEndpoint, loginId);
             }

@@ -216,19 +216,19 @@ namespace FuncTests
             dataInitializer.Clients = new[]
             {
                 dataInitializer.Clients.First(),
-                new ClientDb {Id = client2Id, Name = "bar"}
+                new ClientDb {Id = client2Id, Name = "bar", PasswordHash = TestTools.ClientPasswordHash}
             };
 
             dataInitializer.ClientScopes = new []
             {
                 dataInitializer.ClientScopes.First(),
-                new ClientScopeDb{ClientId = client2Id, ScopeName = "testscope"}, 
+                new ClientAvailableScopeDb{ClientId = client2Id, Name = "testscope"}, 
             };
 
             dataInitializer.ClientRedirectUris = new[]
             {
                 dataInitializer.ClientRedirectUris.First(),
-                new ClientRedirectUriDb {ClientId = client2Id, Uri = redirectUri},
+                new ClientAvailableUriDb() {ClientId = client2Id, Uri = redirectUri},
             };
 
             var db = await _dbFixture.CreateDbAsync(dataInitializer);
@@ -263,8 +263,8 @@ namespace FuncTests
 
             dataInitializer.ClientRedirectUris = new []
             {
-                new ClientRedirectUriDb{ClientId = clientId, Uri = redirectUri},
-                new ClientRedirectUriDb{ClientId = clientId, Uri = redirectUri2},
+                new ClientAvailableUriDb{ClientId = clientId, Uri = redirectUri},
+                new ClientAvailableUriDb{ClientId = clientId, Uri = redirectUri2},
             };
 
             var db = await _dbFixture.CreateDbAsync(dataInitializer);
@@ -300,7 +300,7 @@ namespace FuncTests
             dataInitializer.ClientScopes = new[]
             {
                 dataInitializer.ClientScopes.First(),
-                new ClientScopeDb {ClientId = clientId, ScopeName = scopes2},
+                new ClientAvailableScopeDb{ClientId = clientId, Name = scopes2},
             };
 
             var db = await _dbFixture.CreateDbAsync(dataInitializer);

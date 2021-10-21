@@ -3,12 +3,25 @@ using System.Collections.Specialized;
 using System.Net;
 using System.Web;
 using MyAuth.OAuthPoint.Db;
+using MyAuth.OAuthPoint.Tools;
 using MyLab.ApiClient.Test;
 
 namespace FuncTests
 {
     static class TestTools
     {
+        public static string ClientPasswordHash { get; }
+
+        public static string ClientPassword { get; }
+
+        static TestTools()
+        {
+            var passCalculator = new PasswordHashCalculator("salt");
+
+            ClientPassword = "password";
+            ClientPasswordHash = passCalculator.CalcHexPasswordMd5(ClientPassword);
+        }
+
         public static void TryExtractRedirect(
             TestCallDetails resp,
             out string locationLeftPart,
@@ -38,22 +51,15 @@ namespace FuncTests
 
             return new DataDbInitializer
             {
-                Clients = new[] { new ClientDb { Id = clientId, Name = "foo" } },
+                Clients = new[] { new ClientDb { Id = clientId, Name = "foo", PasswordHash = TestTools.ClientPasswordHash } },
                 LoginSessions = new[]
                 {
                     new LoginSessionDb
                     {
                         Id = sessionId,
                         ClientId = clientId,
-                        Expiry = DateTime.MinValue
-                    }
-                },
-                SessionInitiations = new[]
-                {
-                    new SessionInitiationDb
-                    {
+                        Expiry = DateTime.MinValue,
                         RedirectUri = redirectUri,
-                        SessionId = sessionId,
                         Scope = "no-mater-scope"
                     }
                 }

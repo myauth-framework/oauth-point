@@ -6,7 +6,6 @@ using Microsoft.Extensions.Options;
 using MyAuth.OAuthPoint.Models;
 using MyAuth.OAuthPoint.Services;
 using MyAuth.OAuthPoint.Tools;
-using MyLab.Log;
 using MyLab.WebErrors;
 
 namespace MyAuth.OAuthPoint.Controllers.Api
@@ -15,42 +14,41 @@ namespace MyAuth.OAuthPoint.Controllers.Api
     [ApiController]
     public class AuthorizationCallbackController : ControllerBase
     {
-        private readonly ILoginService _loginService;
+        private readonly ISessionProvider _sessionProvider;
         private readonly AuthOptions _options;
 
         public AuthorizationCallbackController(
-            ILoginService loginService, 
+            ISessionProvider sessionProvider, 
             IOptions<AuthOptions> options)
         {
-            _loginService = loginService;
+            _sessionProvider = sessionProvider;
             _options = options.Value;
         }
 
         [HttpGet]
         [ErrorToResponse(typeof(LoginSessionNotFoundException), HttpStatusCode.NotFound)]
         [ErrorToResponse(typeof(LoginSessionExpiredException), HttpStatusCode.NotFound)]
-        public async Task<IActionResult> Get([FromQuery(Name = "login_session_id")] string loginId)
+        public async Task<IActionResult> Get([FromQuery(Name = "login_session_id")] string sessId)
         {
-            var lSession = await _loginService.GetLoginSessionAsync(loginId);
+            var foundSess = await _sessionProvider.ProvideOAuth2DetailsAsync(sessId);
 
-            var sessState = lSession.InitDetails;
-
-            if (sessState.Error != null && sessState.Error.Error != AuthorizationRequestProcessingError.Undefined)
+            if (foundSess == null)
             {
-                return UrlRedirector.RedirectError(sessState.RedirectUri, sessState.Error.Error, sessState.Error.Description, sessState.State);
+                return NotFound("Login session not found");
             }
 
-            if (lSession.Expiry < DateTime.Now)
-                throw new LoginSessionExpiredException()
-                    .AndFactIs("session-id", loginId);
-
-            var authCookie = new LoginSessionCookie(loginId)
+            if (foundSess.ErrorCode != AuthorizationRequestProcessingError.Undefined)
             {
-                Expiry = TimeSpan.FromDays(_options.LoginSessionExpiryDays)
+                return UrlRedirector.RedirectError(foundSess.RedirectUri, foundSess.ErrorCode, foundSess.ErrorDescription, foundSess.State);
+            }
+
+            var authCookie = new LoginSessionCookie(sessId)
+            {
+                Expiry = TimeSpan.FromDays(_options.SessionExpiryDays)
             };
             authCookie.Save(Response);
 
-            return UrlRedirector.RedirectSuccessCallback(sessState.RedirectUri, sessState.AuthorizationCode, sessState.State);
+            return UrlRedirector.RedirectSuccessCallback(foundSess.RedirectUri, foundSess.AuthorizationCode, foundSess.State);
         }
     }
 }

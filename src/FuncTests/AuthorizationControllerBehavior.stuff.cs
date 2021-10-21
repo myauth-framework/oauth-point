@@ -67,7 +67,7 @@ namespace FuncTests
 
             dataInitializer.ClientRedirectUris = new[]
             {
-                new ClientRedirectUriDb
+                new ClientAvailableUriDb
                 {
                     ClientId = clientId,
                     Uri = redirectUri
@@ -81,18 +81,10 @@ namespace FuncTests
                     ClientId = clientId,
                     Id = sessionId,
                     Expiry = DateTime.MaxValue,
-                    LoginDt = DateTime.Now.AddMinutes(-1)
-                }
-            };
-
-            dataInitializer.SessionInitiations = new[]
-            {
-                new SessionInitiationDb
-                {
-                    SessionId = sessionId,
                     Scope = scopes,
                     RedirectUri = redirectUri,
-                    AuthorizationCode = authCode,
+                    AuthCode= authCode,
+                    Completed = MySqlBool.True
                 }
             };
 

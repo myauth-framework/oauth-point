@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.Localization;
 using MyAuth.OAuthPoint.Models;
+using MyAuth.OAuthPoint.Models.DataContract;
 using MyLab.Log;
 
 namespace MyAuth.OAuthPoint.Tools

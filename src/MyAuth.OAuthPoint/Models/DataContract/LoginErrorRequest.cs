@@ -1,21 +1,26 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 #if MYAUTH_CLIENT
+
+using MyAuth.OAuthPoint.Client.Tools;
+
 namespace MyAuth.OAuthPoint.Client.Models
 #else
-namespace MyAuth.OAuthPoint.Models 
+
+using MyAuth.OAuthPoint.Tools;
+
+namespace MyAuth.OAuthPoint.Models.DataContract 
 #endif
 {
     /// <summary>
     /// Describes login process error
     /// </summary>
-    public class LoginError
+    public class LoginErrorRequest
     {
         /// <summary>
         /// OpenID Connect authorization error code
         /// </summary>
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonConverter(typeof(EnumNameJsonConverter))]
         public AuthorizationRequestProcessingError AuthError { get; set; }
         /// <summary>
         /// Human readable description

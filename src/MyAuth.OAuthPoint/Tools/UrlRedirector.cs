@@ -17,7 +17,7 @@ namespace MyAuth.OAuthPoint.Tools
 
             var query = new NameValueCollection
             {
-                {"error", EnumNameAttribute.GetName(error)}, 
+                {"error", EnumNameTools.GetName(error)}, 
                 {"error_description", errorDescription}
             };
 

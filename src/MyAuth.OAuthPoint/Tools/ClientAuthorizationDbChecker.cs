@@ -45,9 +45,9 @@ namespace MyAuth.OAuthPoint.Tools
                 .Select(s => s.Trim())
                 .ToArray();
 
-            var allowed = await _dc.Tab<ClientScopeDb>()
-                .Where(s => s.ClientId == _clientId && scopes.Contains(s.ScopeName))
-                .Select(s => s.ScopeName)
+            var allowed = await _dc.Tab<ClientAvailableScopeDb>()
+                .Where(s => s.ClientId == _clientId && scopes.Contains(s.Name))
+                .Select(s => s.Name)
                 .ToArrayAsync();
 
             var disallowed = scopes
@@ -66,7 +66,7 @@ namespace MyAuth.OAuthPoint.Tools
 
         public async Task CheckRedirectUri(string redirectUri)
         {
-            bool found = await _dc.Tab<ClientRedirectUriDb>()
+            bool found = await _dc.Tab<ClientAvailableUriDb>()
                 .AnyAsync(u => u.ClientId == _clientId && u.Uri == redirectUri);
 
             if (!found)

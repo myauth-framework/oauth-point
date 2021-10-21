@@ -23,7 +23,10 @@ namespace MyAuth.OAuthPoint
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers().AddNewtonsoftJson();
-            services.AddSingleton<ILoginService, LoginService>()
+            services
+                .AddSingleton<ISessionCreator, SessionCreator>()
+                .AddSingleton<ISessionProvider, SessionProvider>()
+                .AddSingleton<ISessionCompleter, SessionCompleter>()
                 .AddDbTools(Configuration, new MySqlDataProvider(ProviderName.MySql))
                 .AddLocalization(lo => lo.ResourcesPath = "Resources");
 

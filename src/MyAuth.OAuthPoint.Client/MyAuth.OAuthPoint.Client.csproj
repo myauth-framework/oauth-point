@@ -16,19 +16,23 @@
 
   <ItemGroup>
     <Compile Include="..\MyAuth.OAuthPoint\LoginSessionCookieName.cs" Link="LoginSessionCookieName.cs" />
-    <Compile Include="..\MyAuth.OAuthPoint\Models\AddressClaim.cs" Link="Models\AddressClaim.cs" />
-    <Compile Include="..\MyAuth.OAuthPoint\Models\AddressScopeClaims.cs" Link="Models\AddressScopeClaims.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\AuthorizationRequestProcessingError.cs" Link="Models\AuthorizationRequestProcessingError.cs" />
-    <Compile Include="..\MyAuth.OAuthPoint\Models\CustomScopeClaims.cs" Link="Models\CustomScopeClaims.cs" />
-    <Compile Include="..\MyAuth.OAuthPoint\Models\EmailScopeClaims.cs" Link="Models\EmailScopeClaims.cs" />
-    <Compile Include="..\MyAuth.OAuthPoint\Models\LoginError.cs" Link="Models\LoginError.cs" />
-    <Compile Include="..\MyAuth.OAuthPoint\Models\PhoneScopeClaims.cs" Link="Models\PhoneScopeClaims.cs" />
-    <Compile Include="..\MyAuth.OAuthPoint\Models\ProfileScopeClaims.cs" Link="Models\ProfileScopeClaims.cs" />
-    <Compile Include="..\MyAuth.OAuthPoint\Models\ScopeClaims.cs" Link="Models\ScopeClaims.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\DataContract\LoginErrorRequest.cs" Link="Models\LoginErrorRequest.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\DataContract\LoginSuccessRequest.cs" Link="Models\LoginSuccessRequest.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\JsonClaimsCollection.cs" Link="Models\JsonClaimsCollection.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\JsonScope.cs" Link="Models\JsonScope.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\TokenRequestProcessingError.cs" Link="Models\TokenRequestProcessingError.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Tools\EnumNameAttribute.cs" Link="Tools\EnumNameAttribute.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Tools\EnumNameJsonConverter.cs" Link="Tools\EnumNameJsonConverter.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Tools\EnumNameTools.cs" Link="Tools\EnumNameTools.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="MyLab.ApiClient" Version="3.9.22" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Tools\" />
   </ItemGroup>
 
 </Project>

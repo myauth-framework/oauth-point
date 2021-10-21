@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace MyAuth.OAuthPoint.Models
+namespace MyAuth.OAuthPoint.Models.DataContract
 {
     public class AuthorizationRequest
     {

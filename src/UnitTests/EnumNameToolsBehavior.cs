@@ -8,7 +8,7 @@ using Xunit;
 
 namespace UnitTests
 {
-    public class EnumNameAttributeBehavior
+    public class EnumNameToolsBehavior
     {
         [Fact]
         public void ShouldProvideOverridenName()
@@ -17,7 +17,7 @@ namespace UnitTests
             
 
             //Act
-            var overridenName = EnumNameAttribute.GetName(TestEnum.Val1);
+            var overridenName = EnumNameTools.GetName(TestEnum.Val1);
             
             //Assert
             Assert.Equal("foo", overridenName);
@@ -30,7 +30,7 @@ namespace UnitTests
 
 
             //Act
-            var overridenName = EnumNameAttribute.GetName(TestEnum.Val2);
+            var overridenName = EnumNameTools.GetName(TestEnum.Val2);
 
             //Assert
             Assert.Equal("Val2", overridenName);

@@ -25,33 +25,37 @@ namespace MyAuth.OAuthPoint.Db
 	public partial class MyAuthOAuthPointDb : LinqToDB.Data.DataConnection
 	{
 		/// <summary>
-		/// Session scope claims
+		/// Client available scopes
 		/// </summary>
-		public ITable<ClaimDb>             Claims             { get { return this.GetTable<ClaimDb>(); } }
+		public ITable<ClientAvailableScopeDb>  ClientAvailableScopes  { get { return this.GetTable<ClientAvailableScopeDb>(); } }
+		/// <summary>
+		/// Available redirect URI for client
+		/// </summary>
+		public ITable<ClientAvailableUriDb>    ClientAvailableUris    { get { return this.GetTable<ClientAvailableUriDb>(); } }
 		/// <summary>
 		/// Registered clients
 		/// </summary>
-		public ITable<ClientDb>            Clients            { get { return this.GetTable<ClientDb>(); } }
+		public ITable<ClientDb>                Clients                { get { return this.GetTable<ClientDb>(); } }
 		/// <summary>
-		/// Alowed client redirect URIs
+		/// Login sessions
 		/// </summary>
-		public ITable<ClientRedirectUriDb> ClientRedirectUris { get { return this.GetTable<ClientRedirectUriDb>(); } }
+		public ITable<LoginSessionDb>          LoginSessions          { get { return this.GetTable<LoginSessionDb>(); } }
 		/// <summary>
-		/// Scopes allowed for client
+		/// Additional subject claims for access token
 		/// </summary>
-		public ITable<ClientScopeDb>       ClientScopes       { get { return this.GetTable<ClientScopeDb>(); } }
+		public ITable<SubjectAccessClaimDb>    SubjectAccessClaims    { get { return this.GetTable<SubjectAccessClaimDb>(); } }
 		/// <summary>
-		/// Contains login sessions
+		/// Subject available scopes
 		/// </summary>
-		public ITable<LoginSessionDb>      LoginSessions      { get { return this.GetTable<LoginSessionDb>(); } }
+		public ITable<SubjectAvailableScopeDb> SubjectAvailableScopes { get { return this.GetTable<SubjectAvailableScopeDb>(); } }
 		/// <summary>
-		/// Info about session initiation
+		/// Subjects
 		/// </summary>
-		public ITable<SessionInitiationDb> SessionInitiations { get { return this.GetTable<SessionInitiationDb>(); } }
+		public ITable<SubjectDb>               Subjects               { get { return this.GetTable<SubjectDb>(); } }
 		/// <summary>
-		/// Scopes which related to sessions
+		/// Subject claims for identity
 		/// </summary>
-		public ITable<SessionScopeDb>      SessionScopes      { get { return this.GetTable<SessionScopeDb>(); } }
+		public ITable<SubjectIdentityClaimDb>  SubjectIdentityClaims  { get { return this.GetTable<SubjectIdentityClaimDb>(); } }
 
 		public MyAuthOAuthPointDb()
 		{
@@ -85,32 +89,61 @@ namespace MyAuth.OAuthPoint.Db
 	}
 
 	/// <summary>
-	/// Session scope claims
+	/// Client available scopes
 	/// </summary>
-	[Table("claims")]
-	public partial class ClaimDb
+	[Table("client_available_scopes")]
+	public partial class ClientAvailableScopeDb
 	{
 		/// <summary>
-		/// Claim identifier
+		/// Row identifier
 		/// </summary>
-		[Column("id"),            PrimaryKey, Identity] public int    Id           { get; set; } // int
-		[Column("session_scope"), NotNull             ] public int    SessionScope { get; set; } // int
+		[Column("id"),        PrimaryKey, Identity] public int    Id       { get; set; } // int
 		/// <summary>
-		/// Claim name
+		/// Scope name
 		/// </summary>
-		[Column("name"),          NotNull             ] public string Name         { get; set; } // varchar(50)
+		[Column("name"),      NotNull             ] public string Name     { get; set; } // varchar(50)
 		/// <summary>
-		/// CLaim value
+		/// Client identifier
 		/// </summary>
-		[Column("value"),         NotNull             ] public string Value        { get; set; } // varchar(1024)
+		[Column("client_id"), NotNull             ] public string ClientId { get; set; } // char(32)
 
 		#region Associations
 
 		/// <summary>
-		/// FK_Claim_To_SessionScope
+		/// ClientAvailableScopesToClient
 		/// </summary>
-		[Association(ThisKey="SessionScope", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="FK_Claim_To_SessionScope", BackReferenceName="ClaimToSessionScopes")]
-		public SessionScopeDb ClaimToSessionScope { get; set; }
+		[Association(ThisKey="ClientId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="ClientAvailableScopesToClient", BackReferenceName="ClientAvailableScopesToClients")]
+		public ClientDb Client { get; set; }
+
+		#endregion
+	}
+
+	/// <summary>
+	/// Available redirect URI for client
+	/// </summary>
+	[Table("client_available_uri")]
+	public partial class ClientAvailableUriDb
+	{
+		/// <summary>
+		/// Row identifier
+		/// </summary>
+		[Column("id"),        PrimaryKey, Identity] public int    Id       { get; set; } // int
+		/// <summary>
+		/// URI
+		/// </summary>
+		[Column("uri"),       NotNull             ] public string Uri      { get; set; } // varchar(250)
+		/// <summary>
+		/// Client identifier
+		/// </summary>
+		[Column("client_id"), NotNull             ] public string ClientId { get; set; } // char(32)
+
+		#region Associations
+
+		/// <summary>
+		/// ClientAvailableUriToClient
+		/// </summary>
+		[Association(ThisKey="ClientId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="ClientAvailableUriToClient", BackReferenceName="ClientAvailableUriToClients")]
+		public ClientDb Client { get; set; }
 
 		#endregion
 	}
@@ -122,233 +155,296 @@ namespace MyAuth.OAuthPoint.Db
 	public partial class ClientDb
 	{
 		/// <summary>
-		/// Client identifier (Guid)
+		/// Client identifier (GUID)
 		/// </summary>
-		[Column("id"),      PrimaryKey,  NotNull] public string Id      { get; set; } // char(32)
+		[Column("id"),            PrimaryKey,  NotNull] public string                         Id           { get; set; } // char(32)
 		/// <summary>
 		/// Name
 		/// </summary>
-		[Column("name"),                 NotNull] public string Name    { get; set; } // varchar(50)
+		[Column("name"),                       NotNull] public string                         Name         { get; set; } // varchar(50)
 		/// <summary>
-		/// Is enabled
+		/// HEX HMAC-MD5 hash with salt
 		/// </summary>
-		[Column("enabled"),              NotNull] public char   Enabled { get; set; } // enum('Y','N')
+		[Column("password_hash"),              NotNull] public string                         PasswordHash { get; set; } // char(32)
 		/// <summary>
-		/// Is deleted
+		/// Indicated client enabled
 		/// </summary>
-		[Column("deleted"),    Nullable         ] public char?  Deleted { get; set; } // enum('Y','N')
+		[Column("enabled"),                    NotNull] public MyAuth.OAuthPoint.Db.MySqlBool Enabled      { get; set; } // enum('Y','N')
+		/// <summary>
+		/// &apos;enabled&apos; flag actuallity date time
+		/// </summary>
+		[Column("enabled_dt"),       Nullable         ] public DateTime?                      EnabledDt    { get; set; } // datetime
 
 		#region Associations
 
 		/// <summary>
-		/// RedirectUriToClient_BackReference
+		/// ClientAvailableScopesToClient_BackReference
 		/// </summary>
 		[Association(ThisKey="Id", OtherKey="ClientId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
-		public IEnumerable<ClientRedirectUriDb> RedirectUriToClients { get; set; }
+		public IEnumerable<ClientAvailableScopeDb> ClientAvailableScopesToClients { get; set; }
 
 		/// <summary>
-		/// ScopesToClient_BackReference
+		/// ClientAvailableUriToClient_BackReference
 		/// </summary>
 		[Association(ThisKey="Id", OtherKey="ClientId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
-		public IEnumerable<ClientScopeDb> ScopesToClients { get; set; }
+		public IEnumerable<ClientAvailableUriDb> ClientAvailableUriToClients { get; set; }
+
+		/// <summary>
+		/// LoginSessionToClient_BackReference
+		/// </summary>
+		[Association(ThisKey="Id", OtherKey="ClientId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
+		public IEnumerable<LoginSessionDb> LoginSessionToClients { get; set; }
 
 		#endregion
 	}
 
 	/// <summary>
-	/// Alowed client redirect URIs
-	/// </summary>
-	[Table("client_redirect_uri")]
-	public partial class ClientRedirectUriDb
-	{
-		/// <summary>
-		/// Row identifier
-		/// </summary>
-		[Column("id"),        PrimaryKey, Identity] public int    Id       { get; set; } // int
-		/// <summary>
-		/// Client identifier
-		/// </summary>
-		[Column("client_id"), NotNull             ] public string ClientId { get; set; } // char(32)
-		/// <summary>
-		/// URI value
-		/// </summary>
-		[Column("uri"),       NotNull             ] public string Uri      { get; set; } // varchar(2048)
-
-		#region Associations
-
-		/// <summary>
-		/// RedirectUriToClient
-		/// </summary>
-		[Association(ThisKey="ClientId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="RedirectUriToClient", BackReferenceName="RedirectUriToClients")]
-		public ClientDb Client { get; set; }
-
-		#endregion
-	}
-
-	/// <summary>
-	/// Scopes allowed for client
-	/// </summary>
-	[Table("client_scopes")]
-	public partial class ClientScopeDb
-	{
-		/// <summary>
-		/// Row identifier
-		/// </summary>
-		[Column("id"),         PrimaryKey, Identity] public int    Id        { get; set; } // int
-		/// <summary>
-		/// Client identifier
-		/// </summary>
-		[Column("client_id"),  NotNull             ] public string ClientId  { get; set; } // char(32)
-		/// <summary>
-		/// Scope name
-		/// </summary>
-		[Column("scope_name"), NotNull             ] public string ScopeName { get; set; } // varchar(50)
-
-		#region Associations
-
-		/// <summary>
-		/// ScopesToClient
-		/// </summary>
-		[Association(ThisKey="ClientId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="ScopesToClient", BackReferenceName="ScopesToClients")]
-		public ClientDb Client { get; set; }
-
-		#endregion
-	}
-
-	/// <summary>
-	/// Contains login sessions
+	/// Login sessions
 	/// </summary>
 	[Table("login_sessions")]
 	public partial class LoginSessionDb
 	{
 		/// <summary>
-		/// Session identifier (GUID)
+		/// Login session identifier (GUID)
 		/// </summary>
-		[Column("id"),        PrimaryKey,  NotNull] public string    Id       { get; set; } // char(32)
+		[Column("id"),               PrimaryKey,  NotNull] public string                                                       Id             { get; set; } // char(32)
 		/// <summary>
-		/// Expiration time
+		/// Client identifier
 		/// </summary>
-		[Column("expiry"),                 NotNull] public DateTime  Expiry   { get; set; } // datetime
+		[Column("client_id"),                     NotNull] public string                                                       ClientId       { get; set; } // char(32)
 		/// <summary>
-		/// Client identifier (GUID)
+		/// Request &apos;redirect_uri&apos;
 		/// </summary>
-		[Column("client_id"),              NotNull] public string    ClientId { get; set; } // char(32)
+		[Column("redirect_uri"),                  NotNull] public string                                                       RedirectUri    { get; set; } // varchar(250)
 		/// <summary>
-		/// When subject authorized successfully
+		/// Request &apos;scope&apos;
 		/// </summary>
-		[Column("login_dt"),     Nullable         ] public DateTime? LoginDt  { get; set; } // datetime
+		[Column("scope"),                         NotNull] public string                                                       Scope          { get; set; } // varchar(250)
+		/// <summary>
+		/// Request &apos;state&apos;
+		/// </summary>
+		[Column("state"),               Nullable         ] public string                                                       State          { get; set; } // varchar(250)
+		/// <summary>
+		/// Createion date time
+		/// </summary>
+		[Column("create_dt"),                     NotNull] public DateTime                                                     CreateDt       { get; set; } // datetime
+		/// <summary>
+		/// Authorization error string code
+		/// </summary>
+		[Column("error_code"),          Nullable         ] public MyAuth.OAuthPoint.Models.AuthorizationRequestProcessingError ErrorCode      { get; set; } // varchar(50)
+		/// <summary>
+		/// Authorization error description
+		/// </summary>
+		[Column("error_desc"),          Nullable         ] public string                                                       ErrorDesc      { get; set; } // varchar(250)
 		/// <summary>
 		/// Authorized subject identifier
 		/// </summary>
-		[Column("subject"),      Nullable         ] public string    Subject  { get; set; } // varchar(50)
+		[Column("subject_id"),          Nullable         ] public string                                                       SubjectId      { get; set; } // varchar(50)
+		/// <summary>
+		/// Session expirration date time
+		/// </summary>
+		[Column("expiry"),                        NotNull] public DateTime                                                     Expiry         { get; set; } // datetime
+		/// <summary>
+		/// Authorization code
+		/// </summary>
+		[Column("auth_code"),           Nullable         ] public string                                                       AuthCode       { get; set; } // char(32)
+		/// <summary>
+		/// Authorization code expiration date time
+		/// </summary>
+		[Column("auth_code_expiry"),    Nullable         ] public DateTime?                                                    AuthCodeExpiry { get; set; } // datetime
+		/// <summary>
+		/// Indicates that authorixation code already used
+		/// </summary>
+		[Column("auth_code_used"),      Nullable         ] public MyAuth.OAuthPoint.Db.MySqlBool                               AuthCodeUsed   { get; set; } // enum('Y','N')
+		/// <summary>
+		/// Login completion expiration date time
+		/// </summary>
+		[Column("login_expiry"),                  NotNull] public DateTime                                                     LoginExpiry    { get; set; } // datetime
+		/// <summary>
+		/// Indicates that session logon or error
+		/// </summary>
+		[Column("completed"),           Nullable         ] public MyAuth.OAuthPoint.Db.MySqlBool                               Completed      { get; set; } // enum('Y','N')
+		/// <summary>
+		/// &apos;completed&apos; field actuallity date time
+		/// </summary>
+		[Column("completed_dt"),        Nullable         ] public DateTime?                                                    CompletedDt    { get; set; } // datetime
 
 		#region Associations
 
 		/// <summary>
-		/// FK_Initiation_To_Session_BackReference
+		/// LoginSessionToClient
 		/// </summary>
-		[Association(ThisKey="Id", OtherKey="SessionId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToOne, IsBackReference=true)]
-		public SessionInitiationDb InitiationToSession { get; set; }
+		[Association(ThisKey="ClientId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="LoginSessionToClient", BackReferenceName="LoginSessionToClients")]
+		public ClientDb Client { get; set; }
 
 		/// <summary>
-		/// FK_SessScope_To_Session_BackReference
+		/// LoginSessionToSubject
 		/// </summary>
-		[Association(ThisKey="Id", OtherKey="SessionId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
-		public IEnumerable<SessionScopeDb> SessScopeToSessions { get; set; }
+		[Association(ThisKey="SubjectId", OtherKey="Id", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="LoginSessionToSubject", BackReferenceName="LoginSessionToSubjects")]
+		public SubjectDb Subject { get; set; }
 
 		#endregion
 	}
 
 	/// <summary>
-	/// Info about session initiation
+	/// Additional subject claims for access token
 	/// </summary>
-	[Table("session_initiations")]
-	public partial class SessionInitiationDb
+	[Table("subject_access_claims")]
+	public partial class SubjectAccessClaimDb
 	{
 		/// <summary>
-		/// Session identifier (GUID)
+		/// Row id
 		/// </summary>
-		[Column("session_id"),         PrimaryKey,  NotNull] public string                                                       SessionId         { get; set; } // char(32)
-		/// <summary>
-		/// Redirect URI from request
-		/// </summary>
-		[Column("redirect_uri"),                    NotNull] public string                                                       RedirectUri       { get; set; } // varchar(2048)
-		/// <summary>
-		/// Statefrom request
-		/// </summary>
-		[Column("state"),                 Nullable         ] public string                                                       State             { get; set; } // varchar(512)
-		/// <summary>
-		/// Issued authorization code (GUID)
-		/// </summary>
-		[Column("authorization_code"),    Nullable         ] public string                                                       AuthorizationCode { get; set; } // char(32)
-		/// <summary>
-		/// Error code (from specification)  https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.2.1
-		/// </summary>
-		[Column("error_code"),            Nullable         ] public MyAuth.OAuthPoint.Models.AuthorizationRequestProcessingError ErrorCode         { get; set; } // varchar(50)
-		/// <summary>
-		/// Error description
-		/// </summary>
-		[Column("error_desription"),      Nullable         ] public string                                                       ErrorDesription   { get; set; } // varchar(1024)
-		/// <summary>
-		/// When initiation was completed
-		/// </summary>
-		[Column("complete_dt"),           Nullable         ] public DateTime?                                                    CompleteDt        { get; set; } // datetime
-		/// <summary>
-		/// Request scope list (space separated)
-		/// </summary>
-		[Column("scope"),                           NotNull] public string                                                       Scope             { get; set; } // varchar(256)
-
-		#region Associations
-
-		/// <summary>
-		/// FK_Initiation_To_Session
-		/// </summary>
-		[Association(ThisKey="SessionId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.OneToOne, KeyName="FK_Initiation_To_Session", BackReferenceName="InitiationToSession")]
-		public LoginSessionDb Session { get; set; }
-
-		#endregion
-	}
-
-	/// <summary>
-	/// Scopes which related to sessions
-	/// </summary>
-	[Table("session_scopes")]
-	public partial class SessionScopeDb
-	{
 		[Column("id"),         PrimaryKey, Identity] public int    Id        { get; set; } // int
 		/// <summary>
-		/// Session identifier (GUID)
+		/// Name
 		/// </summary>
-		[Column("session_id"), NotNull             ] public string SessionId { get; set; } // char(32)
+		[Column("name"),       NotNull             ] public string Name      { get; set; } // varchar(50)
+		/// <summary>
+		/// Value
+		/// </summary>
+		[Column("value"),      NotNull             ] public string Value     { get; set; } // varchar(250)
+		/// <summary>
+		/// Subject identifier
+		/// </summary>
+		[Column("subject_id"), NotNull             ] public string SubjectId { get; set; } // varchar(50)
+
+		#region Associations
+
+		/// <summary>
+		/// SubjectAccessClaimsToSubject
+		/// </summary>
+		[Association(ThisKey="SubjectId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="SubjectAccessClaimsToSubject", BackReferenceName="SubjectAccessClaimsToSubjects")]
+		public SubjectDb Subject { get; set; }
+
+		#endregion
+	}
+
+	/// <summary>
+	/// Subject available scopes
+	/// </summary>
+	[Table("subject_available_scopes")]
+	public partial class SubjectAvailableScopeDb
+	{
+		/// <summary>
+		/// Row identifier
+		/// </summary>
+		[Column("id"),         PrimaryKey, Identity] public int    Id        { get; set; } // int
 		/// <summary>
 		/// Scope name
 		/// </summary>
 		[Column("name"),       NotNull             ] public string Name      { get; set; } // varchar(50)
 		/// <summary>
-		/// &apos;Y&apos; if scope contains in required scope list. Else - auth server send it but will be ignored
+		/// Subject identifier
 		/// </summary>
-		[Column("required"),   NotNull             ] public char   Required  { get; set; } // enum('Y','N')
+		[Column("subject_id"), NotNull             ] public string SubjectId { get; set; } // varchar(50)
 
 		#region Associations
 
 		/// <summary>
-		/// FK_Claim_To_SessionScope_BackReference
+		/// SubjectAvailabeScopesToSubject
 		/// </summary>
-		[Association(ThisKey="Id", OtherKey="SessionScope", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
-		public IEnumerable<ClaimDb> ClaimToSessionScopes { get; set; }
+		[Association(ThisKey="SubjectId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="SubjectAvailabeScopesToSubject", BackReferenceName="SubjectAvailabeScopesToSubjects")]
+		public SubjectDb Subject { get; set; }
+
+		#endregion
+	}
+
+	/// <summary>
+	/// Subjects
+	/// </summary>
+	[Table("subjects")]
+	public partial class SubjectDb
+	{
+		/// <summary>
+		/// String identitifer
+		/// </summary>
+		[Column("id"),         PrimaryKey,  NotNull] public string                         Id        { get; set; } // varchar(50)
+		/// <summary>
+		/// Indicates is subject enabled
+		/// </summary>
+		[Column("enabled"),                 NotNull] public MyAuth.OAuthPoint.Db.MySqlBool Enabled   { get; set; } // enum('Y','N')
+		/// <summary>
+		/// &apos;enabled&apos; flag actiallity datetime
+		/// </summary>
+		[Column("enabled_dt"),    Nullable         ] public DateTime?                      EnabledDt { get; set; } // datetime
+
+		#region Associations
 
 		/// <summary>
-		/// FK_SessScope_To_Session
+		/// LoginSessionToSubject_BackReference
 		/// </summary>
-		[Association(ThisKey="SessionId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="FK_SessScope_To_Session", BackReferenceName="SessScopeToSessions")]
-		public LoginSessionDb Session { get; set; }
+		[Association(ThisKey="Id", OtherKey="SubjectId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
+		public IEnumerable<LoginSessionDb> LoginSessionToSubjects { get; set; }
+
+		/// <summary>
+		/// SubjectAccessClaimsToSubject_BackReference
+		/// </summary>
+		[Association(ThisKey="Id", OtherKey="SubjectId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
+		public IEnumerable<SubjectAccessClaimDb> SubjectAccessClaimsToSubjects { get; set; }
+
+		/// <summary>
+		/// SubjectAvailabeScopesToSubject_BackReference
+		/// </summary>
+		[Association(ThisKey="Id", OtherKey="SubjectId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
+		public IEnumerable<SubjectAvailableScopeDb> SubjectAvailabeScopesToSubjects { get; set; }
+
+		/// <summary>
+		/// SubjectIdentityClaimsToSubject_BackReference
+		/// </summary>
+		[Association(ThisKey="Id", OtherKey="SubjectId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
+		public IEnumerable<SubjectIdentityClaimDb> SubjectIdentityClaimsToSubjects { get; set; }
+
+		#endregion
+	}
+
+	/// <summary>
+	/// Subject claims for identity
+	/// </summary>
+	[Table("subject_identity_claims")]
+	public partial class SubjectIdentityClaimDb
+	{
+		/// <summary>
+		/// Row id
+		/// </summary>
+		[Column("id"),         PrimaryKey, Identity] public int    Id        { get; set; } // int
+		/// <summary>
+		/// Name
+		/// </summary>
+		[Column("name"),       NotNull             ] public string Name      { get; set; } // varchar(50)
+		/// <summary>
+		/// Value
+		/// </summary>
+		[Column("value"),      NotNull             ] public string Value     { get; set; } // varchar(250)
+		/// <summary>
+		/// Scope string identifier
+		/// </summary>
+		[Column("scope_id"),   NotNull             ] public string ScopeId   { get; set; } // varchar(50)
+		/// <summary>
+		/// Subject id
+		/// </summary>
+		[Column("subject_id"), NotNull             ] public string SubjectId { get; set; } // varchar(50)
+
+		#region Associations
+
+		/// <summary>
+		/// SubjectIdentityClaimsToSubject
+		/// </summary>
+		[Association(ThisKey="SubjectId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="SubjectIdentityClaimsToSubject", BackReferenceName="SubjectIdentityClaimsToSubjects")]
+		public SubjectDb Subject { get; set; }
 
 		#endregion
 	}
 
 	public static partial class TableExtensions
 	{
-		public static ClaimDb Find(this ITable<ClaimDb> table, int Id)
+		public static ClientAvailableScopeDb Find(this ITable<ClientAvailableScopeDb> table, int Id)
+		{
+			return table.FirstOrDefault(t =>
+				t.Id == Id);
+		}
+
+		public static ClientAvailableUriDb Find(this ITable<ClientAvailableUriDb> table, int Id)
 		{
 			return table.FirstOrDefault(t =>
 				t.Id == Id);
@@ -360,31 +456,31 @@ namespace MyAuth.OAuthPoint.Db
 				t.Id == Id);
 		}
 
-		public static ClientRedirectUriDb Find(this ITable<ClientRedirectUriDb> table, int Id)
-		{
-			return table.FirstOrDefault(t =>
-				t.Id == Id);
-		}
-
-		public static ClientScopeDb Find(this ITable<ClientScopeDb> table, int Id)
-		{
-			return table.FirstOrDefault(t =>
-				t.Id == Id);
-		}
-
 		public static LoginSessionDb Find(this ITable<LoginSessionDb> table, string Id)
 		{
 			return table.FirstOrDefault(t =>
 				t.Id == Id);
 		}
 
-		public static SessionInitiationDb Find(this ITable<SessionInitiationDb> table, string SessionId)
+		public static SubjectAccessClaimDb Find(this ITable<SubjectAccessClaimDb> table, int Id)
 		{
 			return table.FirstOrDefault(t =>
-				t.SessionId == SessionId);
+				t.Id == Id);
 		}
 
-		public static SessionScopeDb Find(this ITable<SessionScopeDb> table, int Id)
+		public static SubjectAvailableScopeDb Find(this ITable<SubjectAvailableScopeDb> table, int Id)
+		{
+			return table.FirstOrDefault(t =>
+				t.Id == Id);
+		}
+
+		public static SubjectDb Find(this ITable<SubjectDb> table, string Id)
+		{
+			return table.FirstOrDefault(t =>
+				t.Id == Id);
+		}
+
+		public static SubjectIdentityClaimDb Find(this ITable<SubjectIdentityClaimDb> table, int Id)
 		{
 			return table.FirstOrDefault(t =>
 				t.Id == Id);

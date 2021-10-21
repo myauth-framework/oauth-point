@@ -14,13 +14,13 @@ namespace MyAuth.OAuthPoint.Client
         /// Complete login process successfully
         /// </summary>
         [Post("login/{loginSessionId}/error")]
-        Task SuccessLogin([Path] string loginSessionId, [JsonContent] AuthorizedSubjectInfo authorizedSubjectInfo);
+        Task SuccessLogin([Path] string loginSessionId, [JsonContent] LoginSuccessRequest authorizedSubjectInfo);
 
         /// <summary>
         /// Complete login process failed
         /// </summary>
         [Post("login/{loginSessionId}/error")]
-        Task FailLogin([Path] string loginSessionId, [JsonContent] LoginError loginError);
+        Task FailLogin([Path] string loginSessionId, [JsonContent] LoginErrorRequest loginErrorRequest);
 
         /// <summary>
         /// Return back from login process

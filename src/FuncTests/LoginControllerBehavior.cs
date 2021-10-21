@@ -59,7 +59,7 @@ namespace FuncTests
             var api = _testApi.Start(s => s.AddSingleton(db));
 
             //Act
-            var resp = await api.Call(s => s.SuccessLogin(sessionId, new AuthorizedSubjectInfo()));
+            var resp = await api.Call(s => s.SuccessLogin(sessionId, new LoginSuccessRequest()));
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
@@ -74,7 +74,7 @@ namespace FuncTests
             var api = _testApi.Start(s => s.AddSingleton(db));
 
             //Act
-            var resp = await api.Call(s => s.FailLogin(sessionId, new LoginError()));
+            var resp = await api.Call(s => s.FailLogin(sessionId, new LoginErrorRequest()));
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
@@ -91,7 +91,7 @@ namespace FuncTests
             var api = _testApi.Start(s => s.AddSingleton(db));
 
             //Act
-            var resp = await api.Call(s => s.SuccessLogin(sessionId, new AuthorizedSubjectInfo()));
+            var resp = await api.Call(s => s.SuccessLogin(sessionId, new LoginSuccessRequest()));
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
@@ -108,14 +108,14 @@ namespace FuncTests
             var api = _testApi.Start(s => s.AddSingleton(db));
 
             //Act
-            var resp = await api.Call(s => s.FailLogin(sessionId, new LoginError()));
+            var resp = await api.Call(s => s.FailLogin(sessionId, new LoginErrorRequest()));
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
         }
 
         [Fact]
-        public async Task ShouldReturn409WhenSaveSuccessfulForAlreadyCompletedSession()
+        public async Task ShouldReturn404WhenSaveSuccessfulForAlreadyCompletedSession()
         {
             //Arrange
             var sessionId = Guid.NewGuid().ToString("N");
@@ -123,7 +123,7 @@ namespace FuncTests
             var redirectUri = "http://host.net/cb";
             var dataInitializer = new DataDbInitializer
             {
-                Clients = new[] { new ClientDb { Id = clientId, Name = "foo" } },
+                Clients = new[] { new ClientDb { Id = clientId, Name = "foo", PasswordHash = TestTools.ClientPasswordHash } },
                 LoginSessions = new[]
                 {
                     new LoginSessionDb
@@ -131,16 +131,9 @@ namespace FuncTests
                         Id = sessionId,
                         ClientId = clientId,
                         Expiry = DateTime.MaxValue,
-                    }
-                },
-                SessionInitiations = new[]
-                {
-                    new SessionInitiationDb
-                    {
                         RedirectUri = redirectUri,
-                        SessionId = sessionId,
                         Scope = "no-mater-scope",
-                        CompleteDt = DateTime.Now
+                        CompletedDt = DateTime.Now
                     }
                 }
             };
@@ -148,7 +141,7 @@ namespace FuncTests
             var db = await _dbFixture.CreateDbAsync(dataInitializer);
             var api = _testApi.Start(s => s.AddSingleton(db));
 
-            var authInfo = new AuthorizedSubjectInfo
+            var authInfo = new LoginSuccessRequest
             {
                 Subject = "foo"
             };
@@ -157,11 +150,11 @@ namespace FuncTests
             var resp = await api.Call(s => s.SuccessLogin(sessionId, authInfo));
 
             //Assert
-            Assert.Equal(HttpStatusCode.Conflict, resp.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
         }
 
         [Fact]
-        public async Task ShouldReturn409WhenSaveErrorForAlreadyCompletedSession()
+        public async Task ShouldReturn404WhenSaveErrorForAlreadyCompletedSession()
         {
             //Arrange
             var sessionId = Guid.NewGuid().ToString("N");
@@ -169,24 +162,17 @@ namespace FuncTests
             var redirectUri = "http://host.net/cb";
             var dataInitializer = new DataDbInitializer
             {
-                Clients = new[] { new ClientDb { Id = clientId, Name = "foo" } },
+                Clients = new[] { new ClientDb { Id = clientId, Name = "foo", PasswordHash = TestTools.ClientPasswordHash } },
                 LoginSessions = new[]
                 {
                     new LoginSessionDb
                     {
                         Id = sessionId,
                         ClientId = clientId,
-                        Expiry = DateTime.MaxValue
-                    }
-                },
-                SessionInitiations = new[]
-                {
-                    new SessionInitiationDb
-                    {
+                        Expiry = DateTime.MaxValue,
                         RedirectUri = redirectUri,
-                        SessionId = sessionId,
                         Scope = "no-mater-scope",
-                        CompleteDt = DateTime.Now
+                        CompletedDt = DateTime.Now
                     }
                 }
             };
@@ -194,7 +180,7 @@ namespace FuncTests
             var db = await _dbFixture.CreateDbAsync(dataInitializer);
             var api = _testApi.Start(s => s.AddSingleton(db));
 
-            var loginError = new LoginError
+            var loginError = new LoginErrorRequest
             {
                 AuthError = AuthorizationRequestProcessingError.InvalidRequest
             };
@@ -203,7 +189,7 @@ namespace FuncTests
             var resp = await api.Call(s => s.FailLogin(sessionId, loginError));
 
             //Assert
-            Assert.Equal(HttpStatusCode.Conflict, resp.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
         }
 
         public void Dispose()
