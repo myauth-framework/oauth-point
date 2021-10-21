@@ -22,10 +22,10 @@ namespace MyAuth.OAuthPoint.Services
     {
         private readonly IDbManager _db;
         private readonly IStringLocalizer<SessionCreator> _localizer;
-        private readonly AuthOptions _opt;
+        private readonly AuthTimingsOptions _opt;
         private readonly IDslLogger _log;
 
-        public SessionCreator(IOptions<AuthOptions> opts,
+        public SessionCreator(IOptions<AuthTimingsOptions> opts,
             IDbManager db,
             IStringLocalizer<SessionCreator> localizer,
             ILogger<SessionCreator> log = null)

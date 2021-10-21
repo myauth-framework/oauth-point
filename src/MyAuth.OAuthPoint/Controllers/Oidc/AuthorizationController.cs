@@ -18,14 +18,14 @@ namespace MyAuth.OAuthPoint.Controllers.Oidc
     {
         private readonly ISessionProvider _sessionProvider;
         private readonly ISessionCreator _sessionCreator;
-        private readonly AuthOptions _options;
+        private readonly AuthEndpointsOptions _options;
         private readonly IDslLogger _log;
         private readonly AuthorizationRequestValidator _reqValidator;
 
         public AuthorizationController(
             ISessionProvider sessionProvider, 
             ISessionCreator sessionCreator,
-            IOptions<AuthOptions> options, 
+            IOptions<AuthEndpointsOptions> options, 
             ILogger<AuthorizationController> logger,
             IStringLocalizer<AuthorizationController> localizer)
         {

@@ -1,12 +1,19 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Extensions.Options;
 
-namespace MyAuth.OAuthPoint.Tools
+namespace MyAuth.OAuthPoint.Services
 {
     class PasswordHashCalculator
     {
         private readonly byte[] _salt;
+
+        public PasswordHashCalculator(IOptions<AuthStoringOptions> authStoringOptions)
+            :this(authStoringOptions.Value.ClientPasswordSalt)
+        {
+            
+        }
 
         public PasswordHashCalculator(string salt)
         {

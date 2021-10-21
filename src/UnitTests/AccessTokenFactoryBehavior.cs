@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using MyAuth.OAuthPoint.Models;
 using MyAuth.OAuthPoint.Tools;
+using MyAuth.OAuthPoint.Tools.TokenIssuing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;

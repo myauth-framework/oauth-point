@@ -45,6 +45,10 @@ namespace MyAuth.OAuthPoint.Db
 		/// </summary>
 		public ITable<LoginSessionDb>            LoginSessions            { get { return this.GetTable<LoginSessionDb>(); } }
 		/// <summary>
+		/// Refresh tokens
+		/// </summary>
+		public ITable<RefreshTokenDb>            RefreshTokens            { get { return this.GetTable<RefreshTokenDb>(); } }
+		/// <summary>
 		/// Additional subject claims for access token
 		/// </summary>
 		public ITable<SubjectAccessClaimDb>      SubjectAccessClaims      { get { return this.GetTable<SubjectAccessClaimDb>(); } }
@@ -308,6 +312,10 @@ namespace MyAuth.OAuthPoint.Db
 		/// &apos;completed&apos; field actuallity date time
 		/// </summary>
 		[Column("completed_dt"),        Nullable         ] public DateTime?                                                    CompletedDt    { get; set; } // datetime
+		/// <summary>
+		/// Indicates that the session is revoked
+		/// </summary>
+		[Column("revoked"),             Nullable         ] public MyAuth.OAuthPoint.Db.MySqlBool                               Revoked        { get; set; } // enum('Y','N')
 
 		#region Associations
 
@@ -318,10 +326,50 @@ namespace MyAuth.OAuthPoint.Db
 		public ClientDb Client { get; set; }
 
 		/// <summary>
+		/// RefreshTokenToSession_BackReference
+		/// </summary>
+		[Association(ThisKey="Id", OtherKey="SessionId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
+		public IEnumerable<RefreshTokenDb> RefreshTokenToSessions { get; set; }
+
+		/// <summary>
 		/// LoginSessionToSubject
 		/// </summary>
 		[Association(ThisKey="SubjectId", OtherKey="Id", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="LoginSessionToSubject", BackReferenceName="LoginSessionToSubjects")]
 		public SubjectDb Subject { get; set; }
+
+		#endregion
+	}
+
+	/// <summary>
+	/// Refresh tokens
+	/// </summary>
+	[Table("refresh_tokens")]
+	public partial class RefreshTokenDb
+	{
+		/// <summary>
+		/// Token identifier
+		/// </summary>
+		[Column("id"),         PrimaryKey,  NotNull] public string                         Id        { get; set; } // char(32)
+		/// <summary>
+		/// Session identifier
+		/// </summary>
+		[Column("session_id"),              NotNull] public string                         SessionId { get; set; } // char(32)
+		/// <summary>
+		/// Expiration date time
+		/// </summary>
+		[Column("expiry"),                  NotNull] public DateTime                       Expiry    { get; set; } // datetime
+		/// <summary>
+		/// Indicates that the token is revoked
+		/// </summary>
+		[Column("revoked"),       Nullable         ] public MyAuth.OAuthPoint.Db.MySqlBool Revoked   { get; set; } // enum('Y','N')
+
+		#region Associations
+
+		/// <summary>
+		/// RefreshTokenToSession
+		/// </summary>
+		[Association(ThisKey="SessionId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="RefreshTokenToSession", BackReferenceName="RefreshTokenToSessions")]
+		public LoginSessionDb Session { get; set; }
 
 		#endregion
 	}
@@ -503,6 +551,12 @@ namespace MyAuth.OAuthPoint.Db
 		}
 
 		public static LoginSessionDb Find(this ITable<LoginSessionDb> table, string Id)
+		{
+			return table.FirstOrDefault(t =>
+				t.Id == Id);
+		}
+
+		public static RefreshTokenDb Find(this ITable<RefreshTokenDb> table, string Id)
 		{
 			return table.FirstOrDefault(t =>
 				t.Id == Id);

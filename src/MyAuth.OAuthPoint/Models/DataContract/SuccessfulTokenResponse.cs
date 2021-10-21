@@ -12,10 +12,16 @@ namespace MyAuth.OAuthPoint.Models.DataContract
     public class SuccessfulTokenResponse
     {
         /// <summary>
+        /// ID Token value associated with the authenticated session.
+        /// </summary>
+        [JsonProperty(PropertyName = "id_token")]
+        public string IdToken { get; set; }
+
+        /// <summary>
         /// REQUIRED.  The access token issued by the authorization server.
         /// </summary>
         [JsonProperty(PropertyName = "access_token")]
-        public string Token { get; set; }
+        public string AccessToken { get; set; }
 
         /// <summary>
         /// REQUIRED.  The type of the token issued as described in Section 7.1.  Value is case insensitive.

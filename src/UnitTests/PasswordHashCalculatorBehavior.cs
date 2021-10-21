@@ -1,4 +1,5 @@
-﻿using MyAuth.OAuthPoint.Tools;
+﻿using MyAuth.OAuthPoint.Services;
+using MyAuth.OAuthPoint.Tools;
 using Xunit;
 
 namespace UnitTests

@@ -15,7 +15,9 @@
 	Tables["clients"].Columns["enabled"].Type = "MyAuth.OAuthPoint.Db.MySqlBool";
 	Tables["login_sessions"].Columns["auth_code_used"].Type = "MyAuth.OAuthPoint.Db.MySqlBool";
 	Tables["login_sessions"].Columns["completed"].Type = "MyAuth.OAuthPoint.Db.MySqlBool";
+	Tables["login_sessions"].Columns["revoked"].Type = "MyAuth.OAuthPoint.Db.MySqlBool";
 	Tables["subjects"].Columns["enabled"].Type = "MyAuth.OAuthPoint.Db.MySqlBool";
+	Tables["refresh_tokens"].Columns["revoked"].Type = "MyAuth.OAuthPoint.Db.MySqlBool";
 
 	foreach(var t in Tables.Values)
 	{

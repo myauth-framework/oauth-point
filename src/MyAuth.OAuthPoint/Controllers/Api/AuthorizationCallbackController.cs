@@ -15,11 +15,11 @@ namespace MyAuth.OAuthPoint.Controllers.Api
     public class AuthorizationCallbackController : ControllerBase
     {
         private readonly ISessionProvider _sessionProvider;
-        private readonly AuthOptions _options;
+        private readonly AuthTimingsOptions _options;
 
         public AuthorizationCallbackController(
             ISessionProvider sessionProvider, 
-            IOptions<AuthOptions> options)
+            IOptions<AuthTimingsOptions> options)
         {
             _sessionProvider = sessionProvider;
             _options = options.Value;

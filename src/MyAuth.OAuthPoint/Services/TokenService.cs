@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using LinqToDB;
+using LinqToDB.Data;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using MyAuth.OAuthPoint.Db;
 using MyAuth.OAuthPoint.Models;
 using MyAuth.OAuthPoint.Models.DataContract;
 using MyAuth.OAuthPoint.Tools;
+using MyAuth.OAuthPoint.Tools.TokenIssuing;
 using MyLab.Db;
 
 namespace MyAuth.OAuthPoint.Services
@@ -18,84 +22,236 @@ namespace MyAuth.OAuthPoint.Services
         private readonly IDbManager _dbManager;
         private readonly IStringLocalizer<TokenService> _localizer;
         private readonly PasswordHashCalculator _passwordHashCalculator;
-        private readonly AuthOptions _opt;
+        private readonly IX509CertificateProvider _x509CertificateProvider;
+        private readonly TokenIssuingOptions _tokenIssuingOptions;
 
         public TokenService(IDbManager dbManager, 
             IStringLocalizer<TokenService> localizer,
-            IOptions<AuthOptions> options)
+            PasswordHashCalculator passwordHashCalculator,
+            IX509CertificateProvider x509CertificateProvider,
+            IOptions<TokenIssuingOptions> tokenIssuingOptions)
         {
             _dbManager = dbManager;
             _localizer = localizer;
-            _passwordHashCalculator = new PasswordHashCalculator(options.Value.ClientPasswordSalt);
-            _opt = options.Value;
+            _passwordHashCalculator = passwordHashCalculator;
+            _x509CertificateProvider = x509CertificateProvider;
+            _tokenIssuingOptions = tokenIssuingOptions.Value;
         }
 
         public async Task<SuccessfulTokenResponse> IssueAsync(string clientId, string clientPassword, TokenRequest request)
         {
-            if (request.GrantType != "authorization_code")
-                throw new TokenRequestProcessingException(_localizer["UnsupportedGrantType"], TokenRequestProcessingError.UnsupportedGrantType);
+            VerifyRequestProperties(clientId, request);
 
             await using var db = _dbManager.Use();
 
-            var passwordHash = _passwordHashCalculator.CalcHexPasswordMd5(clientPassword);
+            await VerifyClientAsync(clientId, clientPassword, db);
 
-            bool clientFound = await db.Tab<ClientDb>()
-                .AnyAsync(c => c.Id == clientId && c.PasswordHash == passwordHash);
+            switch (request.GrantType)
+            {
+                case "authorization_code":
+                    return await IssueNew(db, clientId, clientPassword, request);
+                case "refresh_token":
+                    return await RefreshToken(db, clientId, clientPassword, request);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(request.GrantType));
+            }
+        }
 
-            if (!clientFound)
-                throw new TokenRequestProcessingException(_localizer["ClientNotFound"], TokenRequestProcessingError.InvalidClient);
-
+        private async Task<SuccessfulTokenResponse> RefreshToken(DataConnection db, string clientId, string clientPassword, TokenRequest request)
+        {
             var foundSession = await db.Tab<LoginSessionDb>()
-                .Where(s => s.ClientId == clientId && s.AuthCode == request.Code)
-                .Select(s => new
-                {
-                    s.RedirectUri,
-                    s.Expiry,
-                    s.AuthCodeUsed,
-                    s.Scope,
-                    s.SubjectId,
-                    Audiences = s.Client.ClientAvailableAudienceToClients,
-                    AccessClaims = s.Subject.SubjectAccessClaimsToSubjects,
-                    IdentityClaims = s.Subject.SubjectIdentityClaimsToSubjects
-                })
+                .Where(s => s.ClientId == clientId && s.Id == request.RefreshToken)
+                .Select(StoredSessionInfoSelector)
                 .FirstOrDefaultAsync();
 
+            VerifySessionAsync(foundSession, null);
+
+            return IssueTokens(foundSession);
+        }
+
+        private async Task<SuccessfulTokenResponse> IssueNew(DataConnection db, string clientId, string clientPassword, TokenRequest request)
+        {
+            var foundSession = await db.Tab<LoginSessionDb>()
+                .Where(s => s.ClientId == clientId && s.AuthCode == request.Code)
+                .Select(StoredSessionInfoSelector)
+                .FirstOrDefaultAsync();
+
+            VerifySessionAsync(foundSession, request.RedirectUri);
+
+            var response = IssueTokens(foundSession);
+
+            response.RefreshToken = foundSession.Id;
+
+            return response;
+        }
+
+        private SuccessfulTokenResponse IssueTokens(StoredSessionInfo foundSession)
+        {
+            var issueDt = DateTime.Now;
+            var accessTokenExpiration = issueDt.AddSeconds(_tokenIssuingOptions.AccessTokenExpirySeconds);
+
+            var response = new SuccessfulTokenResponse
+            {
+                TokenType = "Bearer",
+                ExpiresIn = EpochTime.GetIntDate(accessTokenExpiration),
+                Scope = foundSession.Scope
+            };
+
+            var baseClaims = new BaseClaimSet
+            {
+                Audiences = foundSession.Audiences.Select(a => a.Uri).ToArray(),
+                Issuer = _tokenIssuingOptions.Issuer,
+                IssuedAt = issueDt,
+                Subject = foundSession.SubjectId
+            };
+
+            response.AccessToken = IssueAccessToken(foundSession.Scope, baseClaims, accessTokenExpiration, foundSession);
+
+            var scopes = ScopeStringParser.Parse(foundSession.Scope);
+
+            if (scopes.Contains("openid"))
+            {
+                response.IdToken = IssueIdToken(foundSession, scopes, baseClaims);
+            }
+
+            return response;
+        }
+
+        void VerifyRequestProperties(string credentialsClientId, TokenRequest request)
+        {
+            switch (request.GrantType)
+            {
+                case "authorization_code":
+                {
+                    if (string.IsNullOrWhiteSpace(request.Code))
+                        throw new TokenRequestProcessingException(_localizer["NoAuthCode"],
+                            TokenRequestProcessingError.InvalidRequest);
+
+                    if (string.IsNullOrWhiteSpace(request.RedirectUri))
+                        throw new TokenRequestProcessingException(_localizer["NoRedirectionUri"],
+                            TokenRequestProcessingError.InvalidRequest);
+
+                    if (!Uri.IsWellFormedUriString(request.RedirectUri, UriKind.Absolute))
+                        throw new TokenRequestProcessingException(_localizer["NoRedirectionMalformed"],
+                            TokenRequestProcessingError.InvalidRequest);
+                }
+                    break;
+                case "refresh_token":
+                {
+                    if (string.IsNullOrWhiteSpace(request.RefreshToken))
+                        throw new TokenRequestProcessingException(_localizer["NoRefreshToken"],
+                            TokenRequestProcessingError.InvalidRequest);
+                }
+                    break;
+                default:
+                    throw new TokenRequestProcessingException(_localizer["UnsupportedGrantType"],
+                        TokenRequestProcessingError.UnsupportedGrantType);
+            }
+
+            if (credentialsClientId != request.ClientId)
+            {
+                throw new TokenRequestProcessingException(_localizer["RequestClientMismatch"],
+                    TokenRequestProcessingError.InvalidRequest);
+            }
+        }
+        private string IssueIdToken(StoredSessionInfo foundSession, string[] scopes, BaseClaimSet baseClaims)
+        {
+            var userInfoClaims = new ClaimsCollection(
+                foundSession.IdentityClaims
+                    .Where(ic => scopes.Contains(ic.ScopeId))
+                    .ToDictionary(
+                        ci => ci.Name,
+                        ci => ClaimValue.Parse(ci.Value)
+                    )
+            );
+            var baseClaimsForIdToken = baseClaims.WithExpiry(foundSession.Expiry);
+
+            var idTokenFactory = new IdTokenFactory(baseClaimsForIdToken, userInfoClaims);
+
+            var issuerCertificate = _x509CertificateProvider.ProvideIssuerCertificate();
+
+            return idTokenFactory.Create(issuerCertificate);
+        }
+
+        private string IssueAccessToken(string scope, BaseClaimSet baseClaims, DateTime accessTokenExpiration, StoredSessionInfo foundSession)
+        {
+            var baseClaimsForAccessToken = baseClaims.WithExpiry(accessTokenExpiration);
+
+            var addAccessClaims = new ClaimsCollection(foundSession.AccessClaims
+                .ToDictionary(
+                    c => c.Name,
+                    c => ClaimValue.Parse(c.Value)
+                ));
+
+            var accessTokenFactory = new AccessTokenFactory(baseClaimsForAccessToken, addAccessClaims)
+            {
+                Scope = scope
+            };
+
+            return accessTokenFactory.Create(_tokenIssuingOptions.SignSymmetricKey);
+        }
+
+        private Expression<Func<LoginSessionDb, StoredSessionInfo>> StoredSessionInfoSelector = s =>
+            new StoredSessionInfo
+            {
+                Id = s.Id,
+                RedirectUri = s.RedirectUri,
+                Expiry = s.Expiry,
+                AuthCodeUsed = s.AuthCodeUsed == MySqlBool.True,
+                Scope = s.Scope,
+                SubjectId = s.SubjectId,
+                Audiences = s.Client.ClientAvailableAudienceToClients.ToArray(),
+                AccessClaims = s.Subject.SubjectAccessClaimsToSubjects.ToArray(),
+                IdentityClaims = s.Subject.SubjectIdentityClaimsToSubjects.ToArray()
+            };
+
+        private void VerifySessionAsync(StoredSessionInfo foundSession, string verifyRequestRedirectUri)
+        {
             if (foundSession == null)
                 throw new TokenRequestProcessingException(_localizer["SessionNotFound"],
+                    TokenRequestProcessingError.InvalidGrant);
+            
+            if (foundSession.Revoked)
+                throw new TokenRequestProcessingException(_localizer["RevokedSession"],
                     TokenRequestProcessingError.InvalidGrant);
 
             if (foundSession.Expiry <= DateTime.Now)
                 throw new TokenRequestProcessingException(_localizer["SessionHasExpired"],
                     TokenRequestProcessingError.InvalidGrant);
 
-            if (foundSession.AuthCodeUsed == MySqlBool.True)
+            if (foundSession.AuthCodeUsed)
                 throw new TokenRequestProcessingException(_localizer["CodeUsed"],
                     TokenRequestProcessingError.InvalidGrant);
 
-            if (foundSession.RedirectUri != request.RedirectUri)
+            if (verifyRequestRedirectUri != null && foundSession.RedirectUri != verifyRequestRedirectUri)
                 throw new TokenRequestProcessingException(_localizer["RedirectionUriMismatch"],
                     TokenRequestProcessingError.InvalidGrant);
+        }
 
-            var accessTokenFactory = new AccessTokenFactory(_opt.TokenSecret)
-            {
-                Expiry = DateTime.Now.AddSeconds(_opt.AccessTokenExpirySeconds),
-                Issuer = _opt.TokenIssuer,
-                Subject = foundSession.SubjectId,
-                Scope = foundSession.Scope,
-                Audiences = foundSession.Audiences.Select(a => a.Uri).ToArray(),
-                Claims = new ClaimsCollection(foundSession.AccessClaims.ToDictionary(c => c.Name, c => ClaimValue.Parse(c.Value)))
-            };
+        private async Task VerifyClientAsync(string clientId, string clientPassword, DataConnection db)
+        {
+            var passwordHash = _passwordHashCalculator.CalcHexPasswordMd5(clientPassword);
 
-            var accessToken = accessTokenFactory.Create();
+            bool clientFound = await db.Tab<ClientDb>()
+                .AnyAsync(c => c.Id == clientId && c.PasswordHash == passwordHash);
 
-            var requiredScopes = ScopeStringParser.Parse(foundSession.Scope);
+            if (!clientFound)
+                throw new TokenRequestProcessingException(_localizer["ClientNotFound"],
+                    TokenRequestProcessingError.InvalidClient);
+        }
 
-            if (requiredScopes.Contains("openid"))
-            {
-                
-            }
-
-            return null;
+        class StoredSessionInfo
+        { 
+            public string Id { get; set; }
+            public string RedirectUri { get; set; }
+            public DateTime Expiry { get; set; }
+            public bool AuthCodeUsed { get; set; }
+            public bool Revoked { get; set; }
+            public string Scope { get; set; }
+            public string SubjectId { get; set; }
+            public ClientAvailableAudienceDb[] Audiences { get; set; }
+            public SubjectAccessClaimDb[] AccessClaims { get; set; }
+            public SubjectIdentityClaimDb[] IdentityClaims { get; set; }
         }
     }
 }

@@ -13,7 +13,7 @@ namespace MyAuth.OAuthPoint.Models.DataContract
     public class TokenRequest
     {
         /// <summary>
-        /// REQUIRED.  Value MUST be set to "client_credentials".
+        /// REQUIRED.  Value MUST be set to "authorization_code" or "refresh_token".
         /// </summary>
 #if !MYAUTH_CLIENT
         [FromForm(Name = "grant_type")]
@@ -21,7 +21,7 @@ namespace MyAuth.OAuthPoint.Models.DataContract
         public string GrantType { get; set; }
 
         /// <summary>
-        /// REQUIRED.  The authorization code received from the authorization server.
+        /// REQUIRED if "grant_type" parameter is "authorization_code".  The authorization code received from the authorization server.
         /// </summary>
 #if !MYAUTH_CLIENT
         [FromForm(Name = "code")]
@@ -29,7 +29,7 @@ namespace MyAuth.OAuthPoint.Models.DataContract
         public string Code { get; set; }
 
         /// <summary>
-        /// REQUIRED, if the "redirect_uri" parameter was included in the authorization request as described in Section 4.1.1, and their values MUST be identical.
+        /// REQUIRED, if "grant_type" parameter is "authorization_code" and the "redirect_uri" parameter was included in the authorization request as described in Section 4.1.1, and their values MUST be identical.
         /// </summary>
 #if !MYAUTH_CLIENT
         [FromForm(Name = "redirect_uri")]
@@ -43,5 +43,13 @@ namespace MyAuth.OAuthPoint.Models.DataContract
         [FromForm(Name = "client_id")]
 #endif
         public string ClientId { get; set; }
+
+        /// <summary>
+        /// REQUIRED if "grant_type" parameter is "refresh_token".  The refresh token issued to the client.
+        /// </summary>
+#if !MYAUTH_CLIENT
+        [FromForm(Name = "refresh_token")]
+#endif
+        public string RefreshToken { get; set; }
     }
 }
