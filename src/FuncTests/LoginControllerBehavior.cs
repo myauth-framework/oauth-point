@@ -35,7 +35,7 @@ namespace FuncTests
                 Output = output,
                 ServiceOverrider = srv =>
                 {
-                    srv.Configure<AuthOptions>(opt =>
+                    srv.Configure<AuthEndpointsOptions>(opt =>
                     {
                         opt.DefaultErrorEndpoint = TestConfigDefaultErrorEndpoint;
                         opt.LoginEndpoint = TestConfigLoginEndpoint;

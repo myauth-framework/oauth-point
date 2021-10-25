@@ -30,7 +30,10 @@ namespace MyAuth.OAuthPoint
                 .AddDbTools(Configuration, new MySqlDataProvider(ProviderName.MySql))
                 .AddLocalization(lo => lo.ResourcesPath = "Resources");
 
-            services.Configure<AuthOptions>(Configuration.GetSection("Auth"));
+            services.Configure<AuthTimingsOptions>(Configuration.GetSection("Auth:Timing"));
+            services.Configure<AuthStoringOptions>(Configuration.GetSection("Auth:Storing"));
+            services.Configure<AuthEndpointsOptions>(Configuration.GetSection("Auth:Endpoints"));
+            services.Configure<TokenIssuingOptions>(Configuration.GetSection("Auth:Issuing"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -26,20 +26,23 @@ namespace UnitTests
         public void ShouldCreateToken()
         {
             //Arrange
-            var f = new AccessTokenFactory("1234567890123456")
+            var basicClaims = new BaseClaimSet
             {
                 Subject = "foo",
-                Audiences = new []{ "host1", "host2" },
+                Audiences = new[] { "host1", "host2" },
                 Expiry = DateTime.Now.AddDays(1),
                 Issuer = "bar",
-                Claims = new ClaimsCollection(new Dictionary<string, ClaimValue>
-                {
-                    {"foo-claim", new ClaimValue("bar-claim")}
-                })
+                IssuedAt = DateTime.Now
             };
+            var addClaims = new ClaimsCollection(new Dictionary<string, ClaimValue>
+            {
+                {"foo-claim", new ClaimValue("bar-claim")}
+            });
+
+            var f = new AccessTokenFactory(basicClaims, addClaims);
 
             //Act
-            var token = f.Create();
+            var token = f.Create("1234567890123456");
 
             _output.WriteLine(token);
 
