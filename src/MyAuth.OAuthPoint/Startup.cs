@@ -26,7 +26,7 @@ namespace MyAuth.OAuthPoint
             services
                 .AddSingleton<ISessionCreator, SessionCreator>()
                 .AddSingleton<ISessionProvider, SessionProvider>()
-                .AddSingleton<ISessionCompleter, SessionCompleter>()
+                .AddSingleton<ISessionInitiator, SessionInitiator>()
                 .AddDbTools(Configuration, new MySqlDataProvider(ProviderName.MySql))
                 .AddLocalization(lo => lo.ResourcesPath = "Resources");
 

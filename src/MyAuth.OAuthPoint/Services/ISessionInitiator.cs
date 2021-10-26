@@ -12,20 +12,20 @@ using MyLab.Log.Dsl;
 
 namespace MyAuth.OAuthPoint.Services
 {
-    public interface ISessionCompleter
+    public interface ISessionInitiator
     {
         Task CompleteSuccessfulAsync(string loginSessionId, LoginSuccessRequest loginSuccessRequest);
 
         Task CompleteErrorAsync(string loginSessionId, LoginErrorRequest loginErrorRequest);
     }
 
-    class SessionCompleter : ISessionCompleter
+    class SessionInitiator : ISessionInitiator
     {
         private readonly IDbManager _db;
         private readonly IDslLogger _log;
 
-        public SessionCompleter(IDbManager db,
-            ILogger<SessionCompleter> log = null)
+        public SessionInitiator(IDbManager db,
+            ILogger<SessionInitiator> log = null)
         {
             _db = db;
             _log = log?.Dsl();

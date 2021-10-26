@@ -11,21 +11,21 @@ namespace MyAuth.OAuthPoint.Controllers.Api
     [ApiController]
     public class LoginController : ControllerBase
     {
-        private readonly ISessionCompleter _sessionCompleter;
+        private readonly ISessionInitiator _sessionInitiator;
 
         /// <summary>
         /// Initializes a new instance of <see cref="LoginController"/>
         /// </summary>
-        public LoginController(ISessionCompleter sessionCompleter)
+        public LoginController(ISessionInitiator sessionInitiator)
         {
-            _sessionCompleter = sessionCompleter;
+            _sessionInitiator = sessionInitiator;
         }
 
         [HttpPost("{loginSessionId}/success")]
         [ErrorToResponse(typeof(LoginSessionNotFoundException), HttpStatusCode.NotFound)]
         public async Task<IActionResult> PostSuccess([FromRoute]string loginSessionId, [FromBody] LoginSuccessRequest loginSuccessRequest)
         {
-            await _sessionCompleter.CompleteSuccessfulAsync(loginSessionId, loginSuccessRequest);
+            await _sessionInitiator.CompleteSuccessfulAsync(loginSessionId, loginSuccessRequest);
             
             return Ok();
         }
@@ -34,7 +34,7 @@ namespace MyAuth.OAuthPoint.Controllers.Api
         [ErrorToResponse(typeof(LoginSessionNotFoundException), HttpStatusCode.NotFound)]
         public async Task<IActionResult> PostError([FromRoute] string loginSessionId, [FromBody] LoginErrorRequest loginErrorRequest)
         {
-            await _sessionCompleter.CompleteErrorAsync(loginSessionId, loginErrorRequest);
+            await _sessionInitiator.CompleteErrorAsync(loginSessionId, loginErrorRequest);
 
             return Ok();
         }
