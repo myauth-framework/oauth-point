@@ -31,7 +31,8 @@ namespace MyAuth.OAuthPoint.Tools
             return _dc.Tab<SubjectDb>().InsertOrUpdateAsync(
                 () => new SubjectDb
                 {
-                    Id = _succReq.Subject
+                    Id = _succReq.Subject,
+                    Enabled = MySqlBool.True
                 },
                 s => s);
         }
@@ -45,7 +46,7 @@ namespace MyAuth.OAuthPoint.Tools
 
         public async Task SaveIdentityClaimsAsync()
         {
-            var identityClaims = _succReq.IdentityScopes.SelectMany(sc =>
+            var identityClaims = _succReq.IdentityScopes?.SelectMany(sc =>
                     sc.Claims.Select(c =>
                         new SubjectIdentityClaimDb
                         {
@@ -56,7 +57,7 @@ namespace MyAuth.OAuthPoint.Tools
                         }))
                 .ToArray();
 
-            if (identityClaims.Length != 0)
+            if (identityClaims != null && identityClaims.Length != 0)
                 await _dc.BulkCopyAsync(identityClaims);
         }
 
@@ -70,7 +71,7 @@ namespace MyAuth.OAuthPoint.Tools
         public async Task SaveAccessClaimsAsync()
         {
             var accessClaims = _succReq.AccessClaims
-                .Select(cl =>
+                ?.Select(cl =>
                     new SubjectAccessClaimDb
                     {
                         Name = cl.Key,
@@ -79,21 +80,20 @@ namespace MyAuth.OAuthPoint.Tools
                     })
                 .ToArray();
 
-            if (accessClaims.Length != 0)
+            if (accessClaims != null && accessClaims.Length != 0)
                 await _dc.BulkCopyAsync(accessClaims);
         }
 
-        public Task UpdateSessionStateAsync()
+        public Task UpdateSessionStateAsync(string authCode, DateTime authCodeExpiry)
         {
             return _dc.Tab<LoginSessionDb>()
                 .Where(s => s.Id == _sessionId)
-                .Set(s => s.SubjectId, s => _succReq.Subject)
-                .Set(s => s.Completed, s => MySqlBool.True)
-                .Set(s => s.CompletedDt, s => DateTime.Now)
+                .Set(s => s.SubjectId, () => _succReq.Subject)
+                .Set(s => s.Completed, () => MySqlBool.True)
+                .Set(s => s.CompletedDt, () => DateTime.Now)
+                .Set(s => s.AuthCode, () => authCode)
+                .Set(s => s.AuthCodeExpiry, () => authCodeExpiry)
                 .UpdateAsync();
         }
-
-
-        //string ClaimValueToString(JObject claimValue) => claimValue.ToString().Trim('\"');
     }
 }

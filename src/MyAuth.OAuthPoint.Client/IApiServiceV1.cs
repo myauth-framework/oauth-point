@@ -13,7 +13,7 @@ namespace MyAuth.OAuthPoint.Client
         /// <summary>
         /// Complete login process successfully
         /// </summary>
-        [Post("login/{loginSessionId}/error")]
+        [Post("login/{loginSessionId}/success")]
         Task SuccessLogin([Path] string loginSessionId, [JsonContent] LoginSuccessRequest authorizedSubjectInfo);
 
         /// <summary>

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using LinqToDB;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MyAuth.OAuthPoint;
@@ -8,6 +10,7 @@ using MyAuth.OAuthPoint.Client;
 using MyAuth.OAuthPoint.Client.Models;
 using MyAuth.OAuthPoint.Db;
 using MyLab.ApiClient.Test;
+using MyLab.Db;
 using MyLab.DbTest;
 using Xunit;
 using Xunit.Abstractions;
@@ -133,7 +136,9 @@ namespace FuncTests
                         Expiry = DateTime.MaxValue,
                         RedirectUri = redirectUri,
                         Scope = "no-mater-scope",
-                        CompletedDt = DateTime.Now
+                        CompletedDt = DateTime.Now,
+                        Completed = MySqlBool.True,
+                        LoginExpiry = DateTime.Now.AddSeconds(10)
                     }
                 }
             };
@@ -172,7 +177,9 @@ namespace FuncTests
                         Expiry = DateTime.MaxValue,
                         RedirectUri = redirectUri,
                         Scope = "no-mater-scope",
-                        CompletedDt = DateTime.Now
+                        CompletedDt = DateTime.Now,
+                        Completed = MySqlBool.True,
+                        LoginExpiry = DateTime.Now.AddSeconds(10)
                     }
                 }
             };
@@ -190,6 +197,127 @@ namespace FuncTests
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
+        }
+
+        [Fact]
+        public async Task ShouldCompleteSuccessful()
+        {
+            //Arrange
+            var sessionId = Guid.NewGuid().ToString("N");
+            var clientId = Guid.NewGuid().ToString("N");
+            var redirectUri = "http://host.net/cb";
+            var dataInitializer = new DataDbInitializer
+            {
+                Clients = new[] { new ClientDb { Id = clientId, Name = "foo", PasswordHash = TestTools.ClientPasswordHash } },
+                LoginSessions = new[]
+                {
+                    new LoginSessionDb
+                    {
+                        Id = sessionId,
+                        ClientId = clientId,
+                        Expiry = DateTime.MaxValue,
+                        RedirectUri = redirectUri,
+                        Scope = "no-mater-scope",
+                        LoginExpiry = DateTime.Now.AddSeconds(10)
+                    }
+                }
+            };
+
+            var db = await _dbFixture.CreateDbAsync(dataInitializer);
+            var api = _testApi.Start(s => s.AddSingleton(db));
+
+            var authInfo = new LoginSuccessRequest
+            {
+                Subject = "foo"
+            };
+
+            //Act
+            var resp = await api.Call(s => s.SuccessLogin(sessionId, authInfo));
+
+            var actualSess = await db.DoOnce().Tab<LoginSessionDb>()
+                .Where(s => s.Id == sessionId)
+                .Select(s => new
+                {
+                    s.Completed,
+                    s.CompletedDt,
+                    s.SubjectId,
+                    s.AuthCode,
+                    s.AuthCodeExpiry,
+                    s.AuthCodeUsed,
+                    s.ErrorCode
+                }).FirstOrDefaultAsync();
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+            Assert.NotNull(actualSess);
+            Assert.Equal(MySqlBool.True, actualSess.Completed);
+            Assert.True(actualSess.CompletedDt < DateTime.Now);
+            Assert.Equal("foo", actualSess.SubjectId);
+            Assert.NotNull(actualSess.AuthCode);
+            Assert.True(actualSess.AuthCodeExpiry > DateTime.Now);
+            Assert.NotEqual(MySqlBool.True, actualSess.AuthCodeUsed);
+            Assert.Equal(MyAuth.OAuthPoint.Models.AuthorizationRequestProcessingError.Undefined, actualSess.ErrorCode);
+        }
+
+        [Fact]
+        public async Task ShouldCompleteWithError()
+        {
+            //Arrange
+            var sessionId = Guid.NewGuid().ToString("N");
+            var clientId = Guid.NewGuid().ToString("N");
+            var redirectUri = "http://host.net/cb";
+            var dataInitializer = new DataDbInitializer
+            {
+                Clients = new[] { new ClientDb { Id = clientId, Name = "foo", PasswordHash = TestTools.ClientPasswordHash } },
+                LoginSessions = new[]
+                {
+                    new LoginSessionDb
+                    {
+                        Id = sessionId,
+                        ClientId = clientId,
+                        Expiry = DateTime.MaxValue,
+                        RedirectUri = redirectUri,
+                        Scope = "no-mater-scope",
+                        LoginExpiry = DateTime.Now.AddSeconds(10)
+                    }
+                }
+            };
+
+            var db = await _dbFixture.CreateDbAsync(dataInitializer);
+            var api = _testApi.Start(s => s.AddSingleton(db));
+            
+            var errReq = new LoginErrorRequest
+            {
+                AuthError = AuthorizationRequestProcessingError.AccessDenied,
+                Description = "foo-desc"
+            };
+
+            //Act
+            var resp = await api.Call(s => s.FailLogin(sessionId, errReq));
+
+            var actualSess = await db.DoOnce().Tab<LoginSessionDb>()
+                .Where(s => s.Id == sessionId)
+                .Select(s => new
+                {
+                    s.Completed,
+                    s.CompletedDt,
+                    s.SubjectId,
+                    s.AuthCode,
+                    s.AuthCodeExpiry,
+                    s.AuthCodeUsed,
+                    s.ErrorCode
+                }).FirstOrDefaultAsync();
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+            Assert.NotNull(actualSess);
+            Assert.Equal(MySqlBool.True, actualSess.Completed);
+            Assert.True(actualSess.CompletedDt < DateTime.Now);
+            Assert.Null(actualSess.SubjectId);
+            Assert.Null(actualSess.AuthCode);
+            Assert.Null(actualSess.AuthCodeExpiry);
+            Assert.NotEqual(MySqlBool.True, actualSess.AuthCodeUsed);
+            Assert.Equal(MyAuth.OAuthPoint.Models.AuthorizationRequestProcessingError.AccessDenied, actualSess.ErrorCode);
         }
 
         public void Dispose()

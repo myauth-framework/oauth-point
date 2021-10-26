@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using LinqToDB;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MyAuth.OAuthPoint.Db;
 using MyAuth.OAuthPoint.Models.DataContract;
 using MyAuth.OAuthPoint.Tools;
@@ -23,12 +24,15 @@ namespace MyAuth.OAuthPoint.Services
     {
         private readonly IDbManager _db;
         private readonly IDslLogger _log;
+        private readonly AuthTimingsOptions _opts;
 
         public SessionCompleter(IDbManager db,
+            IOptions<AuthTimingsOptions> timingOpts,
             ILogger<SessionCompleter> log = null)
         {
             _db = db;
             _log = log?.Dsl();
+            _opts = timingOpts.Value;
         }
 
         public async Task CompleteSuccessfulAsync(string sessId, LoginSuccessRequest succReq)
@@ -43,6 +47,9 @@ namespace MyAuth.OAuthPoint.Services
                 throw new LoginSessionNotFoundException()
                     .AndFactIs("login-session-id", sessId);
 
+            var authCode = Guid.NewGuid().ToString("N");
+            var authCodeExpiry = DateTime.Now.AddSeconds(_opts.AuthCodeExpirySeconds);
+
             await db.PerformAutoTransactionAsync(async d =>
             {
                 var logic = new SuccessfulLoginApplyLogic(sessId, d, succReq);
@@ -52,7 +59,7 @@ namespace MyAuth.OAuthPoint.Services
                 await logic.SaveIdentityClaimsAsync();
                 await logic.RemoveSubjectAccessClaimsAsync();
                 await logic.SaveAccessClaimsAsync();
-                await logic.UpdateSessionStateAsync();
+                await logic.UpdateSessionStateAsync(authCode, authCodeExpiry);
             });
         }
 

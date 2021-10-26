@@ -3,6 +3,7 @@
     public class AuthTimingsOptions
     {
         public int LoginExpirySeconds { get; set; } = 60;
+        public int AuthCodeExpirySeconds { get; set; } = 60;
         public int SessionExpiryDays { get; set; } = 10;
         public string ClientPasswordSalt { get; set; }
         
