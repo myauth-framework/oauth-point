@@ -24,6 +24,9 @@ namespace MyAuth.OAuthPoint
         {
             services.AddControllers().AddNewtonsoftJson();
             services
+                .AddSingleton<IX509CertificateProvider, X509CertificateProvider>()
+                .AddSingleton<PasswordHashCalculator>()
+                .AddSingleton<ITokenService, TokenService>()
                 .AddSingleton<ISessionCreator, SessionCreator>()
                 .AddSingleton<ISessionProvider, SessionProvider>()
                 .AddSingleton<ISessionCompleter, SessionCompleter>()

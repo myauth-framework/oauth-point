@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace MyAuth.OAuthPoint.Services
 {
-    class PasswordHashCalculator
+    public class PasswordHashCalculator
     {
         private readonly byte[] _salt;
 
@@ -17,6 +17,8 @@ namespace MyAuth.OAuthPoint.Services
 
         public PasswordHashCalculator(string salt)
         {
+            if(salt == null)
+                throw new InvalidOperationException("Password salt is not set");
             _salt = Encoding.UTF8.GetBytes(salt);
         }
 

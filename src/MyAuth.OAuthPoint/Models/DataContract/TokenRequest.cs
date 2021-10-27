@@ -1,4 +1,6 @@
 ﻿#if MYAUTH_CLIENT
+using MyLab.ApiClient;
+
 namespace MyAuth.OAuthPoint.Client.Models
 #else
 using Microsoft.AspNetCore.Mvc;
@@ -15,7 +17,9 @@ namespace MyAuth.OAuthPoint.Models.DataContract
         /// <summary>
         /// REQUIRED.  Value MUST be set to "authorization_code" or "refresh_token".
         /// </summary>
-#if !MYAUTH_CLIENT
+#if MYAUTH_CLIENT
+        [UrlFormItem(Name = "grant_type")]
+#else
         [FromForm(Name = "grant_type")]
 #endif
         public string GrantType { get; set; }
@@ -23,7 +27,9 @@ namespace MyAuth.OAuthPoint.Models.DataContract
         /// <summary>
         /// REQUIRED if "grant_type" parameter is "authorization_code".  The authorization code received from the authorization server.
         /// </summary>
-#if !MYAUTH_CLIENT
+#if MYAUTH_CLIENT
+        [UrlFormItem(Name = "code")]
+#else
         [FromForm(Name = "code")]
 #endif
         public string Code { get; set; }
@@ -31,7 +37,9 @@ namespace MyAuth.OAuthPoint.Models.DataContract
         /// <summary>
         /// REQUIRED, if "grant_type" parameter is "authorization_code" and the "redirect_uri" parameter was included in the authorization request as described in Section 4.1.1, and their values MUST be identical.
         /// </summary>
-#if !MYAUTH_CLIENT
+#if MYAUTH_CLIENT
+        [UrlFormItem(Name = "redirect_uri")]
+#else
         [FromForm(Name = "redirect_uri")]
 #endif
         public string RedirectUri { get; set; }
@@ -39,7 +47,9 @@ namespace MyAuth.OAuthPoint.Models.DataContract
         /// <summary>
         /// REQUIRED, if the client is not authenticating with the authorization server as described in Section 3.2.1.
         /// </summary>
-#if !MYAUTH_CLIENT
+#if MYAUTH_CLIENT
+        [UrlFormItem(Name = "client_id")]
+#else
         [FromForm(Name = "client_id")]
 #endif
         public string ClientId { get; set; }
@@ -47,7 +57,9 @@ namespace MyAuth.OAuthPoint.Models.DataContract
         /// <summary>
         /// REQUIRED if "grant_type" parameter is "refresh_token".  The refresh token issued to the client.
         /// </summary>
-#if !MYAUTH_CLIENT
+#if MYAUTH_CLIENT
+        [UrlFormItem(Name = "refresh_token")]
+#else
         [FromForm(Name = "refresh_token")]
 #endif
         public string RefreshToken { get; set; }

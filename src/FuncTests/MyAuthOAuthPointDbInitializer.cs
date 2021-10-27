@@ -13,6 +13,7 @@ namespace FuncTests
             await dataConnection.CreateTableAsync<ClientDb>();
             await dataConnection.CreateTableAsync<ClientAvailableUriDb>();
             await dataConnection.CreateTableAsync<ClientAvailableScopeDb>();
+            await dataConnection.CreateTableAsync<ClientAvailableAudienceDb>();
 
             await dataConnection.CreateTableAsync<SubjectDb>();
             await dataConnection.CreateTableAsync<SubjectAccessClaimDb>();

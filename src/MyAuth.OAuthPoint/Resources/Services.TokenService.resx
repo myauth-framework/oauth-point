@@ -139,7 +139,7 @@
     <value>Redirection URI mismatch</value>
   </data>
   <data name="RequestClientMismatch" xml:space="preserve">
-    <value>Credentials client and client_id marameter are mismatched</value>
+    <value>Credentials client and authorization code client_id are mismatched</value>
   </data>
   <data name="RevokedSession" xml:space="preserve">
     <value>Session has revoked</value>

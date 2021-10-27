@@ -11,16 +11,20 @@ namespace FuncTests
 {
     static class TestTools
     {
-        public static string ClientPasswordHash { get; }
+        public static readonly string ClientPasswordHash;
 
-        public static string ClientPassword { get; }
+        public static readonly string ClientPassword;
+
+        public const string PasswordSalt = "salt";
+
+        public static readonly PasswordHashCalculator PasswordHashCalculator;
 
         static TestTools()
         {
-            var passCalculator = new PasswordHashCalculator("salt");
+            PasswordHashCalculator = new PasswordHashCalculator(PasswordSalt);
 
             ClientPassword = "password";
-            ClientPasswordHash = passCalculator.CalcHexPasswordMd5(ClientPassword);
+            ClientPasswordHash = PasswordHashCalculator.CalcHexPasswordMd5(ClientPassword);
         }
 
         public static void TryExtractRedirect(

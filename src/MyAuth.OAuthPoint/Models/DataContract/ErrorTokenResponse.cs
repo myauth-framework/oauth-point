@@ -1,10 +1,11 @@
-﻿#if MYAUTH_CLIENT
+﻿using Newtonsoft.Json;
+
+#if MYAUTH_CLIENT
 using MyAuth.OAuthPoint.Client.Tools;
 
 namespace MyAuth.OAuthPoint.Client.Models
 #else
 using MyAuth.OAuthPoint.Tools;
-using Newtonsoft.Json;
 
 namespace MyAuth.OAuthPoint.Models.DataContract
 #endif

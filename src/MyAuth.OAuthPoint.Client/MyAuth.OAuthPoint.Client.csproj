@@ -19,8 +19,11 @@
     <Compile Include="..\MyAuth.OAuthPoint\Models\AuthorizationRequestProcessingError.cs" Link="Models\AuthorizationRequestProcessingError.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\ClaimsCollection.cs" Link="Models\ClaimsCollection.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\ClaimValue.cs" Link="Models\ClaimValue.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\DataContract\ErrorTokenResponse.cs" Link="Models\ErrorTokenResponse.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\DataContract\LoginErrorRequest.cs" Link="Models\LoginErrorRequest.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\DataContract\LoginSuccessRequest.cs" Link="Models\LoginSuccessRequest.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\DataContract\SuccessfulTokenResponse.cs" Link="Models\SuccessfulTokenResponse.cs" />
+    <Compile Include="..\MyAuth.OAuthPoint\Models\DataContract\TokenRequest.cs" Link="Models\TokenRequest.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\ScopeClaims.cs" Link="Models\ScopeClaims.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Models\TokenRequestProcessingError.cs" Link="Models\TokenRequestProcessingError.cs" />
     <Compile Include="..\MyAuth.OAuthPoint\Tools\EnumNameAttribute.cs" Link="Tools\EnumNameAttribute.cs" />
@@ -29,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MyLab.ApiClient" Version="3.9.22" />
+    <PackageReference Include="MyLab.ApiClient" Version="3.10.22" />
   </ItemGroup>
 
   <ItemGroup>
