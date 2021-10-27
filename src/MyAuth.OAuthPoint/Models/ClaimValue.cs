@@ -134,9 +134,9 @@ namespace MyAuth.OAuthPoint.Models
                 return Object.ToString();
 
             if (Int.HasValue) return Int.ToString();
-            if (Double.HasValue) return Int.ToString();
-            if (Bool.HasValue) return Int.ToString();
-            if (DateTime.HasValue) return Int.ToString();
+            if (Double.HasValue) return Double.ToString();
+            if (Bool.HasValue) return Bool.ToString();
+            if (DateTime.HasValue) return DateTime.ToString();
 
             return base.ToString();
         }
