@@ -26,7 +26,7 @@ namespace MyAuth.OAuthPoint.Client
         /// Return back from login process
         /// </summary>
         [Get("authorization-callback")]
-        Task CallbackLogin([Query("login_session_id")]string loginSessionId);
+        Task CallbackLogin([Query("login_id")]string loginSessionId);
     }
 
 }

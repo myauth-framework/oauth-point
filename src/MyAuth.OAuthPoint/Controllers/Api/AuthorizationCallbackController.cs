@@ -28,7 +28,7 @@ namespace MyAuth.OAuthPoint.Controllers.Api
         [HttpGet]
         [ErrorToResponse(typeof(LoginSessionNotFoundException), HttpStatusCode.NotFound)]
         [ErrorToResponse(typeof(LoginSessionExpiredException), HttpStatusCode.NotFound)]
-        public async Task<IActionResult> Get([FromQuery(Name = "login_session_id")] string sessId)
+        public async Task<IActionResult> Get([FromQuery(Name = "login_id")] string sessId)
         {
             var foundSess = await _sessionProvider.ProvideOAuth2DetailsAsync(sessId);
 
