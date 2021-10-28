@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MyAuth.OAuthPoint.Services;
 using MyLab.Db;
+using Newtonsoft.Json;
 
 namespace MyAuth.OAuthPoint
 {
@@ -22,7 +23,7 @@ namespace MyAuth.OAuthPoint
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers().AddNewtonsoftJson();
+            services.AddControllers().AddNewtonsoftJson(o => o.SerializerSettings.NullValueHandling = NullValueHandling.Ignore);
             services
                 .AddSingleton<IX509CertificateProvider, X509CertificateProvider>()
                 .AddSingleton<PasswordHashCalculator>()
