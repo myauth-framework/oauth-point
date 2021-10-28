@@ -13,57 +13,131 @@
 
 
 -- Дамп структуры базы данных myauth-sso
-CREATE DATABASE IF NOT EXISTS `myauth-sso` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `myauth-sso`;
+-- CREATE DATABASE IF NOT EXISTS `myauth-sso` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+-- USE `myauth-sso`;
 
--- Дамп структуры для таблица myauth-sso.claims
-CREATE TABLE IF NOT EXISTS `claims` (
-  `id` int NOT NULL AUTO_INCREMENT COMMENT 'Claim identifier',
-  `session_scope` int NOT NULL,
-  `name` varchar(50) NOT NULL COMMENT 'Claim name',
-  `value` varchar(1024) NOT NULL COMMENT 'CLaim value',
+-- Дамп структуры для таблица myauth-sso.clients
+CREATE TABLE IF NOT EXISTS `clients` (
+  `id` char(32) NOT NULL COMMENT 'Client identifier (GUID)',
+  `name` varchar(50) NOT NULL COMMENT 'Name',
+  `password_hash` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'HEX HMAC-MD5 hash with salt',
+  `enabled` enum('Y','N') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Y' COMMENT 'Indicated client enabled',
+  `enabled_dt` datetime DEFAULT NULL COMMENT '''enabled'' flag actuallity date time',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Registered clients';
+
+-- Экспортируемые данные не выделены.
+
+-- Дамп структуры для таблица myauth-sso.client_available_audiences
+CREATE TABLE IF NOT EXISTS `client_available_audiences` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT 'Row identifier',
+  `uri` varchar(250) NOT NULL COMMENT 'URI',
+  `client_id` char(32) NOT NULL COMMENT 'Client identifier',
   PRIMARY KEY (`id`),
-  KEY `FK_Claim_To_SessionScope` (`session_scope`),
-  CONSTRAINT `FK_Claim_To_SessionScope` FOREIGN KEY (`session_scope`) REFERENCES `session_scopes` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Session scope claims';
+  KEY `ClientAvailableAudienceToClient` (`client_id`),
+  CONSTRAINT `ClientAvailableAudienceToClient` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Available audiences for client';
+
+-- Экспортируемые данные не выделены.
+
+-- Дамп структуры для таблица myauth-sso.client_available_scopes
+CREATE TABLE IF NOT EXISTS `client_available_scopes` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT 'Row identifier',
+  `name` varchar(50) NOT NULL COMMENT 'Scope name',
+  `client_id` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Client identifier',
+  PRIMARY KEY (`id`),
+  KEY `ClientAvailableScopesToClient` (`client_id`),
+  CONSTRAINT `ClientAvailableScopesToClient` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Client available scopes';
+
+-- Экспортируемые данные не выделены.
+
+-- Дамп структуры для таблица myauth-sso.client_available_uri
+CREATE TABLE IF NOT EXISTS `client_available_uri` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT 'Row identifier',
+  `uri` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'URI',
+  `client_id` char(32) NOT NULL COMMENT 'Client identifier',
+  PRIMARY KEY (`id`),
+  KEY `ClientAvailableUriToClient` (`client_id`),
+  CONSTRAINT `ClientAvailableUriToClient` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Available redirect URI for client';
 
 -- Экспортируемые данные не выделены.
 
 -- Дамп структуры для таблица myauth-sso.login_sessions
 CREATE TABLE IF NOT EXISTS `login_sessions` (
-  `id` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Session identifier (GUID)',
-  `expiry` datetime NOT NULL COMMENT 'Expiration time',
-  `client_id` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Client identifier (GUID)',
-  `login_dt` datetime DEFAULT NULL COMMENT 'When user login successfully',
+  `id` char(32) NOT NULL COMMENT 'Login session identifier (GUID)',
+  `client_id` char(32) NOT NULL COMMENT 'Client identifier',
+  `redirect_uri` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Request ''redirect_uri''',
+  `scope` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Request ''scope''',
+  `state` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Request ''state''',
+  `create_dt` datetime NOT NULL COMMENT 'Createion date time',
+  `error_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Authorization error string code',
+  `error_desc` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Authorization error description',
+  `subject_id` varchar(50) DEFAULT NULL COMMENT 'Authorized subject identifier',
+  `expiry` datetime NOT NULL COMMENT 'Session expirration date time',
+  `auth_code` char(32) DEFAULT NULL COMMENT 'Authorization code',
+  `auth_code_expiry` datetime DEFAULT NULL COMMENT 'Authorization code expiration date time',
+  `auth_code_used` enum('Y','N') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Indicates that authorixation code already used',
+  `login_expiry` datetime NOT NULL COMMENT 'Login completion expiration date time',
+  `completed` enum('Y','N') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Indicates that session logon or error',
+  `completed_dt` datetime DEFAULT NULL COMMENT '''completed'' field actuallity date time',
+  `revoked` enum('Y','N') DEFAULT NULL COMMENT 'Indicates that the session is revoked',
+  PRIMARY KEY (`id`),
+  KEY `LoginSessionToClient` (`client_id`),
+  KEY `LoginSessionToSubject` (`subject_id`),
+  CONSTRAINT `LoginSessionToClient` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`),
+  CONSTRAINT `LoginSessionToSubject` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Login sessions';
+
+-- Экспортируемые данные не выделены.
+
+-- Дамп структуры для таблица myauth-sso.subjects
+CREATE TABLE IF NOT EXISTS `subjects` (
+  `id` varchar(50) NOT NULL COMMENT 'String identitifer',
+  `enabled` enum('Y','N') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Indicates is subject enabled',
+  `enabled_dt` datetime DEFAULT NULL COMMENT '''enabled'' flag actiallity datetime',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Contains login sessions';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Subjects';
 
 -- Экспортируемые данные не выделены.
 
--- Дамп структуры для таблица myauth-sso.session_initiations
-CREATE TABLE IF NOT EXISTS `session_initiations` (
-  `session_id` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'Session identifier (GUID)',
-  `redirect_uri` varchar(2048) NOT NULL COMMENT 'Redirect URI from request',
-  `state` varchar(512) DEFAULT NULL COMMENT 'Statefrom request',
-  `authorization_code` char(32) DEFAULT NULL COMMENT 'Issued authorization code (GUID)',
-  `error_code` varchar(50) DEFAULT NULL COMMENT 'Error code (from specification)',
-  `erro_desription` varchar(1024) DEFAULT NULL COMMENT 'Error description',
-  `complete_dt` datetime DEFAULT NULL COMMENT 'When initiation was completed',
-  PRIMARY KEY (`session_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Info about session initiation';
+-- Дамп структуры для таблица myauth-sso.subject_access_claims
+CREATE TABLE IF NOT EXISTS `subject_access_claims` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT 'Row id',
+  `name` varchar(50) NOT NULL COMMENT 'Name',
+  `value` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Value',
+  `subject_id` varchar(50) NOT NULL COMMENT 'Subject identifier',
+  PRIMARY KEY (`id`),
+  KEY `SubjectAccessClaimsToSubject` (`subject_id`),
+  CONSTRAINT `SubjectAccessClaimsToSubject` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Additional subject claims for access token';
 
 -- Экспортируемые данные не выделены.
 
--- Дамп структуры для таблица myauth-sso.session_scopes
-CREATE TABLE IF NOT EXISTS `session_scopes` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `session_id` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Session identifier (GUID)',
-  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Scope name',
-  `requierd` enum('Y','N') NOT NULL COMMENT '''Y'' if scope contains in required scope list. Else - auth server send it but will be ignored',
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `UK_SessionScope` (`session_id`,`name`),
-  CONSTRAINT `FK_SessScope_To_Session` FOREIGN KEY (`session_id`) REFERENCES `login_sessions` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Scopes which related to sessions';
+-- Дамп структуры для таблица myauth-sso.subject_available_scopes
+CREATE TABLE IF NOT EXISTS `subject_available_scopes` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT 'Row identifier',
+  `name` varchar(50) NOT NULL COMMENT 'Scope name',
+  `subject_id` varchar(50) NOT NULL COMMENT 'Subject identifier',
+  PRIMARY KEY (`id`),
+  KEY `SubjectAvailabeScopesToSubject` (`subject_id`),
+  CONSTRAINT `SubjectAvailabeScopesToSubject` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Subject available scopes';
+
+-- Экспортируемые данные не выделены.
+
+-- Дамп структуры для таблица myauth-sso.subject_identity_claims
+CREATE TABLE IF NOT EXISTS `subject_identity_claims` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT 'Row id',
+  `name` varchar(50) NOT NULL COMMENT 'Name',
+  `value` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Value',
+  `scope_id` varchar(50) NOT NULL COMMENT 'Scope string identifier',
+  `subject_id` varchar(50) NOT NULL COMMENT 'Subject id',
+  PRIMARY KEY (`id`),
+  KEY `SubjectIdentityClaimsToSubject` (`subject_id`),
+  CONSTRAINT `SubjectIdentityClaimsToSubject` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Subject claims for identity';
 
 -- Экспортируемые данные не выделены.
 
