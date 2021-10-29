@@ -8,31 +8,33 @@ using MyLab.Db;
 
 namespace MyAuth.OAuthPoint.Services
 {
-    public interface ISessionProvider
+    public interface ILoginSessionProvider
     {
-        Task<SessionOAuth2Details> ProvideOAuth2DetailsAsync(string sessionId, bool successCompletionRequired = false);
+        Task<SessionOAuth2Details> ProvideOAuth2DetailsAsync(string loginId, string clientId,bool shouldLogon);
     }
 
-    class SessionProvider : ISessionProvider
+    class LoginSessionProvider : ILoginSessionProvider
     {
         private readonly IDbManager _db;
 
-        public SessionProvider(IDbManager db)
+        public LoginSessionProvider(IDbManager db)
         {
             _db = db;
         }
 
-        public async Task<SessionOAuth2Details> ProvideOAuth2DetailsAsync(string sessionId, bool successCompletionRequired)
+        public async Task<SessionOAuth2Details> ProvideOAuth2DetailsAsync(string loginId, string clientId, bool shouldLogon)
         {
             await using var db = _db.Use();
 
-            var q = db.Tab<LoginSessionDb>()
-                .Where(s => s.Expiry > DateTime.Now);
+            var q = db.Tab<TokenSessionDb>()
+                .Where(s => 
+                    s.LoginId == loginId && 
+                    s.ClientId == clientId && 
+                    s.Login.Expiry > DateTime.Now);
 
-            if (successCompletionRequired)
-                q = q.Where(s => 
-                    s.Completed == MySqlBool.True &&
-                    s.ErrorCode == AuthorizationRequestProcessingError.Undefined);
+            q = shouldLogon 
+                ? q.Where(s => s.Status == TokenSessionDbStatus.Started) 
+                : q.Where(s => s.Status == TokenSessionDbStatus.Pending);
 
             return await q.Select(s => new SessionOAuth2Details
                 {

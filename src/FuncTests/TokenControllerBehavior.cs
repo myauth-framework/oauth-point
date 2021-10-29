@@ -172,7 +172,7 @@ namespace FuncTests
                     {
                         ClientId = "right-client",
                         RedirectUri = "http://right.ru/cb",
-                        RefreshToken = "right-sess-id-2",
+                        RefreshToken = "right-login-sess-id-2",
                         GrantType = "refresh_token"
                     },
                     rightBasicAuthHeader, TokenRequestProcessingError.InvalidGrant
@@ -199,14 +199,21 @@ namespace FuncTests
 
                 await dataConnection.Tab<LoginSessionDb>().InsertAsync(() => new LoginSessionDb
                 {
-                    Id = "right-sess-id",
+                    Id = "right-login-sess-id",
+                    CreateDt = DateTime.Now,
+                    Expiry = DateTime.MaxValue,
+                    LoginExpiry = DateTime.MaxValue,
+                });
+
+                await dataConnection.Tab<TokenSessionDb>().InsertAsync(() => new TokenSessionDb
+                {
+                    Id = "right-token-sess-id",
+                    LoginId = "right-login-sess-id",
                     ClientId = "right-client",
                     AuthCode = "right-code",
                     RedirectUri = "http://right.ru/cb",
                     Scope = "openid",
-                    CreateDt = DateTime.Now,
-                    Expiry = DateTime.MaxValue,
-                    LoginExpiry = DateTime.MaxValue,
+                    CreateDt = DateTime.Now
                 });
 
                 await dataConnection.Tab<ClientDb>().InsertAsync(() => new ClientDb
@@ -219,14 +226,21 @@ namespace FuncTests
 
                 await dataConnection.Tab<LoginSessionDb>().InsertAsync(() => new LoginSessionDb
                 {
-                    Id = "right-sess-id-2",
+                    Id = "right-login-sess-id-2",
+                    CreateDt = DateTime.Now,
+                    Expiry = DateTime.MaxValue,
+                    LoginExpiry = DateTime.MaxValue,
+                });
+
+                await dataConnection.Tab<TokenSessionDb>().InsertAsync(() => new TokenSessionDb
+                {
+                    Id = "right-token-sess-id-2",
+                    LoginId = "right-login-sess-id-2",
                     ClientId = "right-client2",
                     AuthCode = "right-code2",
                     RedirectUri = "http://right.ru/cb",
                     Scope = "openid",
-                    CreateDt = DateTime.Now,
-                    Expiry = DateTime.MaxValue,
-                    LoginExpiry = DateTime.MaxValue,
+                    CreateDt = DateTime.Now
                 });
             }
         }

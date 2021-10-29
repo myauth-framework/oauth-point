@@ -45,10 +45,6 @@ namespace MyAuth.OAuthPoint.Db
 		/// </summary>
 		public ITable<LoginSessionDb>            LoginSessions            { get { return this.GetTable<LoginSessionDb>(); } }
 		/// <summary>
-		/// Refresh tokens
-		/// </summary>
-		public ITable<RefreshTokenDb>            RefreshTokens            { get { return this.GetTable<RefreshTokenDb>(); } }
-		/// <summary>
 		/// Additional subject claims for access token
 		/// </summary>
 		public ITable<SubjectAccessClaimDb>      SubjectAccessClaims      { get { return this.GetTable<SubjectAccessClaimDb>(); } }
@@ -64,6 +60,10 @@ namespace MyAuth.OAuthPoint.Db
 		/// Subject claims for identity
 		/// </summary>
 		public ITable<SubjectIdentityClaimDb>    SubjectIdentityClaims    { get { return this.GetTable<SubjectIdentityClaimDb>(); } }
+		/// <summary>
+		/// Token sessions
+		/// </summary>
+		public ITable<TokenSessionDb>            TokenSessions            { get { return this.GetTable<TokenSessionDb>(); } }
 
 		public MyAuthOAuthPointDb()
 		{
@@ -234,10 +234,10 @@ namespace MyAuth.OAuthPoint.Db
 		public IEnumerable<ClientAvailableUriDb> ClientAvailableUriToClients { get; set; }
 
 		/// <summary>
-		/// LoginSessionToClient_BackReference
+		/// TokenSessionsToClient_BackReference
 		/// </summary>
 		[Association(ThisKey="Id", OtherKey="ClientId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
-		public IEnumerable<LoginSessionDb> LoginSessionToClients { get; set; }
+		public IEnumerable<TokenSessionDb> TokenSessionsToClients { get; set; }
 
 		#endregion
 	}
@@ -251,85 +251,33 @@ namespace MyAuth.OAuthPoint.Db
 		/// <summary>
 		/// Login session identifier (GUID)
 		/// </summary>
-		[Column("id"),               PrimaryKey,  NotNull] public string                                                       Id             { get; set; } // char(32)
-		/// <summary>
-		/// Client identifier
-		/// </summary>
-		[Column("client_id"),                     NotNull] public string                                                       ClientId       { get; set; } // char(32)
-		/// <summary>
-		/// Request &apos;redirect_uri&apos;
-		/// </summary>
-		[Column("redirect_uri"),                  NotNull] public string                                                       RedirectUri    { get; set; } // varchar(250)
-		/// <summary>
-		/// Request &apos;scope&apos;
-		/// </summary>
-		[Column("scope"),                         NotNull] public string                                                       Scope          { get; set; } // varchar(250)
-		/// <summary>
-		/// Request &apos;state&apos;
-		/// </summary>
-		[Column("state"),               Nullable         ] public string                                                       State          { get; set; } // varchar(250)
+		[Column("id"),           PrimaryKey,  NotNull] public string                                    Id          { get; set; } // char(32)
 		/// <summary>
 		/// Createion date time
 		/// </summary>
-		[Column("create_dt"),                     NotNull] public DateTime                                                     CreateDt       { get; set; } // datetime
+		[Column("create_dt"),                 NotNull] public DateTime                                  CreateDt    { get; set; } // datetime
 		/// <summary>
-		/// Authorization error string code
+		/// Subject login expiration date time
 		/// </summary>
-		[Column("error_code"),          Nullable         ] public MyAuth.OAuthPoint.Models.AuthorizationRequestProcessingError ErrorCode      { get; set; } // varchar(50)
-		/// <summary>
-		/// Authorization error description
-		/// </summary>
-		[Column("error_desc"),          Nullable         ] public string                                                       ErrorDesc      { get; set; } // varchar(250)
+		[Column("login_expiry"),              NotNull] public DateTime                                  LoginExpiry { get; set; } // datetime
 		/// <summary>
 		/// Authorized subject identifier
 		/// </summary>
-		[Column("subject_id"),          Nullable         ] public string                                                       SubjectId      { get; set; } // varchar(50)
+		[Column("subject_id"),      Nullable         ] public string                                    SubjectId   { get; set; } // varchar(50)
 		/// <summary>
 		/// Session expirration date time
 		/// </summary>
-		[Column("expiry"),                        NotNull] public DateTime                                                     Expiry         { get; set; } // datetime
+		[Column("expiry"),                    NotNull] public DateTime                                  Expiry      { get; set; } // datetime
 		/// <summary>
-		/// Authorization code
+		/// Login date time
 		/// </summary>
-		[Column("auth_code"),           Nullable         ] public string                                                       AuthCode       { get; set; } // char(32)
+		[Column("logged_dt"),       Nullable         ] public DateTime?                                 LoggedDt    { get; set; } // datetime
 		/// <summary>
-		/// Authorization code expiration date time
+		/// Login session status
 		/// </summary>
-		[Column("auth_code_expiry"),    Nullable         ] public DateTime?                                                    AuthCodeExpiry { get; set; } // datetime
-		/// <summary>
-		/// Indicates that authorixation code already used
-		/// </summary>
-		[Column("auth_code_used"),      Nullable         ] public MyAuth.OAuthPoint.Db.MySqlBool                               AuthCodeUsed   { get; set; } // enum('Y','N')
-		/// <summary>
-		/// Login completion expiration date time
-		/// </summary>
-		[Column("login_expiry"),                  NotNull] public DateTime                                                     LoginExpiry    { get; set; } // datetime
-		/// <summary>
-		/// Indicates that session logon or error
-		/// </summary>
-		[Column("completed"),           Nullable         ] public MyAuth.OAuthPoint.Db.MySqlBool                               Completed      { get; set; } // enum('Y','N')
-		/// <summary>
-		/// &apos;completed&apos; field actuallity date time
-		/// </summary>
-		[Column("completed_dt"),        Nullable         ] public DateTime?                                                    CompletedDt    { get; set; } // datetime
-		/// <summary>
-		/// Indicates that the session is revoked
-		/// </summary>
-		[Column("revoked"),             Nullable         ] public MyAuth.OAuthPoint.Db.MySqlBool                               Revoked        { get; set; } // enum('Y','N')
+		[Column("status"),          Nullable         ] public MyAuth.OAuthPoint.Db.LoginSessionDbStatus Status      { get; set; } // enum('started','failed','revoked')
 
 		#region Associations
-
-		/// <summary>
-		/// LoginSessionToClient
-		/// </summary>
-		[Association(ThisKey="ClientId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="LoginSessionToClient", BackReferenceName="LoginSessionToClients")]
-		public ClientDb Client { get; set; }
-
-		/// <summary>
-		/// RefreshTokenToSession_BackReference
-		/// </summary>
-		[Association(ThisKey="Id", OtherKey="SessionId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
-		public IEnumerable<RefreshTokenDb> RefreshTokenToSessions { get; set; }
 
 		/// <summary>
 		/// LoginSessionToSubject
@@ -337,39 +285,11 @@ namespace MyAuth.OAuthPoint.Db
 		[Association(ThisKey="SubjectId", OtherKey="Id", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="LoginSessionToSubject", BackReferenceName="LoginSessionToSubjects")]
 		public SubjectDb Subject { get; set; }
 
-		#endregion
-	}
-
-	/// <summary>
-	/// Refresh tokens
-	/// </summary>
-	[Table("refresh_tokens")]
-	public partial class RefreshTokenDb
-	{
 		/// <summary>
-		/// Token identifier
+		/// TokenSesionToLoginSession_BackReference
 		/// </summary>
-		[Column("id"),         PrimaryKey,  NotNull] public string                         Id        { get; set; } // char(32)
-		/// <summary>
-		/// Session identifier
-		/// </summary>
-		[Column("session_id"),              NotNull] public string                         SessionId { get; set; } // char(32)
-		/// <summary>
-		/// Expiration date time
-		/// </summary>
-		[Column("expiry"),                  NotNull] public DateTime                       Expiry    { get; set; } // datetime
-		/// <summary>
-		/// Indicates that the token is revoked
-		/// </summary>
-		[Column("revoked"),       Nullable         ] public MyAuth.OAuthPoint.Db.MySqlBool Revoked   { get; set; } // enum('Y','N')
-
-		#region Associations
-
-		/// <summary>
-		/// RefreshTokenToSession
-		/// </summary>
-		[Association(ThisKey="SessionId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="RefreshTokenToSession", BackReferenceName="RefreshTokenToSessions")]
-		public LoginSessionDb Session { get; set; }
+		[Association(ThisKey="Id", OtherKey="LoginId", CanBeNull=true, Relationship=LinqToDB.Mapping.Relationship.OneToMany, IsBackReference=true)]
+		public IEnumerable<TokenSessionDb> TokenSesionToLoginSessions { get; set; }
 
 		#endregion
 	}
@@ -524,6 +444,78 @@ namespace MyAuth.OAuthPoint.Db
 		#endregion
 	}
 
+	/// <summary>
+	/// Token sessions
+	/// </summary>
+	[Table("token_sessions")]
+	public partial class TokenSessionDb
+	{
+		/// <summary>
+		/// Token session identifier (GUID)
+		/// </summary>
+		[Column("id"),               PrimaryKey,  NotNull] public string                                                       Id             { get; set; } // char(32)
+		/// <summary>
+		/// Login session identifier
+		/// </summary>
+		[Column("login_id"),                      NotNull] public string                                                       LoginId        { get; set; } // char(32)
+		/// <summary>
+		/// Client identifier
+		/// </summary>
+		[Column("client_id"),                     NotNull] public string                                                       ClientId       { get; set; } // char(32)
+		/// <summary>
+		/// Request &apos;redirect_uri&apos;
+		/// </summary>
+		[Column("redirect_uri"),                  NotNull] public string                                                       RedirectUri    { get; set; } // varchar(250)
+		/// <summary>
+		/// Request &apos;scope&apos;
+		/// </summary>
+		[Column("scope"),                         NotNull] public string                                                       Scope          { get; set; } // varchar(250)
+		/// <summary>
+		/// Request &apos;state&apos;
+		/// </summary>
+		[Column("state"),               Nullable         ] public string                                                       State          { get; set; } // varchar(250)
+		/// <summary>
+		/// Authorization error string code
+		/// </summary>
+		[Column("error_code"),          Nullable         ] public MyAuth.OAuthPoint.Models.AuthorizationRequestProcessingError ErrorCode      { get; set; } // varchar(50)
+		/// <summary>
+		/// Authorization error description
+		/// </summary>
+		[Column("error_desc"),          Nullable         ] public string                                                       ErrorDesc      { get; set; } // varchar(250)
+		/// <summary>
+		/// Createion date time
+		/// </summary>
+		[Column("create_dt"),                     NotNull] public DateTime                                                     CreateDt       { get; set; } // datetime
+		/// <summary>
+		/// Authorization code (GUID)
+		/// </summary>
+		[Column("auth_code"),           Nullable         ] public string                                                       AuthCode       { get; set; } // char(32)
+		/// <summary>
+		/// Authorization code expiration date time
+		/// </summary>
+		[Column("auth_code_expiry"),    Nullable         ] public DateTime?                                                    AuthCodeExpiry { get; set; } // datetime
+		/// <summary>
+		/// Token session status
+		/// </summary>
+		[Column("status"),              Nullable         ] public MyAuth.OAuthPoint.Db.TokenSessionDbStatus                    Status         { get; set; } // enum('started','failed')
+
+		#region Associations
+
+		/// <summary>
+		/// TokenSessionsToClient
+		/// </summary>
+		[Association(ThisKey="ClientId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="TokenSessionsToClient", BackReferenceName="TokenSessionsToClients")]
+		public ClientDb Client { get; set; }
+
+		/// <summary>
+		/// TokenSesionToLoginSession
+		/// </summary>
+		[Association(ThisKey="LoginId", OtherKey="Id", CanBeNull=false, Relationship=LinqToDB.Mapping.Relationship.ManyToOne, KeyName="TokenSesionToLoginSession", BackReferenceName="TokenSesionToLoginSessions")]
+		public LoginSessionDb Login { get; set; }
+
+		#endregion
+	}
+
 	public static partial class TableExtensions
 	{
 		public static ClientAvailableAudienceDb Find(this ITable<ClientAvailableAudienceDb> table, int Id)
@@ -556,12 +548,6 @@ namespace MyAuth.OAuthPoint.Db
 				t.Id == Id);
 		}
 
-		public static RefreshTokenDb Find(this ITable<RefreshTokenDb> table, string Id)
-		{
-			return table.FirstOrDefault(t =>
-				t.Id == Id);
-		}
-
 		public static SubjectAccessClaimDb Find(this ITable<SubjectAccessClaimDb> table, int Id)
 		{
 			return table.FirstOrDefault(t =>
@@ -581,6 +567,12 @@ namespace MyAuth.OAuthPoint.Db
 		}
 
 		public static SubjectIdentityClaimDb Find(this ITable<SubjectIdentityClaimDb> table, int Id)
+		{
+			return table.FirstOrDefault(t =>
+				t.Id == Id);
+		}
+
+		public static TokenSessionDb Find(this ITable<TokenSessionDb> table, string Id)
 		{
 			return table.FirstOrDefault(t =>
 				t.Id == Id);

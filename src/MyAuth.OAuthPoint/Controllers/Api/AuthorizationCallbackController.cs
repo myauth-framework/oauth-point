@@ -14,23 +14,23 @@ namespace MyAuth.OAuthPoint.Controllers.Api
     [ApiController]
     public class AuthorizationCallbackController : ControllerBase
     {
-        private readonly ISessionProvider _sessionProvider;
+        private readonly ILoginSessionProvider _loginSessionProvider;
         private readonly AuthTimingsOptions _options;
 
         public AuthorizationCallbackController(
-            ISessionProvider sessionProvider, 
+            ILoginSessionProvider loginSessionProvider, 
             IOptions<AuthTimingsOptions> options)
         {
-            _sessionProvider = sessionProvider;
+            _loginSessionProvider = loginSessionProvider;
             _options = options.Value;
         }
 
         [HttpGet]
         [ErrorToResponse(typeof(LoginSessionNotFoundException), HttpStatusCode.NotFound)]
         [ErrorToResponse(typeof(LoginSessionExpiredException), HttpStatusCode.NotFound)]
-        public async Task<IActionResult> Get([FromQuery(Name = "login_id")] string sessId)
+        public async Task<IActionResult> Get([FromQuery(Name = "login_id")] string loginId, [FromQuery(Name = "client_id")] string clientId)
         {
-            var foundSess = await _sessionProvider.ProvideOAuth2DetailsAsync(sessId);
+            var foundSess = await _loginSessionProvider.ProvideOAuth2DetailsAsync(loginId, clientId, false);
 
             if (foundSess == null)
             {
@@ -42,7 +42,7 @@ namespace MyAuth.OAuthPoint.Controllers.Api
                 return UrlRedirector.RedirectError(foundSess.RedirectUri, foundSess.ErrorCode, foundSess.ErrorDescription, foundSess.State);
             }
 
-            var authCookie = new LoginSessionCookie(sessId)
+            var authCookie = new LoginSessionCookie(loginId)
             {
                 Expiry = TimeSpan.FromDays(_options.SessionExpiryDays)
             };

@@ -58,14 +58,14 @@ namespace FuncTests
         public async Task ShouldReturn404IfSessionNotFound()
         {
             //Arrange
-            var sessionId = Guid.NewGuid().ToString("N");
-            
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var clientId = Guid.NewGuid().ToString("N");
 
             var db = await _dbFixture.CreateDbAsync();
             var api = _testApi.Start(s => s.AddSingleton(db));
 
             //Act
-            var resp = await api.Call(s => s.CallbackLogin(sessionId));
+            var resp = await api.Call(s => s.CallbackLogin(loginSessId, clientId));
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
@@ -75,14 +75,16 @@ namespace FuncTests
         public async Task ShouldReturn404IfSessionExpired()
         {
             //Arrange
-            var sessionId = Guid.NewGuid().ToString("N");
-            var dataInitializer = TestTools.CreateDataIniterWithExpiredSession(sessionId);
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var tokenSessId = Guid.NewGuid().ToString("N");
+            var clientId = Guid.NewGuid().ToString("N");
+            var dataInitializer = TestTools.CreateDataIniterWithExpiredSession(loginSessId, tokenSessId);
 
             var db = await _dbFixture.CreateDbAsync(dataInitializer);
             var api = _testApi.Start(s => s.AddSingleton(db));
 
             //Act
-            var resp = await api.Call(s => s.CallbackLogin(sessionId));
+            var resp = await api.Call(s => s.CallbackLogin(loginSessId, clientId));
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
@@ -92,7 +94,8 @@ namespace FuncTests
         public async Task ShouldRedirectToErrorWhenWasLoginError()
         {
             //Arrange
-            var sessionId = Guid.NewGuid().ToString("N");
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var tokenSessId = Guid.NewGuid().ToString("N");
             var clientId = Guid.NewGuid().ToString("N");
             var redirectUri = "http://host.net/cb";
 
@@ -108,9 +111,17 @@ namespace FuncTests
                 {
                     new LoginSessionDb
                     {
-                        Id = sessionId, 
-                        ClientId = clientId,
+                        Id = loginSessId, 
                         Expiry = DateTime.MaxValue,
+                    }
+                },
+                TokenSessions = new []
+                {
+                    new TokenSessionDb
+                    {
+                        Id = tokenSessId,
+                        LoginId = loginSessId,
+                        ClientId = clientId,
                         ErrorCode = AuthorizationRequestProcessingError.InvalidRequestObject,
                         ErrorDesc = "error",
                         RedirectUri = redirectUri,
@@ -123,7 +134,7 @@ namespace FuncTests
             var api = _testApi.Start(s => s.AddSingleton(db));
 
             //Act
-            var resp = await api.Call(s => s.CallbackLogin(sessionId));
+            var resp = await api.Call(s => s.CallbackLogin(loginSessId, clientId));
 
             TestTools.TryExtractRedirect(resp, out var locationLeftPart, out var query);
 
@@ -138,7 +149,8 @@ namespace FuncTests
         public async Task ShouldRedirectToCallbackWhenLoginSuccess()
         {
             //Arrange
-            var sessionId = Guid.NewGuid().ToString("N");
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var tokenSessId = Guid.NewGuid().ToString("N");
             var clientId = Guid.NewGuid().ToString("N");
             var authCode = Guid.NewGuid().ToString("N");
             var state = Guid.NewGuid().ToString("N");
@@ -159,12 +171,19 @@ namespace FuncTests
                 {
                     new LoginSessionDb
                     {
-                        Id = sessionId,
-                        ClientId = clientId,
+                        Id = loginSessId,
                         Expiry = DateTime.MaxValue,
+                    }
+                },
+                TokenSessions = new[]
+                {
+                    new TokenSessionDb
+                    {
+                        Id = tokenSessId,
+                        LoginId = loginSessId,
+                        ClientId = clientId,
                         RedirectUri = redirectUri,
                         AuthCode = authCode,
-                        CompletedDt = DateTime.Now,
                         State = state,
                         Scope = "no-mater-scope"
                     }
@@ -175,7 +194,7 @@ namespace FuncTests
             var api = _testApi.Start(s => s.AddSingleton(db));
 
             //Act
-            var resp = await api.Call(s => s.CallbackLogin(sessionId));
+            var resp = await api.Call(s => s.CallbackLogin(loginSessId, clientId));
 
             TestTools.TryExtractRedirect(resp, out var locationLeftPart, out var query);
 
@@ -190,7 +209,8 @@ namespace FuncTests
         public async Task ShouldSetLoginCookieWhenLoginSuccess()
         {
             //Arrange
-            var sessionId = Guid.NewGuid().ToString("N");
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var tokenSessId = Guid.NewGuid().ToString("N");
             var clientId = Guid.NewGuid().ToString("N");
             var authCode = Guid.NewGuid().ToString("N");
             var state = Guid.NewGuid().ToString("N");
@@ -211,12 +231,19 @@ namespace FuncTests
                 {
                     new LoginSessionDb
                     {
-                        Id = sessionId,
+                        Id = loginSessId,
+                        Expiry = DateTime.MaxValue
+                    }
+                },
+                TokenSessions = new[]
+                {
+                    new TokenSessionDb
+                    {
+                        Id = tokenSessId,
+                        LoginId = loginSessId,
                         ClientId = clientId,
-                        Expiry = DateTime.MaxValue,
                         RedirectUri = redirectUri,
                         AuthCode= authCode,
-                        CompletedDt = DateTime.Now,
                         State = state,
                         Scope = "no-mater-scope"
                     }
@@ -227,7 +254,7 @@ namespace FuncTests
             var api = _testApi.Start(s => s.AddSingleton(db));
 
             //Act
-            var resp = await api.Call(s => s.CallbackLogin(sessionId));
+            var resp = await api.Call(s => s.CallbackLogin(loginSessId, clientId));
 
             var cookiesWasFound = resp.ResponseMessage.Headers.TryGetValues("Set-Cookie", out var values);
             var foundLoginCookies = values?.FirstOrDefault(c => c.StartsWith(LoginSessionCookieName.Name + "="));
@@ -235,7 +262,7 @@ namespace FuncTests
             //Assert
             Assert.True(cookiesWasFound);
             Assert.NotNull(foundLoginCookies);
-            Assert.StartsWith($"{LoginSessionCookieName.Name}={sessionId}", foundLoginCookies);
+            Assert.StartsWith($"{LoginSessionCookieName.Name}={loginSessId}", foundLoginCookies);
         }
 
         public void Dispose()

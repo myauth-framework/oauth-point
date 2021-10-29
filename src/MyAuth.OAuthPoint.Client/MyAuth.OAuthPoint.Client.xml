@@ -19,7 +19,7 @@
             Complete login process failed
             </summary>
         </member>
-        <member name="M:MyAuth.OAuthPoint.Client.IApiServiceV1.CallbackLogin(System.String)">
+        <member name="M:MyAuth.OAuthPoint.Client.IApiServiceV1.CallbackLogin(System.String,System.String)">
             <summary>
             Return back from login process
             </summary>

@@ -146,12 +146,13 @@ namespace FuncTests
         {
             //Arrange
             var clientId = Guid.NewGuid().ToString("N");
-            var sessionId = Guid.NewGuid().ToString("N");
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var tokenSessId = Guid.NewGuid().ToString("N");
             var authCode = Guid.NewGuid().ToString("N");
             var redirectUri = "http://host.net/cb";
             var scopes = "testscope";
 
-            var dataInitializer = CreateDataInitializerForCookieTest(clientId, sessionId, redirectUri, scopes, authCode);
+            var dataInitializer = CreateDataInitializerForCookieTest(clientId, loginSessId, tokenSessId, redirectUri, scopes, authCode);
 
             var db = await _dbFixture.CreateDbAsync(dataInitializer);
 
@@ -161,7 +162,7 @@ namespace FuncTests
 
             //Act
             var resp = await oidc.Call(s => s.Authorization(
-                "code", clientId, redirectUri, scopes, null, $"{LoginSessionCookieName.Name}={sessionId}"));
+                "code", clientId, redirectUri, scopes, null, $"{LoginSessionCookieName.Name}={loginSessId}"));
 
             TestTools.TryExtractRedirect(resp, out var locationLeftPart, out var query);
 
@@ -176,7 +177,7 @@ namespace FuncTests
         {
             //Arrange
             var clientId = Guid.NewGuid().ToString("N");
-            var sessionId = Guid.NewGuid().ToString("N");
+            var loginSessId = Guid.NewGuid().ToString("N");
             var redirectUri = "http://host.net/cb";
             var scopes = "testscope";
 
@@ -190,7 +191,7 @@ namespace FuncTests
 
             //Act
             var resp = await oidc.Call(s => s.Authorization(
-                "code", clientId, redirectUri, scopes, null, $"{LoginSessionCookieName.Name}={sessionId}"));
+                "code", clientId, redirectUri, scopes, null, $"{LoginSessionCookieName.Name}={loginSessId}"));
 
             TestTools.TryExtractRedirect(resp, out var locationLeftPart, out var query);
 
@@ -206,12 +207,12 @@ namespace FuncTests
             //Arrange
             var clientId = Guid.NewGuid().ToString("N");
             var client2Id = Guid.NewGuid().ToString("N");
-            var sessionId = Guid.NewGuid().ToString("N");
+            var loginSessId = Guid.NewGuid().ToString("N");
             var authCode = Guid.NewGuid().ToString("N");
             var redirectUri = "http://host.net/cb";
             var scopes = "testscope";
 
-            var dataInitializer = CreateDataInitializerForCookieTest(clientId, sessionId, redirectUri, scopes, authCode);
+            var dataInitializer = CreateDataInitializerForCookieTest(clientId, loginSessId, redirectUri, scopes, authCode);
 
             dataInitializer.Clients = new[]
             {
@@ -239,7 +240,7 @@ namespace FuncTests
 
             //Act
             var resp = await oidc.Call(s => s.Authorization(
-                "code", client2Id, redirectUri, scopes, null, $"{LoginSessionCookieName.Name}={sessionId}"));
+                "code", client2Id, redirectUri, scopes, null, $"{LoginSessionCookieName.Name}={loginSessId}"));
 
             TestTools.TryExtractRedirect(resp, out var locationLeftPart, out var query);
 
@@ -254,12 +255,13 @@ namespace FuncTests
         {
             //Arrange
             var clientId = Guid.NewGuid().ToString("N");
-            var sessionId = Guid.NewGuid().ToString("N");
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var tokenSessId = Guid.NewGuid().ToString("N");
             var redirectUri = "http://host.net/cb";
             var redirectUri2 = "http://host2.net/cb";
             var scopes = "testscope";
 
-            var dataInitializer = CreateDataInitializerForCookieTest(clientId, sessionId, redirectUri, scopes);
+            var dataInitializer = CreateDataInitializerForCookieTest(clientId, loginSessId, tokenSessId, redirectUri, scopes);
 
             dataInitializer.ClientRedirectUris = new []
             {
@@ -275,7 +277,7 @@ namespace FuncTests
 
             //Act
             var resp = await oidc.Call(s => s.Authorization(
-                "code", clientId, redirectUri2, scopes, null, $"{LoginSessionCookieName.Name}={sessionId}"));
+                "code", clientId, redirectUri2, scopes, null, $"{LoginSessionCookieName.Name}={loginSessId}"));
 
             TestTools.TryExtractRedirect(resp, out var locationLeftPart, out var query);
 
@@ -290,12 +292,13 @@ namespace FuncTests
         {
             //Arrange
             var clientId = Guid.NewGuid().ToString("N");
-            var sessionId = Guid.NewGuid().ToString("N");
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var tokenSessId = Guid.NewGuid().ToString("N");
             var redirectUri = "http://host.net/cb";
             var scopes = "testscope";
             var scopes2 = "testscope2";
 
-            var dataInitializer = CreateDataInitializerForCookieTest(clientId, sessionId, redirectUri, scopes);
+            var dataInitializer = CreateDataInitializerForCookieTest(clientId, loginSessId, tokenSessId, redirectUri, scopes);
 
             dataInitializer.ClientScopes = new[]
             {
@@ -311,7 +314,7 @@ namespace FuncTests
 
             //Act
             var resp = await oidc.Call(s => s.Authorization(
-                "code", clientId, redirectUri, scopes2, null, $"{LoginSessionCookieName.Name}={sessionId}"));
+                "code", clientId, redirectUri, scopes2, null, $"{LoginSessionCookieName.Name}={loginSessId}"));
 
             TestTools.TryExtractRedirect(resp, out var locationLeftPart, out var query);
 

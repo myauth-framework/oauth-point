@@ -49,19 +49,19 @@ namespace MyAuth.OAuthPoint.Services
             switch (request.GrantType)
             {
                 case "authorization_code":
-                    return await IssueNew(db, clientId, clientPassword, request);
+                    return await IssueNew(db, clientId, request);
                 case "refresh_token":
-                    return await RefreshToken(db, clientId, clientPassword, request);
+                    return await RefreshToken(db, clientId, request);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(request.GrantType));
             }
         }
 
-        private async Task<SuccessfulTokenResponse> RefreshToken(DataConnection db, string clientId, string clientPassword, TokenRequest request)
+        private async Task<SuccessfulTokenResponse> RefreshToken(DataConnection db, string clientId, TokenRequest request)
         {
-            var foundSession = await db.Tab<LoginSessionDb>()
+            var foundSession = await db.Tab<TokenSessionDb>()
                 .Where(s => s.ClientId == clientId && s.Id == request.RefreshToken)
-                .Select(StoredSessionInfoSelector)
+                .Select(_storedSessionInfoSelector)
                 .FirstOrDefaultAsync();
 
             VerifySessionAsync(foundSession, null);
@@ -69,11 +69,11 @@ namespace MyAuth.OAuthPoint.Services
             return IssueTokens(foundSession);
         }
 
-        private async Task<SuccessfulTokenResponse> IssueNew(DataConnection db, string clientId, string clientPassword, TokenRequest request)
+        private async Task<SuccessfulTokenResponse> IssueNew(DataConnection db, string clientId, TokenRequest request)
         {
-            var foundSession = await db.Tab<LoginSessionDb>()
+            var foundSession = await db.Tab<TokenSessionDb>()
                 .Where(s => s.ClientId == clientId && s.AuthCode == request.Code)
-                .Select(StoredSessionInfoSelector)
+                .Select(_storedSessionInfoSelector)
                 .FirstOrDefaultAsync();
 
             VerifySessionAsync(foundSession, request.RedirectUri);
@@ -191,18 +191,18 @@ namespace MyAuth.OAuthPoint.Services
             return accessTokenFactory.Create(_tokenIssuingOptions.SignSymmetricKey);
         }
 
-        private Expression<Func<LoginSessionDb, StoredSessionInfo>> StoredSessionInfoSelector = s =>
+        private readonly Expression<Func<TokenSessionDb, StoredSessionInfo>> _storedSessionInfoSelector = s =>
             new StoredSessionInfo
             {
                 Id = s.Id,
                 RedirectUri = s.RedirectUri,
-                Expiry = s.Expiry,
-                AuthCodeUsed = s.AuthCodeUsed == MySqlBool.True,
+                Expiry = s.Login.Expiry,
+                AuthCodeDisabled = s.Status != TokenSessionDbStatus.Pending,
                 Scope = s.Scope,
-                SubjectId = s.SubjectId,
+                SubjectId = s.Login.SubjectId,
                 Audiences = s.Client.ClientAvailableAudienceToClients.ToArray(),
-                AccessClaims = s.Subject.SubjectAccessClaimsToSubjects.ToArray(),
-                IdentityClaims = s.Subject.SubjectIdentityClaimsToSubjects.ToArray()
+                AccessClaims = s.Login.Subject.SubjectAccessClaimsToSubjects.ToArray(),
+                IdentityClaims = s.Login.Subject.SubjectIdentityClaimsToSubjects.ToArray()
             };
 
         private void VerifySessionAsync(StoredSessionInfo foundSession, string verifyRequestRedirectUri)
@@ -219,7 +219,7 @@ namespace MyAuth.OAuthPoint.Services
                 throw new TokenRequestProcessingException(_localizer["SessionHasExpired"],
                     TokenRequestProcessingError.InvalidGrant);
 
-            if (foundSession.AuthCodeUsed)
+            if (foundSession.AuthCodeDisabled)
                 throw new TokenRequestProcessingException(_localizer["CodeUsed"],
                     TokenRequestProcessingError.InvalidGrant);
 
@@ -245,7 +245,7 @@ namespace MyAuth.OAuthPoint.Services
             public string Id { get; set; }
             public string RedirectUri { get; set; }
             public DateTime Expiry { get; set; }
-            public bool AuthCodeUsed { get; set; }
+            public bool AuthCodeDisabled { get; set; }
             public bool Revoked { get; set; }
             public string Scope { get; set; }
             public string SubjectId { get; set; }

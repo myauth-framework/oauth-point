@@ -49,7 +49,7 @@ namespace FuncTests
             query = new NameValueCollection();
         }
 
-        public static DataDbInitializer CreateDataIniterWithExpiredSession(string sessionId)
+        public static DataDbInitializer CreateDataIniterWithExpiredSession(string loginSessId, string tokenSessId)
         {
             var clientId = Guid.NewGuid().ToString("N");
             var redirectUri = "http://host.net/cb";
@@ -61,9 +61,17 @@ namespace FuncTests
                 {
                     new LoginSessionDb
                     {
-                        Id = sessionId,
+                        Id = loginSessId,
+                        Expiry = DateTime.MinValue
+                    }
+                },
+                TokenSessions = new []
+                {
+                    new TokenSessionDb
+                    {
+                        Id = tokenSessId,
+                        LoginId = loginSessId,
                         ClientId = clientId,
-                        Expiry = DateTime.MinValue,
                         RedirectUri = redirectUri,
                         Scope = "no-mater-scope"
                     }

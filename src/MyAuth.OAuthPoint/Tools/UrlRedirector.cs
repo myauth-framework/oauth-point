@@ -31,9 +31,9 @@ namespace MyAuth.OAuthPoint.Tools
             return new RedirectResult(url.ToString(), false);
         }
 
-        public static IActionResult RedirectToLogin(string loginEp, string loginId)
+        public static IActionResult RedirectToLogin(string loginEp, string loginId, string clientId)
         {
-            var url = new UriBuilder(loginEp) {Query = "login_id=" + loginId}.ToString();
+            var url = new UriBuilder(loginEp) {Query = $"login_id={loginId}&client_id={clientId}"}.ToString();
 
             return new RedirectResult(url, false);
         }

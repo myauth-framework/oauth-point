@@ -86,14 +86,21 @@ namespace MyAuth.OAuthPoint.Tools
 
         public Task UpdateSessionStateAsync(string authCode, DateTime authCodeExpiry)
         {
-            return _dc.Tab<LoginSessionDb>()
-                .Where(s => s.Id == _sessionId)
-                .Set(s => s.SubjectId, () => _succReq.Subject)
-                .Set(s => s.Completed, () => MySqlBool.True)
-                .Set(s => s.CompletedDt, () => DateTime.Now)
-                .Set(s => s.AuthCode, () => authCode)
-                .Set(s => s.AuthCodeExpiry, () => authCodeExpiry)
-                .UpdateAsync();
+            return _dc.PerformAutoTransactionAsync(async d =>
+            {
+                await _dc.Tab<LoginSessionDb>()
+                    .Where(s => s.Id == _sessionId && s.Status == LoginSessionDbStatus.Pending)
+                    .Set(s => s.SubjectId, () => _succReq.Subject)
+                    .Set(s => s.Status, () => LoginSessionDbStatus.Started)
+                    .UpdateAsync();
+
+                await _dc.Tab<TokenSessionDb>()
+                    .Where(s => s.LoginId == _sessionId && s.Status == TokenSessionDbStatus.Pending)
+                    .Set(s => s.Status, () => TokenSessionDbStatus.Started)
+                    .Set(s => s.AuthCode, () => authCode)
+                    .Set(s => s.AuthCodeExpiry, () => authCodeExpiry)
+                    .UpdateAsync();
+            });
         }
     }
 }

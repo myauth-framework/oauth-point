@@ -21,6 +21,7 @@ namespace FuncTests
             await dataConnection.CreateTableAsync<SubjectIdentityClaimDb>();
 
             await dataConnection.CreateTableAsync<LoginSessionDb>();
+            await dataConnection.CreateTableAsync<TokenSessionDb>();
         }
     }
 }

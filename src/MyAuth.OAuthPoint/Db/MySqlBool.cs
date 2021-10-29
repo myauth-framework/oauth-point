@@ -10,4 +10,26 @@ namespace MyAuth.OAuthPoint.Db
         [MapValue("Y")]
         True
     }
+
+    public enum LoginSessionDbStatus
+    {
+        [MapValue(null)]
+        Pending,
+        [MapValue("started")]
+        Started,
+        [MapValue("failed")]
+        Failed,
+        [MapValue("revoked")]
+        Revoked
+    }
+
+    public enum TokenSessionDbStatus
+    {
+        [MapValue(null)]
+        Pending,
+        [MapValue("started")]
+        Started,
+        [MapValue("failed")]
+        Failed,
+    }
 }

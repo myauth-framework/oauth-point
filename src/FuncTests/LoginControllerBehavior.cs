@@ -57,12 +57,12 @@ namespace FuncTests
         public async Task ShouldReturn404WhenSaveSuccessfulForAbsentSession()
         {
             //Arrange
-            var sessionId = Guid.NewGuid().ToString("N");
+            var loginSessId = Guid.NewGuid().ToString("N");
             var db = await _dbFixture.CreateDbAsync();
             var api = _testApi.Start(s => s.AddSingleton(db));
 
             //Act
-            var resp = await api.Call(s => s.SuccessLogin(sessionId, new LoginSuccessRequest()));
+            var resp = await api.Call(s => s.SuccessLogin(loginSessId, new LoginSuccessRequest()));
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
@@ -72,12 +72,12 @@ namespace FuncTests
         public async Task ShouldReturn404WhenSaveErrorForAbsentSession()
         {
             //Arrange
-            var sessionId = Guid.NewGuid().ToString("N");
+            var loginSessId = Guid.NewGuid().ToString("N");
             var db = await _dbFixture.CreateDbAsync();
             var api = _testApi.Start(s => s.AddSingleton(db));
 
             //Act
-            var resp = await api.Call(s => s.FailLogin(sessionId, new LoginErrorRequest()));
+            var resp = await api.Call(s => s.FailLogin(loginSessId, new LoginErrorRequest()));
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
@@ -87,14 +87,15 @@ namespace FuncTests
         public async Task ShouldReturn404WhenSaveSuccessfulForExpiredSession()
         {
             //Arrange
-            var sessionId = Guid.NewGuid().ToString("N");
-            var dataInitializer = TestTools.CreateDataIniterWithExpiredSession(sessionId);
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var tokenSessId = Guid.NewGuid().ToString("N");
+            var dataInitializer = TestTools.CreateDataIniterWithExpiredSession(loginSessId,tokenSessId);
 
             var db = await _dbFixture.CreateDbAsync(dataInitializer);
             var api = _testApi.Start(s => s.AddSingleton(db));
 
             //Act
-            var resp = await api.Call(s => s.SuccessLogin(sessionId, new LoginSuccessRequest()));
+            var resp = await api.Call(s => s.SuccessLogin(loginSessId, new LoginSuccessRequest()));
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
@@ -104,14 +105,15 @@ namespace FuncTests
         public async Task ShouldReturn404WhenSaveErrorForExpiredSession()
         {
             //Arrange
-            var sessionId = Guid.NewGuid().ToString("N");
-            var dataInitializer = TestTools.CreateDataIniterWithExpiredSession(sessionId);
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var tokenSessId = Guid.NewGuid().ToString("N");
+            var dataInitializer = TestTools.CreateDataIniterWithExpiredSession(loginSessId, tokenSessId);
 
             var db = await _dbFixture.CreateDbAsync(dataInitializer);
             var api = _testApi.Start(s => s.AddSingleton(db));
 
             //Act
-            var resp = await api.Call(s => s.FailLogin(sessionId, new LoginErrorRequest()));
+            var resp = await api.Call(s => s.FailLogin(loginSessId, new LoginErrorRequest()));
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
@@ -121,7 +123,8 @@ namespace FuncTests
         public async Task ShouldReturn404WhenSaveSuccessfulForAlreadyCompletedSession()
         {
             //Arrange
-            var sessionId = Guid.NewGuid().ToString("N");
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var tokenSessId = Guid.NewGuid().ToString("N");
             var clientId = Guid.NewGuid().ToString("N");
             var redirectUri = "http://host.net/cb";
             var dataInitializer = new DataDbInitializer
@@ -131,14 +134,22 @@ namespace FuncTests
                 {
                     new LoginSessionDb
                     {
-                        Id = sessionId,
-                        ClientId = clientId,
+                        Id = loginSessId,
                         Expiry = DateTime.MaxValue,
+                        LoginExpiry = DateTime.Now.AddSeconds(10),
+                        Status = LoginSessionDbStatus.Started
+                    }
+                },
+                TokenSessions = new []
+                {
+                    new TokenSessionDb
+                    {
+                        Id = tokenSessId,
+                        LoginId = loginSessId,
+                        ClientId = clientId,
                         RedirectUri = redirectUri,
                         Scope = "no-mater-scope",
-                        CompletedDt = DateTime.Now,
-                        Completed = MySqlBool.True,
-                        LoginExpiry = DateTime.Now.AddSeconds(10)
+                        Status = TokenSessionDbStatus.Started
                     }
                 }
             };
@@ -152,7 +163,7 @@ namespace FuncTests
             };
 
             //Act
-            var resp = await api.Call(s => s.SuccessLogin(sessionId, authInfo));
+            var resp = await api.Call(s => s.SuccessLogin(loginSessId, authInfo));
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
@@ -162,7 +173,8 @@ namespace FuncTests
         public async Task ShouldReturn404WhenSaveErrorForAlreadyCompletedSession()
         {
             //Arrange
-            var sessionId = Guid.NewGuid().ToString("N");
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var tokenSessId = Guid.NewGuid().ToString("N");
             var clientId = Guid.NewGuid().ToString("N");
             var redirectUri = "http://host.net/cb";
             var dataInitializer = new DataDbInitializer
@@ -172,14 +184,22 @@ namespace FuncTests
                 {
                     new LoginSessionDb
                     {
-                        Id = sessionId,
-                        ClientId = clientId,
+                        Id = loginSessId,
                         Expiry = DateTime.MaxValue,
+                        LoginExpiry = DateTime.Now.AddSeconds(10),
+                        Status = LoginSessionDbStatus.Started
+                    }
+                },
+                TokenSessions = new[]
+                {
+                    new TokenSessionDb
+                    {
+                        Id = tokenSessId,
+                        LoginId = loginSessId,
+                        ClientId = clientId,
                         RedirectUri = redirectUri,
                         Scope = "no-mater-scope",
-                        CompletedDt = DateTime.Now,
-                        Completed = MySqlBool.True,
-                        LoginExpiry = DateTime.Now.AddSeconds(10)
+                        Status = TokenSessionDbStatus.Started
                     }
                 }
             };
@@ -193,7 +213,7 @@ namespace FuncTests
             };
 
             //Act
-            var resp = await api.Call(s => s.FailLogin(sessionId, loginError));
+            var resp = await api.Call(s => s.FailLogin(loginSessId, loginError));
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
@@ -203,7 +223,8 @@ namespace FuncTests
         public async Task ShouldCompleteSuccessful()
         {
             //Arrange
-            var sessionId = Guid.NewGuid().ToString("N");
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var tokenSessId = Guid.NewGuid().ToString("N");
             var clientId = Guid.NewGuid().ToString("N");
             var redirectUri = "http://host.net/cb";
             var dataInitializer = new DataDbInitializer
@@ -213,12 +234,20 @@ namespace FuncTests
                 {
                     new LoginSessionDb
                     {
-                        Id = sessionId,
-                        ClientId = clientId,
+                        Id = loginSessId,
                         Expiry = DateTime.MaxValue,
+                        LoginExpiry = DateTime.Now.AddSeconds(10),
+                    }
+                },
+                TokenSessions = new[]
+                {
+                    new TokenSessionDb
+                    {
+                        Id = tokenSessId,
+                        LoginId = loginSessId,
+                        ClientId = clientId,
                         RedirectUri = redirectUri,
-                        Scope = "no-mater-scope",
-                        LoginExpiry = DateTime.Now.AddSeconds(10)
+                        Scope = "no-mater-scope"
                     }
                 }
             };
@@ -232,30 +261,28 @@ namespace FuncTests
             };
 
             //Act
-            var resp = await api.Call(s => s.SuccessLogin(sessionId, authInfo));
+            var resp = await api.Call(s => s.SuccessLogin(loginSessId, authInfo));
 
-            var actualSess = await db.DoOnce().Tab<LoginSessionDb>()
-                .Where(s => s.Id == sessionId)
+            var actualSess = await db.DoOnce().Tab<TokenSessionDb>()
+                .Where(s => s.Id == tokenSessId)
                 .Select(s => new
                 {
-                    s.Completed,
-                    s.CompletedDt,
-                    s.SubjectId,
+                    LoginSessStatus = s.Login.Status,
+                    TokenSessStatus = s.Status,
+                    s.Login.SubjectId,
                     s.AuthCode,
                     s.AuthCodeExpiry,
-                    s.AuthCodeUsed,
                     s.ErrorCode
                 }).FirstOrDefaultAsync();
 
             //Assert
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
             Assert.NotNull(actualSess);
-            Assert.Equal(MySqlBool.True, actualSess.Completed);
-            Assert.True(actualSess.CompletedDt < DateTime.Now);
+            Assert.Equal(LoginSessionDbStatus.Started, actualSess.LoginSessStatus);
+            Assert.Equal(TokenSessionDbStatus.Started, actualSess.TokenSessStatus);
             Assert.Equal("foo", actualSess.SubjectId);
             Assert.NotNull(actualSess.AuthCode);
             Assert.True(actualSess.AuthCodeExpiry > DateTime.Now);
-            Assert.NotEqual(MySqlBool.True, actualSess.AuthCodeUsed);
             Assert.Equal(MyAuth.OAuthPoint.Models.AuthorizationRequestProcessingError.Undefined, actualSess.ErrorCode);
         }
 
@@ -263,7 +290,8 @@ namespace FuncTests
         public async Task ShouldCompleteWithError()
         {
             //Arrange
-            var sessionId = Guid.NewGuid().ToString("N");
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var tokenSessId = Guid.NewGuid().ToString("N");
             var clientId = Guid.NewGuid().ToString("N");
             var redirectUri = "http://host.net/cb";
             var dataInitializer = new DataDbInitializer
@@ -273,12 +301,20 @@ namespace FuncTests
                 {
                     new LoginSessionDb
                     {
-                        Id = sessionId,
-                        ClientId = clientId,
+                        Id = loginSessId,
                         Expiry = DateTime.MaxValue,
-                        RedirectUri = redirectUri,
-                        Scope = "no-mater-scope",
                         LoginExpiry = DateTime.Now.AddSeconds(10)
+                    }
+                },
+                TokenSessions = new[]
+                {
+                    new TokenSessionDb
+                    {
+                        Id = tokenSessId,
+                        LoginId = loginSessId,
+                        ClientId = clientId,
+                        RedirectUri = redirectUri,
+                        Scope = "no-mater-scope"
                     }
                 }
             };
@@ -293,30 +329,28 @@ namespace FuncTests
             };
 
             //Act
-            var resp = await api.Call(s => s.FailLogin(sessionId, errReq));
+            var resp = await api.Call(s => s.FailLogin(loginSessId, errReq));
 
-            var actualSess = await db.DoOnce().Tab<LoginSessionDb>()
-                .Where(s => s.Id == sessionId)
+            var actualSess = await db.DoOnce().Tab<TokenSessionDb>()
+                .Where(s => s.Id == tokenSessId)
                 .Select(s => new
                 {
-                    s.Completed,
-                    s.CompletedDt,
-                    s.SubjectId,
+                    LoginSessStatus = s.Login.Status,
+                    TokenSessStatus = s.Status,
+                    s.Login.SubjectId,
                     s.AuthCode,
                     s.AuthCodeExpiry,
-                    s.AuthCodeUsed,
                     s.ErrorCode
                 }).FirstOrDefaultAsync();
 
             //Assert
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
             Assert.NotNull(actualSess);
-            Assert.Equal(MySqlBool.True, actualSess.Completed);
-            Assert.True(actualSess.CompletedDt < DateTime.Now);
+            Assert.Equal(LoginSessionDbStatus.Failed, actualSess.LoginSessStatus);
+            Assert.Equal(TokenSessionDbStatus.Failed, actualSess.TokenSessStatus);
             Assert.Null(actualSess.SubjectId);
             Assert.Null(actualSess.AuthCode);
             Assert.Null(actualSess.AuthCodeExpiry);
-            Assert.NotEqual(MySqlBool.True, actualSess.AuthCodeUsed);
             Assert.Equal(MyAuth.OAuthPoint.Models.AuthorizationRequestProcessingError.AccessDenied, actualSess.ErrorCode);
         }
 

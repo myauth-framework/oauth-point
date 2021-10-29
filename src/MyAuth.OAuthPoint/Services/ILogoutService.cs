@@ -23,8 +23,8 @@ namespace MyAuth.OAuthPoint.Services
         public async Task LogoutAsync(string sessionId)
         { 
             await _dbManager.DoOnce().Tab<LoginSessionDb>()
-                .Where(s => s.Id == sessionId && s.Expiry < DateTime.Now && s.Completed != MySqlBool.True)
-                .Set(s => s.Revoked, MySqlBool.True)
+                .Where(s => s.Id == sessionId && s.Expiry < DateTime.Now && s.Status == LoginSessionDbStatus.Started)
+                .Set(s => s.Status, LoginSessionDbStatus.Revoked)
                 .UpdateAsync();
         }
     }

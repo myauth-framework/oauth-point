@@ -16,21 +16,21 @@ namespace MyAuth.OAuthPoint.Controllers.Oidc
     [ApiController]
     public class AuthorizationController : ControllerBase
     {
-        private readonly ISessionProvider _sessionProvider;
-        private readonly ISessionCreator _sessionCreator;
+        private readonly ILoginSessionProvider _loginSessionProvider;
+        private readonly ILoginSessionCreator _loginSessionCreator;
         private readonly AuthEndpointsOptions _options;
         private readonly IDslLogger _log;
         private readonly AuthorizationRequestValidator _reqValidator;
 
         public AuthorizationController(
-            ISessionProvider sessionProvider, 
-            ISessionCreator sessionCreator,
+            ILoginSessionProvider loginSessionProvider, 
+            ILoginSessionCreator loginSessionCreator,
             IOptions<AuthEndpointsOptions> options, 
             ILogger<AuthorizationController> logger,
             IStringLocalizer<AuthorizationController> localizer)
         {
-            _sessionProvider = sessionProvider;
-            _sessionCreator = sessionCreator;
+            _loginSessionProvider = loginSessionProvider;
+            _loginSessionCreator = loginSessionCreator;
             _options = options.Value;
             _log = logger.Dsl();
             _reqValidator = new AuthorizationRequestValidator(localizer);
@@ -43,14 +43,14 @@ namespace MyAuth.OAuthPoint.Controllers.Oidc
             {
                 _reqValidator.Validate(request);
 
-                if (LoginSessionCookie.TryLoad(Request, out var authCookie))
+                if (LoginSessionCookie.TryLoad(Request, out var loginCookie))
                 {
-                    var foundSess = await _sessionProvider.ProvideOAuth2DetailsAsync(authCookie.SessionId, true);
+                    var foundSess = await _loginSessionProvider.ProvideOAuth2DetailsAsync(loginCookie.SessionId, request.ClientId, true);
 
                     if (foundSess == null)
                     {
                         _log.Debug("Active session not found by cookie")
-                            .AndFactIs("session-id", authCookie.SessionId)
+                            .AndFactIs("session-id", loginCookie.SessionId)
                             .AndFactIs("request", request)
                             .Write();
                     }
@@ -61,7 +61,7 @@ namespace MyAuth.OAuthPoint.Controllers.Oidc
                             foundSess.Scope != request.Scope)
                         {
                             _log.Warning("Session found by cookie but parameters mismatch")
-                                .AndFactIs("session-id", authCookie.SessionId)
+                                .AndFactIs("session-id", loginCookie.SessionId)
                                 .AndFactIs("request", request)
                                 .AndFactIs("stored-client-id", foundSess.ClientId)
                                 .AndFactIs("stored-redirect-uri", foundSess.RedirectUri)
@@ -76,9 +76,9 @@ namespace MyAuth.OAuthPoint.Controllers.Oidc
                     }
                 }
 
-                var loginId = await _sessionCreator.CreateLoginSessionAsync(request);
+                var loginId = await _loginSessionCreator.CreateLoginSessionAsync(request);
 
-                return UrlRedirector.RedirectToLogin(_options.LoginEndpoint, loginId);
+                return UrlRedirector.RedirectToLogin(_options.LoginEndpoint, loginId, request.ClientId);
             }
             catch (RedirectUriException e)
             {

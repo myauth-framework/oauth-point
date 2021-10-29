@@ -58,7 +58,8 @@ namespace FuncTests
 
         private DataDbInitializer CreateDataInitializerForCookieTest(
             string clientId, 
-            string sessionId,
+            string loginSessId,
+            string tokenSessId,
             string redirectUri,
             string scopes,
             string authCode = null)
@@ -78,13 +79,23 @@ namespace FuncTests
             {
                 new LoginSessionDb
                 {
-                    ClientId = clientId,
-                    Id = sessionId,
+                    Id = loginSessId,
                     Expiry = DateTime.MaxValue,
+                    Status = LoginSessionDbStatus.Started
+                }
+            };
+
+            dataInitializer.TokenSessions = new[]
+            {
+                new TokenSessionDb
+                {
+                    ClientId = clientId,
+                    LoginId = loginSessId,
+                    Id = tokenSessId,
                     Scope = scopes,
                     RedirectUri = redirectUri,
                     AuthCode= authCode,
-                    Completed = MySqlBool.True
+                    Status = TokenSessionDbStatus.Started
                 }
             };
 

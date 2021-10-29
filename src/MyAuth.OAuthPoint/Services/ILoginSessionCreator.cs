@@ -13,22 +13,22 @@ using MyLab.Log.Dsl;
 
 namespace MyAuth.OAuthPoint.Services
 {
-    public interface ISessionCreator
+    public interface ILoginSessionCreator
     {
         Task<string> CreateLoginSessionAsync(AuthorizationRequest authorizationRequest);
     }
 
-    class SessionCreator : ISessionCreator
+    class LoginSessionCreator : ILoginSessionCreator
     {
         private readonly IDbManager _db;
-        private readonly IStringLocalizer<SessionCreator> _localizer;
+        private readonly IStringLocalizer<LoginSessionCreator> _localizer;
         private readonly AuthTimingsOptions _opt;
         private readonly IDslLogger _log;
 
-        public SessionCreator(IOptions<AuthTimingsOptions> opts,
+        public LoginSessionCreator(IOptions<AuthTimingsOptions> opts,
             IDbManager db,
-            IStringLocalizer<SessionCreator> localizer,
-            ILogger<SessionCreator> log = null)
+            IStringLocalizer<LoginSessionCreator> localizer,
+            ILogger<LoginSessionCreator> log = null)
         {
             _db = db;
             _localizer = localizer;
@@ -46,28 +46,41 @@ namespace MyAuth.OAuthPoint.Services
             await clientAuthChecker.CheckScopes(authReq.Scope);
             await clientAuthChecker.CheckRedirectUri(authReq.RedirectUri);
 
-            var newSessionId = Guid.NewGuid().ToString("N");
+            var loginSessionId = Guid.NewGuid().ToString("N");
+            var tokenSessionId = Guid.NewGuid().ToString("N");
             var loginExpiry = DateTime.Now.AddSeconds(_opt.LoginExpirySeconds);
             var sessionExpiry = DateTime.Now.AddDays(_opt.SessionExpiryDays);
 
-            await dc.Tab<LoginSessionDb>()
-                .InsertAsync(() => new LoginSessionDb
-                {
-                    Id = newSessionId,
-                    ClientId = authReq.ClientId,
-                    RedirectUri = authReq.RedirectUri,
-                    Scope = authReq.Scope,
-                    State = authReq.State,
-                    CreateDt = DateTime.Now,
-                    Expiry = sessionExpiry,
-                    LoginExpiry = loginExpiry
-                });
+            await dc.PerformAutoTransactionAsync(async d =>
+            {
+                await dc.Tab<LoginSessionDb>()
+                    .InsertAsync(() => new LoginSessionDb
+                    {
+                        Id = loginSessionId,
+                        CreateDt = DateTime.Now,
+                        Expiry = sessionExpiry,
+                        LoginExpiry = loginExpiry
+                    });
+
+                await dc.Tab<TokenSessionDb>()
+                    .InsertAsync(() => new TokenSessionDb()
+                    {
+                        Id = tokenSessionId,
+                        LoginId = loginSessionId,
+                        ClientId = authReq.ClientId,
+                        RedirectUri = authReq.RedirectUri,
+                        Scope = authReq.Scope,
+                        State = authReq.State,
+                        CreateDt = DateTime.Now
+                    });
+            });
+
 
             _log?.Action("Session created")
                 .AndFactIs("request", authReq)
                 .Write();
 
-            return newSessionId;
+            return loginSessionId;
 
             
         }

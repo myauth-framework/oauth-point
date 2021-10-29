@@ -28,9 +28,9 @@ namespace MyAuth.OAuthPoint
                 .AddSingleton<IX509CertificateProvider, X509CertificateProvider>()
                 .AddSingleton<PasswordHashCalculator>()
                 .AddSingleton<ITokenService, TokenService>()
-                .AddSingleton<ISessionCreator, SessionCreator>()
-                .AddSingleton<ISessionProvider, SessionProvider>()
-                .AddSingleton<ISessionCompleter, SessionCompleter>()
+                .AddSingleton<ILoginSessionCreator, LoginSessionCreator>()
+                .AddSingleton<ILoginSessionProvider, LoginSessionProvider>()
+                .AddSingleton<ILoginSessionCompleter, LoginSessionCompleter>()
                 .AddDbTools(Configuration, new MySqlDataProvider(ProviderName.MySql))
                 .AddLocalization(lo => lo.ResourcesPath = "Resources");
 

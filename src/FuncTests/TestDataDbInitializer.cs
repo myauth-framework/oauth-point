@@ -13,6 +13,7 @@ namespace FuncTests
         public ClientAvailableUriDb[] ClientRedirectUris { get; set; }
 
         public LoginSessionDb[] LoginSessions { get; set; }
+        public TokenSessionDb[] TokenSessions { get; set; }
 
         public async Task InitializeAsync(DataConnection dataConnection)
         {
@@ -27,6 +28,9 @@ namespace FuncTests
 
             if (LoginSessions != null)
                 await dataConnection.BulkCopyAsync(LoginSessions);
+
+            if (TokenSessions != null)
+                await dataConnection.BulkCopyAsync(TokenSessions);
 
         }
 
