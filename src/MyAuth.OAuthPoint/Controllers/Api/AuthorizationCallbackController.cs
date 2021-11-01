@@ -10,7 +10,7 @@ using MyLab.WebErrors;
 
 namespace MyAuth.OAuthPoint.Controllers.Api
 {
-    [Route("api/v1/authorization-callback")]
+    [Route("v1/authorization-callback")]
     [ApiController]
     public class AuthorizationCallbackController : ControllerBase
     {

@@ -6,7 +6,7 @@
     <members>
         <member name="T:MyAuth.OAuthPoint.Client.ILoginApiV1">
             <summary>
-            MyAuth API endpoints
+            Login endpoints
             </summary>
         </member>
         <member name="M:MyAuth.OAuthPoint.Client.ILoginApiV1.SuccessLogin(System.String,MyAuth.OAuthPoint.Client.Models.LoginSuccessRequest)">

@@ -11,7 +11,7 @@ using MyAuth.OAuthPoint.Tools;
 
 namespace MyAuth.OAuthPoint.Controllers.Oidc
 {
-    [Route("oidc/v1/token")]
+    [Route("v1/token")]
     [ApiController]
     public class TokenController : ControllerBase
     {

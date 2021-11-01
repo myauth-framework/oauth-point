@@ -7,7 +7,7 @@ using MyLab.WebErrors;
 
 namespace MyAuth.OAuthPoint.Controllers.Api
 {
-    [Route("api/v1/login")]
+    [Route("v1/login")]
     [ApiController]
     public class LoginController : ControllerBase
     {

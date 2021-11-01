@@ -12,7 +12,7 @@ using MyLab.Log.Dsl;
 
 namespace MyAuth.OAuthPoint.Controllers.Oidc
 {
-    [Route("oidc/v1/authorization")]
+    [Route("v1/authorization")]
     [ApiController]
     public class AuthorizationController : ControllerBase
     {
