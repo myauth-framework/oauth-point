@@ -113,6 +113,7 @@ namespace FuncTests
                     {
                         Id = loginSessId, 
                         Expiry = DateTime.MaxValue,
+                        LoginExpiry = DateTime.MaxValue
                     }
                 },
                 TokenSessions = new []

@@ -61,8 +61,13 @@ namespace FuncTests
             var db = await _dbFixture.CreateDbAsync();
             var api = _testApi.Start(s => s.AddSingleton(db));
 
+            var succReq = new LoginSuccessRequest
+            {
+                Subject = "foo"
+            };
+
             //Act
-            var resp = await api.Call(s => s.SuccessLogin(loginSessId, new LoginSuccessRequest()));
+            var resp = await api.Call(s => s.SuccessLogin(loginSessId, succReq));
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
@@ -93,9 +98,13 @@ namespace FuncTests
 
             var db = await _dbFixture.CreateDbAsync(dataInitializer);
             var api = _testApi.Start(s => s.AddSingleton(db));
+            var succReq = new LoginSuccessRequest
+            {
+                Subject = "foo"
+            };
 
             //Act
-            var resp = await api.Call(s => s.SuccessLogin(loginSessId, new LoginSuccessRequest()));
+            var resp = await api.Call(s => s.SuccessLogin(loginSessId, succReq));
 
             //Assert
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
