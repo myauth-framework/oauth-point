@@ -25,7 +25,7 @@ namespace FuncTests
     {
         private readonly ITestOutputHelper _output;
         private readonly TmpDbFixture<MyAuthOAuthPointDbInitializer> _dbFixture;
-        private readonly TestApi<Startup, IOidcServiceContractV1> _testApi;
+        private readonly TestApi<Startup, IOidcContractV1> _testApi;
 
         public TokenControllerBehavior(ITestOutputHelper output, TmpDbFixture<MyAuthOAuthPointDbInitializer> dbFixture)
         {
@@ -34,7 +34,7 @@ namespace FuncTests
 
             dbFixture.Output = output;
 
-            _testApi = new TestApi<Startup, IOidcServiceContractV1>
+            _testApi = new TestApi<Startup, IOidcContractV1>
             {
                 Output = output,
                 ServiceOverrider = srv =>

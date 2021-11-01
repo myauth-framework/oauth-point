@@ -4,32 +4,32 @@
         <name>MyAuth.OAuthPoint.Client</name>
     </assembly>
     <members>
-        <member name="T:MyAuth.OAuthPoint.Client.IApiServiceV1">
+        <member name="T:MyAuth.OAuthPoint.Client.ILoginApiV1">
             <summary>
             MyAuth API endpoints
             </summary>
         </member>
-        <member name="M:MyAuth.OAuthPoint.Client.IApiServiceV1.SuccessLogin(System.String,MyAuth.OAuthPoint.Client.Models.LoginSuccessRequest)">
+        <member name="M:MyAuth.OAuthPoint.Client.ILoginApiV1.SuccessLogin(System.String,MyAuth.OAuthPoint.Client.Models.LoginSuccessRequest)">
             <summary>
             Complete login process successfully
             </summary>
         </member>
-        <member name="M:MyAuth.OAuthPoint.Client.IApiServiceV1.FailLogin(System.String,MyAuth.OAuthPoint.Client.Models.LoginErrorRequest)">
+        <member name="M:MyAuth.OAuthPoint.Client.ILoginApiV1.FailLogin(System.String,MyAuth.OAuthPoint.Client.Models.LoginErrorRequest)">
             <summary>
             Complete login process failed
             </summary>
         </member>
-        <member name="M:MyAuth.OAuthPoint.Client.IApiServiceV1.CallbackLogin(System.String,System.String)">
+        <member name="M:MyAuth.OAuthPoint.Client.ILoginApiV1.CallbackLogin(System.String,System.String)">
             <summary>
             Return back from login process
             </summary>
         </member>
-        <member name="T:MyAuth.OAuthPoint.Client.IOidcServiceContractV1">
+        <member name="T:MyAuth.OAuthPoint.Client.IOidcContractV1">
             <summary>
             OpenID Connect endpoints
             </summary>
         </member>
-        <member name="M:MyAuth.OAuthPoint.Client.IOidcServiceContractV1.Authorization(System.String,System.String,System.String,System.String,System.String,System.String)">
+        <member name="M:MyAuth.OAuthPoint.Client.IOidcContractV1.Authorization(System.String,System.String,System.String,System.String,System.String,System.String)">
             <summary>
             `authorization` endpoint
             </summary>
@@ -37,7 +37,7 @@
             https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
             </remarks>
         </member>
-        <member name="M:MyAuth.OAuthPoint.Client.IOidcServiceContractV1.Token(MyAuth.OAuthPoint.Client.Models.TokenRequest,System.String)">
+        <member name="M:MyAuth.OAuthPoint.Client.IOidcContractV1.Token(MyAuth.OAuthPoint.Client.Models.TokenRequest,System.String)">
             <summary>
             `token` endpoint
             </summary>

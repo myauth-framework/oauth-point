@@ -9,8 +9,8 @@ namespace MyAuth.OAuthPoint.Client
     /// <summary>
     /// OpenID Connect endpoints
     /// </summary>
-    [Api("oidc/v1", Key = "oidc/v1")]
-    public interface IOidcServiceContractV1
+    [Api("v1", Key = "oauth-point")]
+    public interface IOidcContractV1
     {
         /// <summary>
         /// `authorization` endpoint

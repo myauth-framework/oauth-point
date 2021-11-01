@@ -5,10 +5,10 @@ using MyLab.ApiClient;
 namespace MyAuth.OAuthPoint.Client
 {
     /// <summary>
-    /// MyAuth API endpoints
+    /// Login endpoints
     /// </summary>
-    [Api("api/v1", Key = "api/v1")]
-    public interface IApiServiceV1
+    [Api("v1", Key = "oauth-point")]
+    public interface ILoginApiV1
     {
         /// <summary>
         /// Complete login process successfully

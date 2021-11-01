@@ -19,7 +19,7 @@ namespace FuncTests
     {
         private readonly ITestOutputHelper _output;
         private readonly TmpDbFixture<MyAuthOAuthPointDbInitializer> _dbFixture;
-        private readonly TestApi<Startup, IOidcServiceContractV1> _oidcTestApi;
+        private readonly TestApi<Startup, IOidcContractV1> _oidcTestApi;
 
         private const string TestConfigLoginEndpoint = "http://host.net/login";
         private const string TestConfigDefaultErrorEndpoint = "http://host.net/error";
@@ -31,7 +31,7 @@ namespace FuncTests
 
             dbFixture.Output = output;
 
-            _oidcTestApi = new TestApi<Startup, IOidcServiceContractV1>()
+            _oidcTestApi = new TestApi<Startup, IOidcContractV1>()
             {
                 Output = output,
                 ServiceOverrider = srv =>
