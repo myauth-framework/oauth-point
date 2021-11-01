@@ -25,6 +25,9 @@ namespace MyAuth.OAuthPoint.Controllers.Api
         [ErrorToResponse(typeof(LoginSessionNotFoundException), HttpStatusCode.NotFound)]
         public async Task<IActionResult> PostSuccess([FromRoute]string loginSessionId, [FromBody] LoginSuccessRequest loginSuccessRequest)
         {
+            if (string.IsNullOrWhiteSpace(loginSuccessRequest.Subject))
+                return BadRequest("Subject not specified");
+
             await _loginSessionCompleter.CompleteSuccessfulAsync(loginSessionId, loginSuccessRequest);
             
             return Ok();

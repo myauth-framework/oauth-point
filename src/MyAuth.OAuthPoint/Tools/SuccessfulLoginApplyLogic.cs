@@ -47,7 +47,9 @@ namespace MyAuth.OAuthPoint.Tools
         public async Task SaveIdentityClaimsAsync()
         {
             var identityClaims = _succReq.IdentityScopes?.SelectMany(sc =>
-                    sc.Claims.Select(c =>
+                    sc.Claims
+                        .Where(c => c.Value != null && !c.Value.IsNull)
+                        .Select(c =>
                         new SubjectIdentityClaimDb
                         {
                             Name = c.Key,
@@ -71,7 +73,8 @@ namespace MyAuth.OAuthPoint.Tools
         public async Task SaveAccessClaimsAsync()
         {
             var accessClaims = _succReq.AccessClaims
-                ?.Select(cl =>
+                    ?.Where(cl => cl.Value != null && !cl.Value.IsNull)
+                    .Select(cl =>
                     new SubjectAccessClaimDb
                     {
                         Name = cl.Key,

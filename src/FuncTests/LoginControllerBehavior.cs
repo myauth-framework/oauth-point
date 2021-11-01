@@ -354,6 +354,63 @@ namespace FuncTests
             Assert.Equal(MyAuth.OAuthPoint.Models.AuthorizationRequestProcessingError.AccessDenied, actualSess.ErrorCode);
         }
 
+        [Fact]
+        public async Task ShouldReturn400WhenSubjectNotSpecified()
+        {
+            //Arrange
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var tokenSessId = Guid.NewGuid().ToString("N");
+            var dataInitializer = TestTools.CreateDataIniterWithSession(loginSessId, tokenSessId, DateTime.Now.AddDays(1));
+
+            var db = await _dbFixture.CreateDbAsync(dataInitializer);
+            var api = _testApi.Start(s => s.AddSingleton(db));
+
+            var succReq = new LoginSuccessRequest
+            {
+                Subject = null
+            };
+
+            //Act
+            var resp = await api.Call(s => s.SuccessLogin(loginSessId, succReq));
+
+            //Assert
+            Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
+
+        }
+
+        [Fact]
+        public async Task ShouldNotFailWhenNullValueClaim()
+        {
+            //Arrange
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var tokenSessId = Guid.NewGuid().ToString("N");
+            var dataInitializer = TestTools.CreateDataIniterWithSession(loginSessId, tokenSessId,DateTime.Now.AddDays(1));
+
+            var db = await _dbFixture.CreateDbAsync(dataInitializer);
+            var api = _testApi.Start(s => s.AddSingleton(db));
+
+            var succReq = new LoginSuccessRequest
+            {
+                Subject = "foo",
+                AccessClaims = new ClaimsCollection(){ {"key", null} },
+                IdentityScopes = new []
+                {
+                    new ScopeClaims
+                    {
+                        Id = "id",
+                        Claims = new ClaimsCollection(){ {"key", null} }
+                    }
+                }
+            };
+
+            //Act
+            var resp = await api.Call(s => s.SuccessLogin(loginSessId, succReq));
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+
+        }
+
         public void Dispose()
         {
             _testApi?.Dispose();
