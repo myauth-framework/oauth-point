@@ -27,6 +27,7 @@ namespace MyAuth.OAuthPoint
             services
                 .AddSingleton<IX509CertificateProvider, X509CertificateProvider>()
                 .AddSingleton<PasswordHashCalculator>()
+                .AddSingleton<ILogoutService, LogoutService>()
                 .AddSingleton<ITokenService, TokenService>()
                 .AddSingleton<ISessionCreator, SessionCreator>()
                 .AddSingleton<ILoginSessionProvider, LoginSessionProvider>()

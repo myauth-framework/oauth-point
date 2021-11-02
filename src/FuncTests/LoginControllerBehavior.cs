@@ -296,6 +296,56 @@ namespace FuncTests
         }
 
         [Fact]
+        public async Task ShouldLogout()
+        {
+            //Arrange
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var tokenSessId = Guid.NewGuid().ToString("N");
+            var clientId = Guid.NewGuid().ToString("N");
+            var redirectUri = "http://host.net/cb";
+            var dataInitializer = new DataDbInitializer
+            {
+                Clients = new[] { new ClientDb { Id = clientId, Name = "foo", PasswordHash = TestTools.ClientPasswordHash } },
+                LoginSessions = new[]
+                {
+                    new LoginSessionDb
+                    {
+                        Id = loginSessId,
+                        Expiry = DateTime.MaxValue,
+                        LoginExpiry = DateTime.Now.AddSeconds(10),
+                        Status = LoginSessionDbStatus.Started
+                    }
+                },
+                TokenSessions = new[]
+                {
+                    new TokenSessionDb
+                    {
+                        Id = tokenSessId,
+                        LoginId = loginSessId,
+                        ClientId = clientId,
+                        RedirectUri = redirectUri,
+                        Scope = "no-mater-scope",
+                        Status = TokenSessionDbStatus.Started
+                    }
+                }
+            };
+
+            var db = await _dbFixture.CreateDbAsync(dataInitializer);
+            var api = _testApi.Start(s => s.AddSingleton(db));
+
+
+            //Act
+            var resp = await api.Call(s => s.Logout(loginSessId));
+
+            var sessionIsRevoked = await db.DoOnce().Tab<LoginSessionDb>()
+                .AnyAsync(s => s.Id == loginSessId && s.Status == LoginSessionDbStatus.Revoked);
+                
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+            Assert.True(sessionIsRevoked);
+        }
+
+        [Fact]
         public async Task ShouldCreateSugbjectWhenCompleteSuccessful()
         {
             //Arrange

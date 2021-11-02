@@ -23,6 +23,12 @@ namespace MyAuth.OAuthPoint.Client
         Task FailLogin([Path] string loginSessionId, [JsonContent] LoginErrorRequest loginErrorRequest);
 
         /// <summary>
+        /// Logout
+        /// </summary>
+        [Delete("login/{loginSessionId}")]
+        Task Logout([Path] string loginSessionId);
+
+        /// <summary>
         /// Return back from login process
         /// </summary>
         [Get("authorization-callback")]

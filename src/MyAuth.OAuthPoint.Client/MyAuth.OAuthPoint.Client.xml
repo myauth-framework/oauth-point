@@ -19,6 +19,11 @@
             Complete login process failed
             </summary>
         </member>
+        <member name="M:MyAuth.OAuthPoint.Client.ILoginApiV1.Logout(System.String)">
+            <summary>
+            Logout
+            </summary>
+        </member>
         <member name="M:MyAuth.OAuthPoint.Client.ILoginApiV1.CallbackLogin(System.String,System.String)">
             <summary>
             Return back from login process

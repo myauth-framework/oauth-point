@@ -12,13 +12,17 @@ namespace MyAuth.OAuthPoint.Controllers.Api
     public class LoginController : ControllerBase
     {
         private readonly ILoginSessionCompleter _loginSessionCompleter;
+        private readonly ILogoutService _logoutService;
 
         /// <summary>
         /// Initializes a new instance of <see cref="LoginController"/>
         /// </summary>
-        public LoginController(ILoginSessionCompleter loginSessionCompleter)
+        public LoginController(
+            ILoginSessionCompleter loginSessionCompleter,
+            ILogoutService logoutService)
         {
             _loginSessionCompleter = loginSessionCompleter;
+            _logoutService = logoutService;
         }
 
         [HttpPost("{loginSessionId}/success")]
@@ -38,6 +42,15 @@ namespace MyAuth.OAuthPoint.Controllers.Api
         public async Task<IActionResult> PostError([FromRoute] string loginSessionId, [FromBody] LoginErrorRequest loginErrorRequest)
         {
             await _loginSessionCompleter.CompleteErrorAsync(loginSessionId, loginErrorRequest);
+
+            return Ok();
+        }
+
+        [HttpDelete("{loginSessionId}")]
+        [ErrorToResponse(typeof(LoginSessionNotFoundException), HttpStatusCode.NotFound)]
+        public async Task<IActionResult> Logout([FromRoute] string loginSessionId)
+        {
+            await _logoutService.LogoutAsync(loginSessionId);
 
             return Ok();
         }
