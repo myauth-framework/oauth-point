@@ -45,7 +45,7 @@ namespace MyAuth.OAuthPoint.Controllers.Oidc
 
                 if (LoginSessionCookie.TryLoad(Request, out var loginCookie))
                 {
-                    var foundSess = await _loginSessionProvider.ProvideOAuth2DetailsAsync(loginCookie.SessionId, request.ClientId);
+                    var foundSess = await _loginSessionProvider.ProvideOAuth2DetailsAsync(loginCookie.SessionId, request.ClientId, true);
 
                     if (foundSess == null)
                     {
