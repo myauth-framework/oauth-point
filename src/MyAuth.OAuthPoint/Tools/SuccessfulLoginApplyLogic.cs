@@ -87,23 +87,20 @@ namespace MyAuth.OAuthPoint.Tools
                 await _dc.BulkCopyAsync(accessClaims);
         }
 
-        public Task UpdateSessionStateAsync(string authCode, DateTime authCodeExpiry)
+        public async Task UpdateSessionStateAsync(string authCode, DateTime authCodeExpiry)
         {
-            return _dc.PerformAutoTransactionAsync(async d =>
-            {
-                await _dc.Tab<LoginSessionDb>()
-                    .Where(s => s.Id == _sessionId && s.Status == LoginSessionDbStatus.Pending)
-                    .Set(s => s.SubjectId, () => _succReq.Subject)
-                    .Set(s => s.Status, () => LoginSessionDbStatus.Started)
-                    .UpdateAsync();
+            await _dc.Tab<LoginSessionDb>()
+                .Where(s => s.Id == _sessionId && s.Status == LoginSessionDbStatus.Pending)
+                .Set(s => s.SubjectId, () => _succReq.Subject)
+                .Set(s => s.Status, () => LoginSessionDbStatus.Started)
+                .UpdateAsync();
 
-                await _dc.Tab<TokenSessionDb>()
-                    .Where(s => s.LoginId == _sessionId && s.Status == TokenSessionDbStatus.Pending)
-                    .Set(s => s.Status, () => TokenSessionDbStatus.Started)
-                    .Set(s => s.AuthCode, () => authCode)
-                    .Set(s => s.AuthCodeExpiry, () => authCodeExpiry)
-                    .UpdateAsync();
-            });
+            await _dc.Tab<TokenSessionDb>()
+                .Where(s => s.LoginId == _sessionId && s.Status == TokenSessionDbStatus.Pending)
+                .Set(s => s.Status, () => TokenSessionDbStatus.Started)
+                .Set(s => s.AuthCode, () => authCode)
+                .Set(s => s.AuthCodeExpiry, () => authCodeExpiry)
+                .UpdateAsync();
         }
     }
 }

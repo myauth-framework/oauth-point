@@ -296,6 +296,60 @@ namespace FuncTests
         }
 
         [Fact]
+        public async Task ShouldCreateSugbjectWhenCompleteSuccessful()
+        {
+            //Arrange
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var tokenSessId = Guid.NewGuid().ToString("N");
+            var clientId = Guid.NewGuid().ToString("N");
+            var redirectUri = "http://host.net/cb";
+            var dataInitializer = new DataDbInitializer
+            {
+                Clients = new[] { new ClientDb { Id = clientId, Name = "foo", PasswordHash = TestTools.ClientPasswordHash } },
+                LoginSessions = new[]
+                {
+                    new LoginSessionDb
+                    {
+                        Id = loginSessId,
+                        Expiry = DateTime.MaxValue,
+                        LoginExpiry = DateTime.Now.AddSeconds(10),
+                    }
+                },
+                TokenSessions = new[]
+                {
+                    new TokenSessionDb
+                    {
+                        Id = tokenSessId,
+                        LoginId = loginSessId,
+                        ClientId = clientId,
+                        RedirectUri = redirectUri,
+                        Scope = "no-mater-scope"
+                    }
+                }
+            };
+
+            var db = await _dbFixture.CreateDbAsync(dataInitializer);
+            var api = _testApi.Start(s => s.AddSingleton(db));
+
+            var authInfo = new LoginSuccessRequest
+            {
+                Subject = "foo"
+            };
+
+            //Act
+            var resp = await api.Call(s => s.SuccessLogin(loginSessId, authInfo));
+
+            var actualSubjectFound = await db.DoOnce().Tab<SubjectDb>()
+                .AnyAsync(s => s.Id == "foo" && s.Enabled == MySqlBool.True);
+
+            var subjects = await db.DoOnce().Tab<SubjectDb>().ToArrayAsync();
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+            Assert.True(actualSubjectFound);
+        }
+
+        [Fact]
         public async Task ShouldCompleteWithError()
         {
             //Arrange
