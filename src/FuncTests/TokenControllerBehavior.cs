@@ -1,11 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.IO;
+using System.Linq;
 using System.Net;
+using System.Reflection.Metadata.Ecma335;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using LinqToDB;
 using LinqToDB.Data;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using MyAuth.OAuthPoint;
 using MyAuth.OAuthPoint.Client;
 using MyAuth.OAuthPoint.Client.Models;
@@ -51,6 +58,53 @@ namespace FuncTests
                     });
                 }
             };
+        }
+
+        [Fact]
+        public async Task ShouldProvideIdToken()
+        {
+            //Arrange
+            var db = await _dbFixture.CreateDbAsync(new SessionRegistrar());
+            var api = _testApi.Start(s => s
+                .Configure<TokenIssuingOptions>(opt =>
+                {
+                    opt.SignCertificatePassword = "qwerty";
+                    opt.SignCertificateKeyPath = "key.pem";
+                    opt.SignCertificateCertPath = "cert.pem";
+                    opt.SignSymmetricKey = "12345678901234567890";
+                })
+                .AddSingleton(db));
+
+            var request = new TokenRequest
+            {
+                ClientId = "right-client",
+                RedirectUri = "http://right.ru/cb",
+                Code = "right-code",
+                GrantType = "authorization_code"
+            };
+
+            string rightBasicAuthHeader = "Basic cmlnaHQtY2xpZW50OmJhcg==";
+            
+            var signerCert = X509Certificate2.CreateFromEncryptedPemFile("cert.pem", "qwerty", "key.pem");
+            var key = new X509SecurityKey(signerCert);
+
+            //Act
+            var res = await api.Call(s => s.Token(request, rightBasicAuthHeader));
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            tokenHandler.ValidateToken(
+                res.ResponseContent.IdToken,
+                new TokenValidationParameters
+                {
+                    IssuerSigningKey = key,
+                    RequireExpirationTime = false,
+                    ValidateAudience = false,
+                    ValidateIssuer = false
+                }, out _);
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+            Assert.NotNull(res.ResponseContent.IdToken);
         }
 
         [Theory]
@@ -203,6 +257,7 @@ namespace FuncTests
                     CreateDt = DateTime.Now,
                     Expiry = DateTime.MaxValue,
                     LoginExpiry = DateTime.MaxValue,
+                    Status = LoginSessionDbStatus.Started
                 });
 
                 await dataConnection.Tab<TokenSessionDb>().InsertAsync(() => new TokenSessionDb
@@ -213,7 +268,8 @@ namespace FuncTests
                     AuthCode = "right-code",
                     RedirectUri = "http://right.ru/cb",
                     Scope = "openid",
-                    CreateDt = DateTime.Now
+                    CreateDt = DateTime.Now,
+                    Status = TokenSessionDbStatus.Ready
                 });
 
                 await dataConnection.Tab<ClientDb>().InsertAsync(() => new ClientDb

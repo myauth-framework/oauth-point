@@ -23,6 +23,9 @@ namespace MyAuth.OAuthPoint.Tools.TokenIssuing
 
         public string Create(string secret)
         {
+            if(secret == null)
+                throw new ArgumentNullException(nameof(secret), "Symmetric key not defined");
+
             var claims = new List<Claim>();
 
             claims.AddRange(_baseClaimSet.ToArray());

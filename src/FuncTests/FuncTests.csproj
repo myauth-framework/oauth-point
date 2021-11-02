@@ -29,4 +29,13 @@
     <ProjectReference Include="..\MyAuth.OAuthPoint\MyAuth.OAuthPoint.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="cert.pem">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="key.pem">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

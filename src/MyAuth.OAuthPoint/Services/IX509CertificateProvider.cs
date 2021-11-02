@@ -1,5 +1,7 @@
-﻿using System.Security.Cryptography.X509Certificates;
+﻿using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Options;
+using MyLab.Log;
 
 namespace MyAuth.OAuthPoint.Services
 {
@@ -25,7 +27,17 @@ namespace MyAuth.OAuthPoint.Services
 
         public X509Certificate2 ProvideIssuerCertificate()
         {
-            throw new System.NotImplementedException();
+            if(!File.Exists(_tokenIssuingOptions.SignCertificateCertPath))
+                throw new FileNotFoundException("Certificate file not found")
+                    .AndFactIs("path", _tokenIssuingOptions.SignCertificateCertPath);
+            if (!File.Exists(_tokenIssuingOptions.SignCertificateKeyPath))
+                throw new FileNotFoundException("Certificate key file not found")
+                    .AndFactIs("path", _tokenIssuingOptions.SignCertificateKeyPath);
+
+            return X509Certificate2.CreateFromEncryptedPemFile(
+                _tokenIssuingOptions.SignCertificateCertPath,
+                _tokenIssuingOptions.SignCertificatePassword,
+                _tokenIssuingOptions.SignCertificateKeyPath);
         }
     }
 }

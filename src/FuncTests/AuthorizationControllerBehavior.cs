@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using LinqToDB;
 using Microsoft.Extensions.DependencyInjection;
 using MyAuth.OAuthPoint.Client;
 using MyAuth.OAuthPoint.Db;
@@ -142,7 +143,7 @@ namespace FuncTests
         }
 
         [Fact]
-        public async Task ShouldUseCookieAndLoadExistSession()
+        public async Task ShouldUseCookieAndLoadExistSessionWithNewTokenSession()
         {
             //Arrange
             var clientId = Guid.NewGuid().ToString("N");
@@ -166,10 +167,20 @@ namespace FuncTests
 
             TestTools.TryExtractRedirect(resp, out var locationLeftPart, out var query);
 
+            var respCode = query["code"];
+
+            var newTokenSess = await db.DoOnce()
+                .Tab<TokenSessionDb>()
+                .Where(ts => ts.AuthCode == respCode)
+                .FirstOrDefaultAsync();
+
             //Assert
             Assert.Equal(HttpStatusCode.Redirect, resp.StatusCode);
             Assert.Equal(redirectUri, locationLeftPart);
-            Assert.Equal(authCode, query["code"]);
+            Assert.NotNull(newTokenSess);
+            Assert.NotEqual(tokenSessId, newTokenSess.Id);
+            Assert.Equal(loginSessId, newTokenSess.LoginId);
+            Assert.Equal(TokenSessionDbStatus.Ready, newTokenSess.Status);
         }
 
         [Fact]

@@ -35,6 +35,7 @@ namespace MyAuth.OAuthPoint.Services
             
             return await q.Select(s => new SessionOAuth2Details
                 {
+                    LoginSessionId = s.LoginId,
                     RedirectUri = s.RedirectUri,
                     Scope = s.Scope,
                     State = s.State,

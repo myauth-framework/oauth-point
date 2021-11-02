@@ -13,22 +13,24 @@ using MyLab.Log.Dsl;
 
 namespace MyAuth.OAuthPoint.Services
 {
-    public interface ILoginSessionCreator
+    public interface ISessionCreator
     {
         Task<string> CreateLoginSessionAsync(AuthorizationRequest authorizationRequest);
+
+        Task<string> CreateTokenSessionAsync(string loginSessionId, AuthorizationRequest authReq);
     }
 
-    class LoginSessionCreator : ILoginSessionCreator
+    class SessionCreator : ISessionCreator
     {
         private readonly IDbManager _db;
-        private readonly IStringLocalizer<LoginSessionCreator> _localizer;
+        private readonly IStringLocalizer<SessionCreator> _localizer;
         private readonly AuthTimingsOptions _opt;
         private readonly IDslLogger _log;
 
-        public LoginSessionCreator(IOptions<AuthTimingsOptions> opts,
+        public SessionCreator(IOptions<AuthTimingsOptions> opts,
             IDbManager db,
-            IStringLocalizer<LoginSessionCreator> localizer,
-            ILogger<LoginSessionCreator> log = null)
+            IStringLocalizer<SessionCreator> localizer,
+            ILogger<SessionCreator> log = null)
         {
             _db = db;
             _localizer = localizer;
@@ -76,7 +78,7 @@ namespace MyAuth.OAuthPoint.Services
             });
 
 
-            _log?.Action("Session created")
+            _log?.Action("Login session created")
                 .AndFactIs("request", authReq)
                 .Write();
 
@@ -84,6 +86,48 @@ namespace MyAuth.OAuthPoint.Services
 
             
         }
+
+        public async Task<string> CreateTokenSessionAsync(string loginSessionId, AuthorizationRequest authReq)
+        {
+            await using var dc = _db.Use();
+
+            var clientAuthChecker = new ClientAuthorizationDbChecker(authReq.ClientId, dc, _localizer);
+
+            await clientAuthChecker.CheckUser();
+            await clientAuthChecker.CheckScopes(authReq.Scope);
+            await clientAuthChecker.CheckRedirectUri(authReq.RedirectUri);
+
+            var tokenSessionId = Guid.NewGuid().ToString("N");
+            var authCode = Guid.NewGuid().ToString("N");
+            var authCodeExpiry = DateTime.Now.AddSeconds(_opt.AuthCodeExpirySeconds);
+
+            await dc.PerformAutoTransactionAsync(async d =>
+            {
+                await dc.Tab<TokenSessionDb>()
+                    .InsertAsync(() => new TokenSessionDb()
+                    {
+                        Id = tokenSessionId,
+                        LoginId = loginSessionId,
+                        ClientId = authReq.ClientId,
+                        RedirectUri = authReq.RedirectUri,
+                        Scope = authReq.Scope,
+                        State = authReq.State,
+                        CreateDt = DateTime.Now
+                    });
+
+                var logic = new SuccessfulLoginApplyLogic(d);
+
+                await logic.UpdateTokenSessionStateAsync(loginSessionId, authCode, authCodeExpiry);
+
+            });
+
+            
+            _log?.Action("Token session created")
+                .AndFactIs("request", authReq)
+                .Write();
+
+            return authCode;
+        } 
     }
 }
  

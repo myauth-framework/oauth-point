@@ -55,14 +55,15 @@ namespace MyAuth.OAuthPoint.Services
 
             await db.PerformAutoTransactionAsync(async d =>
             {
-                var logic = new SuccessfulLoginApplyLogic(loginSessId, d, succReq);
+                var logic = new SuccessfulLoginApplyLogic(d);
 
-                await logic.CreateSubjectIfNotExistsAsync();
-                await logic.RemoveSubjectIdentityClaimsAsync();
-                await logic.SaveIdentityClaimsAsync();
-                await logic.RemoveSubjectAccessClaimsAsync();
-                await logic.SaveAccessClaimsAsync();
-                await logic.UpdateSessionStateAsync(authCode, authCodeExpiry);
+                await logic.CreateSubjectIfNotExistsAsync(succReq.Subject);
+                await logic.RemoveSubjectIdentityClaimsAsync(succReq.Subject);
+                await logic.SaveIdentityClaimsAsync(succReq.Subject, succReq.IdentityScopes);
+                await logic.RemoveSubjectAccessClaimsAsync(succReq.Subject);
+                await logic.SaveAccessClaimsAsync(succReq.Subject, succReq.AccessClaims);
+                await logic.UpdateLoginSessionStateAsync(loginSessId, succReq.Subject);
+                await logic.UpdateTokenSessionStateAsync(loginSessId, authCode, authCodeExpiry);
             });
         }
 

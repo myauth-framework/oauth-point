@@ -26,6 +26,8 @@
         public string Issuer { get; set; }
         public int AccessTokenExpirySeconds { get; set; }
         public string SignSymmetricKey { get; set; }
-        public string SignCertificateSubjectCn { get; set; }
+        public string SignCertificateCertPath { get; set; }
+        public string SignCertificateKeyPath { get; set; }
+        public string SignCertificatePassword { get; set; }
     }
 }

@@ -18,20 +18,20 @@ namespace MyAuth.OAuthPoint.Controllers.Oidc
     public class AuthorizationController : ControllerBase
     {
         private readonly ILoginSessionProvider _loginSessionProvider;
-        private readonly ILoginSessionCreator _loginSessionCreator;
+        private readonly ISessionCreator _sessionCreator;
         private readonly AuthEndpointsOptions _options;
         private readonly IDslLogger _log;
         private readonly AuthorizationRequestValidator _reqValidator;
 
         public AuthorizationController(
             ILoginSessionProvider loginSessionProvider, 
-            ILoginSessionCreator loginSessionCreator,
+            ISessionCreator sessionCreator,
             IOptions<AuthEndpointsOptions> options, 
             ILogger<AuthorizationController> logger,
             IStringLocalizer<AuthorizationController> localizer)
         {
             _loginSessionProvider = loginSessionProvider;
-            _loginSessionCreator = loginSessionCreator;
+            _sessionCreator = sessionCreator;
             _options = options.Value;
             _log = logger.Dsl();
             _reqValidator = new AuthorizationRequestValidator(localizer);
@@ -71,13 +71,15 @@ namespace MyAuth.OAuthPoint.Controllers.Oidc
                         }
                         else
                         {
-                            return UrlRedirector.RedirectSuccessCallback(foundSess.RedirectUri,
-                                foundSess.AuthorizationCode, foundSess.State);
+                            var newAuthCode = await _sessionCreator.CreateTokenSessionAsync(foundSess.LoginSessionId, request);
+
+                            return UrlRedirector.RedirectSuccessCallback(
+                                foundSess.RedirectUri, newAuthCode, request.State);
                         }
                     }
                 }
 
-                var loginId = await _loginSessionCreator.CreateLoginSessionAsync(request);
+                var loginId = await _sessionCreator.CreateLoginSessionAsync(request);
 
                 return UrlRedirector.RedirectToLogin(_options.LoginEndpoint, loginId, request.ClientId);
             }

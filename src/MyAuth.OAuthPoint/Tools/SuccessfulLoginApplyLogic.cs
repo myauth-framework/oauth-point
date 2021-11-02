@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using LinqToDB;
 using LinqToDB.Data;
 using MyAuth.OAuthPoint.Db;
+using MyAuth.OAuthPoint.Models;
 using MyAuth.OAuthPoint.Models.DataContract;
 using MyLab.Db;
 using Newtonsoft.Json.Linq;
@@ -12,41 +13,35 @@ namespace MyAuth.OAuthPoint.Tools
 {
     class SuccessfulLoginApplyLogic
     {
-        private readonly string _sessionId;
         private readonly DataConnection _dc;
-        private readonly LoginSuccessRequest _succReq;
 
         public SuccessfulLoginApplyLogic(
-            string sessionId,
-            DataConnection dc,
-            LoginSuccessRequest succReq)
+            DataConnection dc)
         {
-            _sessionId = sessionId;
             _dc = dc;
-            _succReq = succReq;
         }
 
-        public Task CreateSubjectIfNotExistsAsync()
+        public Task CreateSubjectIfNotExistsAsync(string subject)
         {
             return _dc.Tab<SubjectDb>().InsertOrUpdateAsync(
                 () => new SubjectDb
                 {
-                    Id = _succReq.Subject,
+                    Id = subject,
                     Enabled = MySqlBool.True
                 },
                 s => s);
         }
 
-        public Task RemoveSubjectIdentityClaimsAsync()
+        public Task RemoveSubjectIdentityClaimsAsync(string subject)
         {
             return _dc.Tab<SubjectIdentityClaimDb>()
-                .Where(c => c.SubjectId == _succReq.Subject)
+                .Where(c => c.SubjectId == subject)
                 .DeleteAsync();
         }
 
-        public async Task SaveIdentityClaimsAsync()
+        public async Task SaveIdentityClaimsAsync(string subject, ScopeClaims[] idScopes)
         {
-            var identityClaims = _succReq.IdentityScopes?.SelectMany(sc =>
+            var identityClaims = idScopes?.SelectMany(sc =>
                     sc.Claims
                         .Where(c => c.Value != null && !c.Value.IsNull)
                         .Select(c =>
@@ -55,7 +50,7 @@ namespace MyAuth.OAuthPoint.Tools
                             Name = c.Key,
                             Value = c.Value.ToString(),
                             ScopeId = sc.Id,
-                            SubjectId = _succReq.Subject
+                            SubjectId = subject
                         }))
                 .ToArray();
 
@@ -63,40 +58,43 @@ namespace MyAuth.OAuthPoint.Tools
                 await _dc.BulkCopyAsync(identityClaims);
         }
 
-        public Task RemoveSubjectAccessClaimsAsync()
+        public Task RemoveSubjectAccessClaimsAsync(string subject)
         {
             return _dc.Tab<SubjectAccessClaimDb>()
-                .Where(c => c.SubjectId == _succReq.Subject)
+                .Where(c => c.SubjectId == subject)
                 .DeleteAsync();
         }
 
-        public async Task SaveAccessClaimsAsync()
+        public async Task SaveAccessClaimsAsync(string subject, ClaimsCollection accessClaims)
         {
-            var accessClaims = _succReq.AccessClaims
+            var accCl = accessClaims
                     ?.Where(cl => cl.Value != null && !cl.Value.IsNull)
                     .Select(cl =>
                     new SubjectAccessClaimDb
                     {
                         Name = cl.Key,
                         Value = cl.Value.ToString(),
-                        SubjectId = _succReq.Subject
+                        SubjectId = subject
                     })
                 .ToArray();
 
-            if (accessClaims != null && accessClaims.Length != 0)
-                await _dc.BulkCopyAsync(accessClaims);
+            if (accCl != null && accCl.Length != 0)
+                await _dc.BulkCopyAsync(accCl);
         }
 
-        public async Task UpdateSessionStateAsync(string authCode, DateTime authCodeExpiry)
+        public async Task UpdateLoginSessionStateAsync(string loginSessionId, string subject)
         {
             await _dc.Tab<LoginSessionDb>()
-                .Where(s => s.Id == _sessionId && s.Status == LoginSessionDbStatus.Pending)
-                .Set(s => s.SubjectId, () => _succReq.Subject)
+                .Where(s => s.Id == loginSessionId && s.Status == LoginSessionDbStatus.Pending)
+                .Set(s => s.SubjectId, () => subject)
                 .Set(s => s.Status, () => LoginSessionDbStatus.Started)
                 .UpdateAsync();
+        }
 
+        public async Task UpdateTokenSessionStateAsync(string loginSessionId, string authCode, DateTime authCodeExpiry)
+        {
             await _dc.Tab<TokenSessionDb>()
-                .Where(s => s.LoginId == _sessionId && s.Status == TokenSessionDbStatus.Pending)
+                .Where(s => s.LoginId == loginSessionId && s.Status == TokenSessionDbStatus.Pending)
                 .Set(s => s.Status, () => TokenSessionDbStatus.Ready)
                 .Set(s => s.AuthCode, () => authCode)
                 .Set(s => s.AuthCodeExpiry, () => authCodeExpiry)
