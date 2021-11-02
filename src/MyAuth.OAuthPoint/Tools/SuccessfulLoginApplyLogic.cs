@@ -97,7 +97,7 @@ namespace MyAuth.OAuthPoint.Tools
 
             await _dc.Tab<TokenSessionDb>()
                 .Where(s => s.LoginId == _sessionId && s.Status == TokenSessionDbStatus.Pending)
-                .Set(s => s.Status, () => TokenSessionDbStatus.Started)
+                .Set(s => s.Status, () => TokenSessionDbStatus.Ready)
                 .Set(s => s.AuthCode, () => authCode)
                 .Set(s => s.AuthCodeExpiry, () => authCodeExpiry)
                 .UpdateAsync();

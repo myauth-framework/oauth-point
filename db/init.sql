@@ -21,7 +21,9 @@ CREATE TABLE IF NOT EXISTS `clients` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Registered clients';
 
--- Экспортируемые данные не выделены.
+-- Дамп данных таблицы myauth-sso.clients: ~0 rows (приблизительно)
+/*!40000 ALTER TABLE `clients` DISABLE KEYS */;
+/*!40000 ALTER TABLE `clients` ENABLE KEYS */;
 
 -- Дамп структуры для таблица myauth-sso.client_available_audiences
 CREATE TABLE IF NOT EXISTS `client_available_audiences` (
@@ -33,7 +35,9 @@ CREATE TABLE IF NOT EXISTS `client_available_audiences` (
   CONSTRAINT `ClientAvailableAudienceToClient` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Available audiences for client';
 
--- Экспортируемые данные не выделены.
+-- Дамп данных таблицы myauth-sso.client_available_audiences: ~0 rows (приблизительно)
+/*!40000 ALTER TABLE `client_available_audiences` DISABLE KEYS */;
+/*!40000 ALTER TABLE `client_available_audiences` ENABLE KEYS */;
 
 -- Дамп структуры для таблица myauth-sso.client_available_scopes
 CREATE TABLE IF NOT EXISTS `client_available_scopes` (
@@ -45,7 +49,9 @@ CREATE TABLE IF NOT EXISTS `client_available_scopes` (
   CONSTRAINT `ClientAvailableScopesToClient` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Client available scopes';
 
--- Экспортируемые данные не выделены.
+-- Дамп данных таблицы myauth-sso.client_available_scopes: ~0 rows (приблизительно)
+/*!40000 ALTER TABLE `client_available_scopes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `client_available_scopes` ENABLE KEYS */;
 
 -- Дамп структуры для таблица myauth-sso.client_available_uri
 CREATE TABLE IF NOT EXISTS `client_available_uri` (
@@ -57,7 +63,9 @@ CREATE TABLE IF NOT EXISTS `client_available_uri` (
   CONSTRAINT `ClientAvailableUriToClient` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Available redirect URI for client';
 
--- Экспортируемые данные не выделены.
+-- Дамп данных таблицы myauth-sso.client_available_uri: ~0 rows (приблизительно)
+/*!40000 ALTER TABLE `client_available_uri` DISABLE KEYS */;
+/*!40000 ALTER TABLE `client_available_uri` ENABLE KEYS */;
 
 -- Дамп структуры для таблица myauth-sso.login_sessions
 CREATE TABLE IF NOT EXISTS `login_sessions` (
@@ -73,7 +81,9 @@ CREATE TABLE IF NOT EXISTS `login_sessions` (
   CONSTRAINT `LoginSessionToSubject` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Login sessions';
 
--- Экспортируемые данные не выделены.
+-- Дамп данных таблицы myauth-sso.login_sessions: ~0 rows (приблизительно)
+/*!40000 ALTER TABLE `login_sessions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `login_sessions` ENABLE KEYS */;
 
 -- Дамп структуры для таблица myauth-sso.subjects
 CREATE TABLE IF NOT EXISTS `subjects` (
@@ -83,7 +93,9 @@ CREATE TABLE IF NOT EXISTS `subjects` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Subjects';
 
--- Экспортируемые данные не выделены.
+-- Дамп данных таблицы myauth-sso.subjects: ~0 rows (приблизительно)
+/*!40000 ALTER TABLE `subjects` DISABLE KEYS */;
+/*!40000 ALTER TABLE `subjects` ENABLE KEYS */;
 
 -- Дамп структуры для таблица myauth-sso.subject_access_claims
 CREATE TABLE IF NOT EXISTS `subject_access_claims` (
@@ -96,7 +108,9 @@ CREATE TABLE IF NOT EXISTS `subject_access_claims` (
   CONSTRAINT `SubjectAccessClaimsToSubject` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Additional subject claims for access token';
 
--- Экспортируемые данные не выделены.
+-- Дамп данных таблицы myauth-sso.subject_access_claims: ~0 rows (приблизительно)
+/*!40000 ALTER TABLE `subject_access_claims` DISABLE KEYS */;
+/*!40000 ALTER TABLE `subject_access_claims` ENABLE KEYS */;
 
 -- Дамп структуры для таблица myauth-sso.subject_available_scopes
 CREATE TABLE IF NOT EXISTS `subject_available_scopes` (
@@ -108,7 +122,9 @@ CREATE TABLE IF NOT EXISTS `subject_available_scopes` (
   CONSTRAINT `SubjectAvailabeScopesToSubject` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Subject available scopes';
 
--- Экспортируемые данные не выделены.
+-- Дамп данных таблицы myauth-sso.subject_available_scopes: ~0 rows (приблизительно)
+/*!40000 ALTER TABLE `subject_available_scopes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `subject_available_scopes` ENABLE KEYS */;
 
 -- Дамп структуры для таблица myauth-sso.subject_identity_claims
 CREATE TABLE IF NOT EXISTS `subject_identity_claims` (
@@ -122,7 +138,9 @@ CREATE TABLE IF NOT EXISTS `subject_identity_claims` (
   CONSTRAINT `SubjectIdentityClaimsToSubject` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Subject claims for identity';
 
--- Экспортируемые данные не выделены.
+-- Дамп данных таблицы myauth-sso.subject_identity_claims: ~0 rows (приблизительно)
+/*!40000 ALTER TABLE `subject_identity_claims` DISABLE KEYS */;
+/*!40000 ALTER TABLE `subject_identity_claims` ENABLE KEYS */;
 
 -- Дамп структуры для таблица myauth-sso.token_sessions
 CREATE TABLE IF NOT EXISTS `token_sessions` (
@@ -137,7 +155,7 @@ CREATE TABLE IF NOT EXISTS `token_sessions` (
   `create_dt` datetime NOT NULL COMMENT 'Createion date time',
   `auth_code` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Authorization code (GUID)',
   `auth_code_expiry` datetime DEFAULT NULL COMMENT 'Authorization code expiration date time',
-  `status` enum('started','failed') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Token session status',
+  `status` enum('ready','started','failed') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Token session status',
   PRIMARY KEY (`id`),
   KEY `TokenSessionsToClient` (`client_id`),
   KEY `IDX_LoginClient` (`login_id`,`client_id`),
@@ -145,7 +163,9 @@ CREATE TABLE IF NOT EXISTS `token_sessions` (
   CONSTRAINT `TokenSessionsToClient` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Token sessions';
 
--- Экспортируемые данные не выделены.
+-- Дамп данных таблицы myauth-sso.token_sessions: ~0 rows (приблизительно)
+/*!40000 ALTER TABLE `token_sessions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `token_sessions` ENABLE KEYS */;
 
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;

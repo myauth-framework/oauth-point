@@ -197,7 +197,7 @@ namespace MyAuth.OAuthPoint.Services
                 Id = s.Id,
                 RedirectUri = s.RedirectUri,
                 Expiry = s.Login.Expiry,
-                AuthCodeDisabled = s.Status != TokenSessionDbStatus.Pending,
+                AuthCodeDisabled = s.Status != TokenSessionDbStatus.Ready,
                 Scope = s.Scope,
                 SubjectId = s.Login.SubjectId,
                 Audiences = s.Client.ClientAvailableAudienceToClients.ToArray(),

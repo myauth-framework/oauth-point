@@ -10,7 +10,7 @@ namespace MyAuth.OAuthPoint.Services
 {
     public interface ILoginSessionProvider
     {
-        Task<SessionOAuth2Details> ProvideOAuth2DetailsAsync(string loginId, string clientId,bool shouldLogon);
+        Task<SessionOAuth2Details> ProvideOAuth2DetailsAsync(string loginId, string clientId, TokenSessionDbStatus expectedStatus);
     }
 
     class LoginSessionProvider : ILoginSessionProvider
@@ -22,7 +22,7 @@ namespace MyAuth.OAuthPoint.Services
             _db = db;
         }
 
-        public async Task<SessionOAuth2Details> ProvideOAuth2DetailsAsync(string loginId, string clientId, bool shouldLogon)
+        public async Task<SessionOAuth2Details> ProvideOAuth2DetailsAsync(string loginId, string clientId, TokenSessionDbStatus expectedStatus)
         {
             await using var db = _db.Use();
 
@@ -30,12 +30,9 @@ namespace MyAuth.OAuthPoint.Services
                 .Where(s => 
                     s.LoginId == loginId && 
                     s.ClientId == clientId && 
-                    s.Login.Expiry > DateTime.Now);
-
-            q = shouldLogon 
-                ? q.Where(s => s.Status == TokenSessionDbStatus.Started) 
-                : q.Where(s => s.Status == TokenSessionDbStatus.Pending);
-
+                    s.Login.Expiry > DateTime.Now &&
+                    (s.Status == expectedStatus || s.Status == TokenSessionDbStatus.Failed));
+            
             return await q.Select(s => new SessionOAuth2Details
                 {
                     RedirectUri = s.RedirectUri,

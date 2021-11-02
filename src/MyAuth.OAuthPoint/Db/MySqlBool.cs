@@ -27,6 +27,8 @@ namespace MyAuth.OAuthPoint.Db
     {
         [MapValue(null)]
         Pending,
+        [MapValue("ready")]
+        Ready,
         [MapValue("started")]
         Started,
         [MapValue("failed")]

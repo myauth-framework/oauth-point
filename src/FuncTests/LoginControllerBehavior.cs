@@ -288,7 +288,7 @@ namespace FuncTests
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
             Assert.NotNull(actualSess);
             Assert.Equal(LoginSessionDbStatus.Started, actualSess.LoginSessStatus);
-            Assert.Equal(TokenSessionDbStatus.Started, actualSess.TokenSessStatus);
+            Assert.Equal(TokenSessionDbStatus.Ready, actualSess.TokenSessStatus);
             Assert.Equal("foo", actualSess.SubjectId);
             Assert.NotNull(actualSess.AuthCode);
             Assert.True(actualSess.AuthCodeExpiry > DateTime.Now);

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MyAuth.OAuthPoint.Db;
 using MyAuth.OAuthPoint.Models;
 using MyAuth.OAuthPoint.Models.DataContract;
 using MyAuth.OAuthPoint.Services;
@@ -45,7 +46,7 @@ namespace MyAuth.OAuthPoint.Controllers.Oidc
 
                 if (LoginSessionCookie.TryLoad(Request, out var loginCookie))
                 {
-                    var foundSess = await _loginSessionProvider.ProvideOAuth2DetailsAsync(loginCookie.SessionId, request.ClientId, true);
+                    var foundSess = await _loginSessionProvider.ProvideOAuth2DetailsAsync(loginCookie.SessionId, request.ClientId, TokenSessionDbStatus.Started);
 
                     if (foundSess == null)
                     {
