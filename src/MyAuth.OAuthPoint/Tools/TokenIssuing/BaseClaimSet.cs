@@ -23,13 +23,13 @@ namespace MyAuth.OAuthPoint.Tools.TokenIssuing
             if (Expiry.HasValue)
             {
                 var expDt = EpochTime.GetIntDate(Expiry.Value);
-                claims.Add(new Claim("exp", expDt.ToString()));
+                claims.Add(new Claim("exp", expDt.ToString(), ClaimValueTypes.Integer));
             }
 
             if (IssuedAt.HasValue)
             {
                 var iatDt = EpochTime.GetIntDate(IssuedAt.Value);
-                claims.Add(new Claim("iat", iatDt.ToString()));
+                claims.Add(new Claim("iat", iatDt.ToString(), ClaimValueTypes.Integer));
             }
 
             if (Issuer != null) claims.Add(new Claim("iss", Issuer));
