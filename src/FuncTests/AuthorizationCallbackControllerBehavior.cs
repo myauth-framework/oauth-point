@@ -113,7 +113,8 @@ namespace FuncTests
                     {
                         Id = loginSessId, 
                         Expiry = DateTime.MaxValue,
-                        LoginExpiry = DateTime.MaxValue
+                        LoginExpiry = DateTime.MaxValue,
+                        Status = LoginSessionDbStatus.Started
                     }
                 },
                 TokenSessions = new []
@@ -127,6 +128,7 @@ namespace FuncTests
                         ErrorDesc = "error",
                         RedirectUri = redirectUri,
                         Scope = "no-mater-scope",
+                        Status = TokenSessionDbStatus.Started
                     }
                 }
             };
@@ -174,6 +176,7 @@ namespace FuncTests
                     {
                         Id = loginSessId,
                         Expiry = DateTime.MaxValue,
+                        Status = LoginSessionDbStatus.Started
                     }
                 },
                 TokenSessions = new[]
@@ -186,7 +189,8 @@ namespace FuncTests
                         RedirectUri = redirectUri,
                         AuthCode = authCode,
                         State = state,
-                        Scope = "no-mater-scope"
+                        Scope = "no-mater-scope",
+                        Status = TokenSessionDbStatus.Started
                     }
                 }
             };
@@ -233,7 +237,8 @@ namespace FuncTests
                     new LoginSessionDb
                     {
                         Id = loginSessId,
-                        Expiry = DateTime.MaxValue
+                        Expiry = DateTime.MaxValue,
+                        Status = LoginSessionDbStatus.Started
                     }
                 },
                 TokenSessions = new[]
@@ -246,7 +251,8 @@ namespace FuncTests
                         RedirectUri = redirectUri,
                         AuthCode= authCode,
                         State = state,
-                        Scope = "no-mater-scope"
+                        Scope = "no-mater-scope",
+                        Status = TokenSessionDbStatus.Started
                     }
                 }
             };
