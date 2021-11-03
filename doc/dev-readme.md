@@ -38,4 +38,8 @@
   * `state` - из запроса авторизации [Authentication Request](https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest)
   * `auth_code` - код авторизации, применяемый в [Code Flow](https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowSteps)
   * `auth_code_expiry` - дата и время истечения жизни кода авторизации
+* `AuthCode` - код авторизации, применяемый в [Code Flow](https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowSteps)Содержит реквизиты (в терминах БД):
+  * `id` - значение кода (GUID)
+  * `token_sess_id` - идентиикатор сессии токена
+  * `expiry` - дата и время истечения срока действия
 
