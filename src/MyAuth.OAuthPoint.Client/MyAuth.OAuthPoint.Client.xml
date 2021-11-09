@@ -203,6 +203,11 @@
             Json object value
             </summary>
         </member>
+        <member name="P:MyAuth.OAuthPoint.Client.Models.ClaimValue.Array">
+            <summary>
+            Json array object value
+            </summary>
+        </member>
         <member name="P:MyAuth.OAuthPoint.Client.Models.ClaimValue.Bool">
             <summary>
             Bool object value
@@ -247,6 +252,19 @@
             <summary>
             Initializes a new instance of <see cref="T:MyAuth.OAuthPoint.Client.Models.ClaimValue"/>
             </summary>
+        </member>
+        <member name="M:MyAuth.OAuthPoint.Client.Models.ClaimValue.#ctor(Newtonsoft.Json.Linq.JArray)">
+            <summary>
+            Initializes a new instance of <see cref="T:MyAuth.OAuthPoint.Client.Models.ClaimValue"/>
+            </summary>
+        </member>
+        <member name="M:MyAuth.OAuthPoint.Client.Models.ClaimValue.#ctor(System.Array)">
+            <summary>
+            Initializes a new instance of <see cref="T:MyAuth.OAuthPoint.Client.Models.ClaimValue"/>
+            </summary>
+        </member>
+        <member name="M:MyAuth.OAuthPoint.Client.Models.ClaimValue.ToString">
+            <inheritdoc />
         </member>
         <member name="T:MyAuth.OAuthPoint.Client.Models.ErrorTokenResponse">
             <summary>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -33,6 +34,11 @@ namespace MyAuth.OAuthPoint.Models
         /// Json object value
         /// </summary>
         public JObject Object { get; }
+
+        /// <summary>
+        /// Json array object value
+        /// </summary>
+        public JArray Array { get; }
 
         /// <summary>
         /// Bool object value
@@ -95,7 +101,17 @@ namespace MyAuth.OAuthPoint.Models
             if (value != null)
             {
                 if (value is string strVal)
+                {
                     String = strVal;
+                }
+                else if (value is JObject jObj)
+                {
+                    Object = jObj;
+                }
+                else if (value is JArray jArr)
+                {
+                    Array = jArr;
+                }
                 else
                 {
                     Object = JObject.FromObject(value);
@@ -122,6 +138,37 @@ namespace MyAuth.OAuthPoint.Models
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ClaimValue"/>
+        /// </summary>
+        public ClaimValue(JArray array)
+        {
+            if (array != null)
+            {
+                Array = array;
+            }
+            else
+            {
+                IsNull = true;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="ClaimValue"/>
+        /// </summary>
+        public ClaimValue(Array array)
+        {
+            if (array != null)
+            {
+                Array = JArray.FromObject(array);
+            }
+            else
+            {
+                IsNull = true;
+            }
+        }
+
+        /// <inheritdoc />
         public override string ToString()
         {
             if (IsNull)
@@ -132,6 +179,9 @@ namespace MyAuth.OAuthPoint.Models
 
             if (Object != null)
                 return Object.ToString();
+
+            if (Array != null)
+                return Array.ToString();
 
             if (Int.HasValue) return Int.ToString();
             if (Double.HasValue) return Double.ToString();
@@ -145,16 +195,21 @@ namespace MyAuth.OAuthPoint.Models
         {
             if (stringValue == null) return null;
 
-            if (stringValue.StartsWith("{") || stringValue.StartsWith("["))
+            if (stringValue.StartsWith("{"))
             {
                 try
                 {
                     return new ClaimValue(JObject.Parse(stringValue));
                 }
-                catch (JsonException )
+                catch (JsonException)
                 {
                     return new ClaimValue(stringValue);
                 }
+            }
+
+            if (stringValue.StartsWith("["))
+            {
+                return new ClaimValue(JArray.Parse(stringValue));
             }
 
             return new ClaimValue(stringValue);
@@ -162,7 +217,7 @@ namespace MyAuth.OAuthPoint.Models
 
         protected bool Equals(ClaimValue other)
         {
-            return String == other.String && Int == other.Int && Nullable.Equals(Double, other.Double) && JToken.DeepEquals(Object, other.Object) && Bool == other.Bool && Nullable.Equals(DateTime, other.DateTime);
+            return String == other.String && Int == other.Int && Nullable.Equals(Double, other.Double) && JToken.DeepEquals(Array, other.Array) && JToken.DeepEquals(Object, other.Object) && Bool == other.Bool && Nullable.Equals(DateTime, other.DateTime);
         }
 
         public override bool Equals(object obj)
@@ -175,7 +230,7 @@ namespace MyAuth.OAuthPoint.Models
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(String, Int, Double, Object, Bool, DateTime);
+            return HashCode.Combine(String, Int, Double, Object, Array, Bool, DateTime);
         }
 
         class JsonConverter : JsonConverter<ClaimValue>
@@ -198,7 +253,16 @@ namespace MyAuth.OAuthPoint.Models
                         writer.WriteValue(value.Bool.Value);
                     else if (value.DateTime.HasValue)
                         writer.WriteValue(value.DateTime.Value);
-                    else
+                    else if (value.Array != null)
+                    {
+                        writer.WriteStartArray();
+                        foreach (var arrItem in value.Array)
+                        {
+                            arrItem.WriteTo(writer);
+                        }
+                        writer.WriteEndArray();
+                    }
+                    else 
                         value.Object.WriteTo(writer);
                 }
             }
@@ -212,6 +276,9 @@ namespace MyAuth.OAuthPoint.Models
                 {
                     case JsonToken.StartObject:
                         return new ClaimValue(JObject.ReadFrom(reader));
+
+                    case JsonToken.StartArray:
+                        return new ClaimValue(JArray.ReadFrom(reader));
 
                     case JsonToken.Integer:
                     case JsonToken.Bytes:

@@ -16,6 +16,32 @@ namespace UnitTests
             _output = output;
         }
 
+        [Fact]
+        public void ShouldSerializeAnArray()
+        {
+            //Arrange
+            var arrayValue = new []
+            {
+                new TestObject{Value = "foo"},
+                new TestObject{Value = "bar"},
+            };
+            var arrayClaimValue = new ClaimValue(arrayValue);
+
+            //Act
+            var claimString = arrayClaimValue.ToString();
+
+            _output.WriteLine(claimString);
+
+            var restored = ClaimValue.Parse(claimString);
+
+            var restoredArray = restored.Array.ToObject<TestObject[]>();
+
+            //Assert
+            Assert.NotNull(restoredArray);
+            Assert.Equal("foo", restoredArray[0].Value);
+            Assert.Equal("bar", restoredArray[1].Value);
+        }
+
         [Theory]
         [MemberData(nameof(GetSerializationCases))]
         public void ShouldConvertValues(string f, ClaimValue claim)
@@ -38,11 +64,12 @@ namespace UnitTests
         public void ShouldParseValues(string f, ClaimValue claim)
         {
             //Arrange
+
+            //Act
             var claimString = claim.ToString();
 
             _output.WriteLine(claimString);
 
-            //Act
             var restored = ClaimValue.Parse(claimString);
 
             //Assert
