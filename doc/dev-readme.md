@@ -11,10 +11,18 @@
 
 ### Части процесса
 
+* LoginRequest
+  * `id` - идентификатор запроса (сквозной порядковый номер)
+  * `client_id` - идентификатор клиента
+  * `scope` - из запроса авторизации [Authentication Request](https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest)
+  * `redirect_uri` -  из запроса авторизации [Authentication Request](https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest)
+  * `state` - из запроса авторизации [Authentication Request](https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest)
+  * `create_dt` - дата и время получения запроса
+
 * `LoginSession` - состояние sso на время входа пользователя. Cодержит следующие реквизиты (в терминах БД):
   * `id` - идентификатор сессии (GUID)
   * `expiry` - дата и время истечения жизни сессии
-  * `client_id` - идентификатор клиента
+  * `request_id` - идентификатор запроса
   * `status` - состояние сессии:
     * `waiting` - ожидает входа пользователя
     * `failed` - произошла ошибка. предусмотренная [oidc-v1#AuthError](https://openid.net/specs/openid-connect-core-1_0.html#AuthError)
@@ -32,13 +40,9 @@
   * `id` - идентификатор сессии (GUID)
   * `auth_id` - идентификатор сессии авторизации
   * `expiry` - дата и время истечения жизни сессии
-  * `client_id` - идентификатор клиента
-  * `scope` - из запроса авторизации [Authentication Request](https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest)
-  * `redirect_uri` -  из запроса авторизации [Authentication Request](https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest)
-  * `state` - из запроса авторизации [Authentication Request](https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest)
   * `auth_code` - код авторизации, применяемый в [Code Flow](https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowSteps)
   * `auth_code_expiry` - дата и время истечения жизни кода авторизации
-* `AuthCode` - код авторизации, применяемый в [Code Flow](https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowSteps)Содержит реквизиты (в терминах БД):
+* `AuthCode` - код авторизации, применяемый в [Code Flow](https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowSteps). Содержит реквизиты (в терминах БД):
   * `id` - значение кода (GUID)
   * `token_sess_id` - идентиикатор сессии токена
   * `expiry` - дата и время истечения срока действия
