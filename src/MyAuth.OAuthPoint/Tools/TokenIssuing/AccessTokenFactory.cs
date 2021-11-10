@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using MyAuth.OAuthPoint.Models;
+using Newtonsoft.Json;
 
 namespace MyAuth.OAuthPoint.Tools.TokenIssuing
 {
@@ -25,21 +26,22 @@ namespace MyAuth.OAuthPoint.Tools.TokenIssuing
         {
             if(secret == null)
                 throw new ArgumentNullException(nameof(secret), "Symmetric key not defined");
-
-            var claims = new List<Claim>();
-
-            claims.AddRange(_baseClaimSet.ToArray());
-
-            if (_addClaims != null)
+            
+            var payloadModel = new PayloadModel
             {
-                claims.AddRange(_addClaims
-                    .Select(c => new Claim(c.Key, c.Value.ToString())));
-            }
+                _baseClaimSet.ToArray()
+            };
+            
+            if(_addClaims != null)
+                payloadModel.Add(_addClaims);
 
             if (Scope != null)
-                claims.Add(new Claim("scope", Scope));
-            
-            JwtPayload payload=  new JwtPayload(claims);
+                payloadModel.Add(new Claim("scope", Scope));
+
+            var payloadModelObject = payloadModel.ToModelObject();
+            var stringPayload = JsonConvert.SerializeObject(payloadModelObject);
+
+            var payload = JwtPayload.Deserialize(stringPayload);
 
             var secKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
 
@@ -48,7 +50,59 @@ namespace MyAuth.OAuthPoint.Tools.TokenIssuing
             JwtSecurityToken t = new JwtSecurityToken(header, payload);
 
             var tokenHandler = new JwtSecurityTokenHandler();
+            
             return tokenHandler.WriteToken(t);
+        }
+
+        class PayloadModel : Dictionary<string, List<ClaimValue>>
+        {
+            public void Add(IEnumerable<Claim> claims)
+            {
+                foreach (var claim in claims)
+                {
+                    Add(claim);
+                }
+            }
+            
+            public void Add(ClaimsCollection claims)
+            {
+                foreach (var claim in claims)
+                {
+                    var list = RetrieveList(claim.Key);
+                    list.Add(claim.Value);
+                }
+            }
+
+            public void Add(Claim claim)
+            {
+                var list = RetrieveList(claim.Type);
+                list.Add(new ClaimValue(claim.Value));
+            }
+
+            List<ClaimValue> RetrieveList(string key)
+            {
+                if (!TryGetValue(key, out var list))
+                {
+                    list = new List<ClaimValue>();
+                    Add(key, list);
+                }
+
+                return list;
+            }
+
+            public Dictionary<string, object> ToModelObject()
+            {
+                var newObj = new Dictionary<string, object>();
+
+                foreach (var item in this)
+                {
+                    newObj.Add(item.Key, item.Value.Count > 1 
+                        ? (object)item.Value.ToArray()
+                        : (object)item.Value.First());
+                }
+
+                return newObj;
+            }
         }
     }
 }

@@ -88,6 +88,21 @@ namespace UnitTests
             Assert.Equal(claim, restored);
         }
 
+        [Fact]
+        public void ShouldDeserializeFromStringArray()
+        {
+            //Arrange
+            var value =
+                "[  {    \"id\": \"942A0006\",    \"name\": \"Врио Петрович Действующий\",    \"inn\": \"500100732259\"  },  {    \"id\": \"942A0007\",    \"name\": \"Врио Иванович Содействующий\",    \"inn\": \"500100732259\"  },  {    \"id\": \"94200005\",    \"name\": \"Тест Тестович Проверяющий\",    \"inn\": \"500100732259\"  }]";
+
+            //Act
+            var claimValue = JsonConvert.DeserializeObject<ClaimValue>(value);
+
+            //Assert
+            Assert.NotNull(claimValue.Array);
+
+        }
+
         public static IEnumerable<object[]> GetSerializationCases()
         {
             return new[]

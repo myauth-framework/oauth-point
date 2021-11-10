@@ -95,5 +95,52 @@ namespace UnitTests
             Assert.Equal("1635800400", iatClaim.Value);
             Assert.Equal(ClaimValueTypes.Integer, iatClaim.ValueType);
         }
+
+        [Fact]
+        public void ShouldSerializeClaimValueObjectAsJsonArray()
+        {
+            //Arrange
+            var basicClaims = new BaseClaimSet
+            {
+                Subject = "foo",
+                Audiences = new[] { "host1", "host2" },
+                Expiry = DateTime.Now.AddDays(1),
+                Issuer = "bar",
+                IssuedAt = DateTime.Now
+            };
+
+            var arrClaim = ClaimValue.Parse("[1, 2, 3]");
+
+            var addClaims = new ClaimsCollection(new Dictionary<string, ClaimValue>
+            {
+                {"foo-claim", arrClaim}
+            });
+
+            var f = new AccessTokenFactory(basicClaims, addClaims);
+
+            //Act
+            var token = f.Create("1234567890123456");
+
+            _output.WriteLine(token);
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var actualToken = tokenHandler.ReadJwtToken(token);
+
+            var payloadJson = actualToken.Payload.SerializeToJson();
+            _output.WriteLine("");
+            _output.WriteLine(payloadJson);
+
+            var fooClaimValue = JsonConvert.DeserializeObject<ClaimValue>(actualToken.Payload["foo-claim"].ToString());
+
+            int[] restoredArray = fooClaimValue.Array?.Values<int>().ToArray();
+
+            //Assert
+            Assert.DoesNotContain("\"[1, 2, 3]\"", payloadJson);
+            Assert.NotNull(restoredArray);
+            Assert.Equal(1,restoredArray[0]);
+            Assert.Equal(2,restoredArray[1]);
+            Assert.Equal(3,restoredArray[2]);
+
+        }
     }
 }
