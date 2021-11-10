@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS `subjects` (
 CREATE TABLE IF NOT EXISTS `subject_access_claims` (
   `id` int NOT NULL AUTO_INCREMENT COMMENT 'Row id',
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Name',
-  `value` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Value',
+  `value` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Value',
   `subject_id` varchar(50) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Subject identifier',
   PRIMARY KEY (`id`),
   KEY `SubjectAccessClaimsToSubject` (`subject_id`),
@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS `subject_available_scopes` (
 CREATE TABLE IF NOT EXISTS `subject_identity_claims` (
   `id` int NOT NULL AUTO_INCREMENT COMMENT 'Row id',
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Name',
-  `value` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Value',
+  `value` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Value',
   `scope_id` varchar(50) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Scope string identifier',
   `subject_id` varchar(50) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Subject id',
   PRIMARY KEY (`id`),
