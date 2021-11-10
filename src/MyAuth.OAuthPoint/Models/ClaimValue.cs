@@ -119,7 +119,7 @@ namespace MyAuth.OAuthPoint.Models
             }
             else
             {
-                IsNull = false;
+                IsNull = true;
             }
         }
 

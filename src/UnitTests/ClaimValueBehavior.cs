@@ -17,6 +17,18 @@ namespace UnitTests
         }
 
         [Fact]
+        public void ShouldProvideIsNullWhenNullValue()
+        {
+            //Arrange
+
+            //Act
+            var claimValue = new ClaimValue((object)null);
+
+            //Assert
+            Assert.True(claimValue.IsNull);
+        }
+
+        [Fact]
         public void ShouldSerializeAnArray()
         {
             //Arrange

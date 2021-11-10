@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -295,6 +296,79 @@ namespace FuncTests
             Assert.Equal(MyAuth.OAuthPoint.Models.AuthorizationRequestProcessingError.Undefined, actualSess.ErrorCode);
         }
 
+        [Theory]
+        [MemberData(nameof(GetNullClaimValues))]
+        public async Task ShouldIgnoreNullValueClaims(string f, ClaimValue nullClaimValue)
+        {
+            //Arrange
+            var loginSessId = Guid.NewGuid().ToString("N");
+            var tokenSessId = Guid.NewGuid().ToString("N");
+            var clientId = Guid.NewGuid().ToString("N");
+            var redirectUri = "http://host.net/cb";
+            var dataInitializer = new DataDbInitializer
+            {
+                Clients = new[] { new ClientDb { Id = clientId, Name = "foo", PasswordHash = TestTools.ClientPasswordHash } },
+                LoginSessions = new[]
+                {
+                    new LoginSessionDb
+                    {
+                        Id = loginSessId,
+                        Expiry = DateTime.MaxValue,
+                        LoginExpiry = DateTime.Now.AddSeconds(10),
+                    }
+                },
+                TokenSessions = new[]
+                {
+                    new TokenSessionDb
+                    {
+                        Id = tokenSessId,
+                        LoginId = loginSessId,
+                        ClientId = clientId,
+                        RedirectUri = redirectUri,
+                        Scope = "no-mater-scope"
+                    }
+                }
+            };
+
+            var db = await _dbFixture.CreateDbAsync(dataInitializer);
+            var api = _testApi.Start(s => s.AddSingleton(db));
+
+            var authInfo = new LoginSuccessRequest
+            {
+                Subject = "foo",
+                AccessClaims = new ClaimsCollection(
+                    new Dictionary<string, ClaimValue>
+                    {
+                        {"foo", nullClaimValue}
+                    }),
+                IdentityScopes = new []
+                {
+                    new ScopeClaims
+                    {
+                        Id = "bar",
+                        Claims = new ClaimsCollection(
+                            new Dictionary<string, ClaimValue>
+                            {
+                                {"baz", nullClaimValue}
+                            })
+                    } 
+                }
+            };
+
+            //Act
+            var resp = await api.Call(s => s.SuccessLogin(loginSessId, authInfo));
+
+            var identityClaimValue = await db.DoOnce().Tab<SubjectIdentityClaimDb>()
+                .Where(c => c.SubjectId == "foo" && c.Name == "bar")
+                .Select(c => c.Value)
+                .FirstOrDefaultAsync();
+
+
+
+            //Assert
+            Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        }
+
         [Fact]
         public async Task ShouldLogout()
         {
@@ -346,7 +420,7 @@ namespace FuncTests
         }
 
         [Fact]
-        public async Task ShouldCreateSugbjectWhenCompleteSuccessful()
+        public async Task ShouldCreateSubjectWhenCompleteSuccessful()
         {
             //Arrange
             var loginSessId = Guid.NewGuid().ToString("N");
@@ -527,6 +601,15 @@ namespace FuncTests
         public void Dispose()
         {
             _testApi?.Dispose();
+        }
+
+        public static IEnumerable<object[]> GetNullClaimValues()
+        {
+            return new[]
+            {
+                new object[] {"null-object", new ClaimValue((object) null)},
+                new object[] {"null", null}
+            };
         }
     }
 }
