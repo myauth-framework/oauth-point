@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
+using MyAuth.OAuthPoint.Models;
+using Newtonsoft.Json.Linq;
 
 namespace MyAuth.OAuthPoint.Tools.TokenIssuing
 {
@@ -14,35 +14,35 @@ namespace MyAuth.OAuthPoint.Tools.TokenIssuing
         public string Issuer { get; set; }
         public string[] Audiences { get; set; }
 
-        public Claim[] ToArray()
+        public ClaimsCollection ToClaimsCollection()
         {
-            var claims = new List<Claim>();
+            var claims = new ClaimsCollection();
 
-            if(Subject != null) claims.Add(new Claim("sub", Subject));
+            if(Subject != null) claims.Add("sub", new ClaimValue(Subject));
             
             if (Expiry.HasValue)
             {
                 var expDt = EpochTime.GetIntDate(Expiry.Value);
-                claims.Add(new Claim("exp", expDt.ToString(), ClaimValueTypes.Integer));
+                claims.Add("exp", new ClaimValue(expDt));
             }
 
             if (IssuedAt.HasValue)
             {
                 var iatDt = EpochTime.GetIntDate(IssuedAt.Value);
-                claims.Add(new Claim("iat", iatDt.ToString(), ClaimValueTypes.Integer));
+                claims.Add("iat", new ClaimValue(iatDt));
             }
 
-            if (Issuer != null) claims.Add(new Claim("iss", Issuer));
+            if (Issuer != null) claims.Add("iss", new ClaimValue(Issuer));
 
-            if (Audiences != null)
+            if (Audiences != null && Audiences.Length != 0)
             {
-                foreach (var audience in Audiences)
-                {
-                    claims.Add(new Claim("aud", audience));
-                }
+                claims.Add("aud",
+                    Audiences.Length == 1
+                        ? new ClaimValue(Audiences[0])
+                        : new ClaimValue(JArray.FromObject(Audiences)));
             }
 
-            return claims.ToArray();
+            return claims;
         }
 
         public BaseClaimSet WithExpiry(DateTime expiry)

@@ -1,8 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using MyAuth.OAuthPoint.Models;
 
 namespace MyAuth.OAuthPoint.Tools.TokenIssuing
 {
@@ -26,8 +25,8 @@ namespace MyAuth.OAuthPoint.Tools.TokenIssuing
 
         public string Create(string secret)
         {
-            var claims = _claims.ToArray().ToList();
-            claims.Add(new Claim("jti", _tokenId));
+            var claims = _claims.ToClaimsCollection();
+            claims.Add("jti", new ClaimValue(_tokenId));
 
             JwtPayload payload = new JwtPayload();
 

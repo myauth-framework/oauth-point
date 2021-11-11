@@ -21,9 +21,9 @@ namespace MyAuth.OAuthPoint.Models
         public string String { get; }
 
         /// <summary>
-        /// Int value
+        /// Long value
         /// </summary>
-        public int? Int { get; }
+        public long? Long { get; }
 
         /// <summary>
         /// Double value
@@ -79,9 +79,9 @@ namespace MyAuth.OAuthPoint.Models
         /// <summary>
         /// Initializes a new instance of <see cref="ClaimValue"/>
         /// </summary>
-        public ClaimValue(int value)
+        public ClaimValue(long value)
         {
-            Int = value;
+            Long = value;
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace MyAuth.OAuthPoint.Models
             if (Array != null)
                 return Array.ToString();
 
-            if (Int.HasValue) return Int.ToString();
+            if (Long.HasValue) return Long.ToString();
             if (Double.HasValue) return Double.ToString();
             if (Bool.HasValue) return Bool.ToString();
             if (DateTime.HasValue) return DateTime.ToString();
@@ -217,7 +217,7 @@ namespace MyAuth.OAuthPoint.Models
 
         protected bool Equals(ClaimValue other)
         {
-            return String == other.String && Int == other.Int && Nullable.Equals(Double, other.Double) && JToken.DeepEquals(Array, other.Array) && JToken.DeepEquals(Object, other.Object) && Bool == other.Bool && Nullable.Equals(DateTime, other.DateTime);
+            return String == other.String && Long == other.Long && Nullable.Equals(Double, other.Double) && JToken.DeepEquals(Array, other.Array) && JToken.DeepEquals(Object, other.Object) && Bool == other.Bool && Nullable.Equals(DateTime, other.DateTime);
         }
 
         public override bool Equals(object obj)
@@ -230,7 +230,7 @@ namespace MyAuth.OAuthPoint.Models
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(String, Int, Double, Object, Array, Bool, DateTime);
+            return HashCode.Combine(String, Long, Double, Object, Array, Bool, DateTime);
         }
 
         class JsonConverter : JsonConverter<ClaimValue>
@@ -245,8 +245,8 @@ namespace MyAuth.OAuthPoint.Models
                 {
                     if (value.String != null)
                         writer.WriteValue(value.String);
-                    else if (value.Int.HasValue)
-                        writer.WriteValue(value.Int.Value);
+                    else if (value.Long.HasValue)
+                        writer.WriteValue(value.Long.Value);
                     else if (value.Double.HasValue)
                         writer.WriteValue(value.Double.Value);
                     else if (value.Bool.HasValue)
@@ -282,7 +282,7 @@ namespace MyAuth.OAuthPoint.Models
 
                     case JsonToken.Integer:
                     case JsonToken.Bytes:
-                        return new ClaimValue((int)new JValue(reader.Value));
+                        return new ClaimValue((long)new JValue(reader.Value));
 
                     case JsonToken.Float:
                         return new ClaimValue((double)new JValue(reader.Value));

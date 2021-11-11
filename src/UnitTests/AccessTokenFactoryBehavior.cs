@@ -2,14 +2,10 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
 using MyAuth.OAuthPoint.Models;
-using MyAuth.OAuthPoint.Tools;
 using MyAuth.OAuthPoint.Tools.TokenIssuing;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -89,10 +85,12 @@ namespace UnitTests
             //Assert
             Assert.NotNull(expClaim);
             Assert.Equal("1635829388", expClaim.Value);
+            Assert.NotEqual(ClaimValueTypes.String, expClaim.ValueType);
             Assert.Equal(ClaimValueTypes.Integer, expClaim.ValueType);
 
             Assert.NotNull(iatClaim);
             Assert.Equal("1635800400", iatClaim.Value);
+            Assert.NotEqual(ClaimValueTypes.String, iatClaim.ValueType);
             Assert.Equal(ClaimValueTypes.Integer, iatClaim.ValueType);
         }
 
