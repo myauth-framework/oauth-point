@@ -9,9 +9,9 @@
     <PackageProjectUrl>https://github.com/myauth-framework/oauth-point</PackageProjectUrl>
     <RepositoryUrl>https://github.com/myauth-framework/oauth-point.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyVersion>2.0.8.0</AssemblyVersion>
-    <FileVersion>2.0.8.0</FileVersion>
-    <Version>2.0.8</Version>
+    <AssemblyVersion>2.0.9.0</AssemblyVersion>
+    <FileVersion>2.0.9.0</FileVersion>
+    <Version>2.0.9</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
